@@ -36,10 +36,9 @@ git clone https://github.com/maresverbrugge/Transcendence
 3. Run script or makefile to start the deployment of our project using Docker Compose. 
 
 4. Navigate here to see our application:
-|||
-| ------ | ----------- |
-| [`localhost:ADD_PORT`](http://localhost:PORT) | Navigate here to see frontend |
-| [`localhost:ADD_PORT`](http://localhost:PORT) | Navigate here to see database |
+
+| [`localhost:ADD_PORT`](http://localhost:PORT) | Navigate here to see frontend |  
+| [`localhost:ADD_PORT`](http://localhost:PORT) | Navigate here to see database |  
 
 ---
 
@@ -72,8 +71,6 @@ In our project, we've adopted a containerized approach using Docker to ensure co
 
 
 ## Features
-
-- **Blocking, banning, and muting** 🔇: users can block other users to stop seeing their messages in chatrooms; chatroom admins/owners can ban or mute users from chatrooms.
 
 ## User Account
 
