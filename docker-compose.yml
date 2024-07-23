@@ -2,13 +2,15 @@ services:
   backend:
     build: ./backend
     container_name: trans-backend
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file :
+      - ./.env
     ports:
       - "3001:3000"
     depends_on:
       - database
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     restart: always
 
   frontend:
