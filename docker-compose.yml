@@ -1,64 +1,40 @@
-version: '3.8'
-
 services:
   backend:
-    image: backend
-    container_name: backend
     build: ./backend
+    container_name: trans-backend
     ports:
-      - 3000:3000
+      - "3001:3000"
     depends_on:
       - database
     volumes:
-      - backend:/app/node_modules
+      - ./backend:/app
+      - /app/node_modules
     restart: always
 
   frontend:
-    image: frontend
-    container_name: frontend
     build: ./frontend
+    container_name: trans-frontend
     volumes:
-      - fronted:/app/node_modules
+      - ./frontend:/app
+      - /app/node_modules
     env_file :
-      - .env
-    restart: always
+      - ./.env
     ports:
-      - 8080:8080
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: always
 
   database:
     image: postgres:latest
-    container_name: database
+    container_name: trans-database
     volumes:
-      - database:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     env_file :
       - .env
-    restart: always
     ports:
-      - 5432:5432
+      - "5432:5432"
+    restart: always
 
 volumes:
-  database:
-    name: database
-    driver: local
-    driver_opts:
-      device: ./database/data
-      o : bind
-      type : none
-  backend:
-    name: backend
-    driver: local
-    driver_opts:
-      device: ./backend
-      o : bind
-      type : none
-  frontend:
-    name: frontend
-    driver: local
-    driver_opts:
-      device: ./frontend
-      o : bind
-      type : none
-
-networks:
-  inception:
-    name: inception
+  postgres_data:
