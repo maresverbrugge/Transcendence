@@ -11,6 +11,7 @@ WORKDIR /app
 # Install dependencies specified in package.json
 COPY package*.json ./
 RUN npm install
+RUN npm install @nestjs/websockets @nestjs/platform-socket.io
 
 # Copy the source code from host machine to container
 COPY . .

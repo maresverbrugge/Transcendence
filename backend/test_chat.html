@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Test</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io('http://localhost:3000', {
+        transports: ['websocket', 'polling'],
+      });
+
+      // Check if already connected
+      socket.on('connect', () => {
+        console.log('Connected to WebSocket server');
+      });
+
+      socket.on('message', (data) => {
+        console.log('Message received:', data);
+        const messageList = document.getElementById('messages');
+        const newMessage = document.createElement('li');
+        newMessage.textContent = `${data.sender}: ${data.message}`;
+        messageList.appendChild(newMessage);
+      });
+
+      document.getElementById('sendBtn').addEventListener('click', () => {
+        const username = document.getElementById('usernameInput').value.trim();
+        const message = document.getElementById('messageInput').value.trim();
+
+        if (username !== '' && message !== '') {
+          socket.emit('message', { sender: username, message: message });
+          document.getElementById('messageInput').value = ''; // Clear input after sending
+        } else {
+          alert('Please enter both a username and a message.');
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>Chat App</h1>
+  <input type="text" id="usernameInput" placeholder="Enter your username" autofocus>
+  <input type="text" id="messageInput" placeholder="Enter your message">
+  <button id="sendBtn">Send</button>
+  <ul id="messages"></ul>
+</body>
+</html>
