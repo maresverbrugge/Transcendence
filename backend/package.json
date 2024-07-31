@@ -1,7 +1,7 @@
 {
-  "name": "test",
+  "name": "backend",
   "version": "0.0.1",
-  "description": "",
+  "description": "Transcendence application backend using NestJS",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
