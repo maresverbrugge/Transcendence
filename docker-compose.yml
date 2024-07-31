@@ -26,12 +26,12 @@ services:
     restart: always
 
   database:
-    image: postgres:latest
+    build: ./database
     container_name: trans-database
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file :
-      - .env
+      - ./.env
     ports:
       - "5432:5432"
     restart: always
