@@ -6,6 +6,7 @@ const ChatApp = () => {
   const [input, setInput] = useState('');
   const [username, setUsername] = useState('');
   const [socket, setSocket] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     // Initialize socket connection
@@ -15,6 +16,14 @@ const ChatApp = () => {
 
     // Set socket instance in state
     setSocket(socketIo);
+
+    // Handle incoming chatHistory
+    socketIo.on('chatHistory', (chatHistory) => {
+      setMessages(chatHistory.map((msg) => ({
+        sender: msg.user.name,
+        message: msg.content,
+      })));
+    });
 
     // Handle incoming messages
     socketIo.on('message', (data) => {
@@ -27,39 +36,56 @@ const ChatApp = () => {
     };
   }, []);
 
+  const handleLogin = () => {
+    if (username.trim()) {
+      setIsLoggedIn(true);
+    } else {
+      alert('Please enter a username.');
+    }
+  };
+
   const sendMessage = () => {
-    if (username.trim() && input.trim()) {
+    if (input.trim()) {
       socket.emit('message', { sender: username, message: input });
       setInput(''); // Clear input after sending
     } else {
-      alert('Please enter both a username and a message.');
+      alert('Please enter a message.');
     }
   };
 
   return (
     <div>
-      <h1>Chat App</h1>
-      <input
-        type="text"
-        placeholder="Enter your username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        autoFocus
-      />
-      <input
-        type="text"
-        placeholder="Enter your message"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button onClick={sendMessage}>Send</button>
-      <ul>
-        {messages.map((msg, index) => (
-          <li key={index}>
-            {msg.sender}: {msg.message}
-          </li>
-        ))}
-      </ul>
+      {isLoggedIn ? (
+        <div>
+          <h1>Chat App</h1>
+          <input
+            type="text"
+            placeholder="Enter your message"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <button onClick={sendMessage}>Send</button>
+          <ul>
+            {messages.map((msg, index) => (
+              <li key={index}>
+                {msg.sender}: {msg.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div>
+          <h1>Login</h1>
+          <input
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoFocus
+          />
+          <button onClick={handleLogin}>Login</button>
+        </div>
+      )}
     </div>
   );
 };

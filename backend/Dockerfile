@@ -11,10 +11,9 @@ WORKDIR /app
 # Install dependencies specified in package.json
 COPY package*.json ./
 RUN npm install
-RUN npm install @nestjs/websockets @nestjs/platform-socket.io
 
-# Install Prisma CLI and client
-RUN npm install prisma @prisma/client --save-dev
+# Install PostgreSQL client tools
+RUN apk --no-cache add postgresql-client
 
 # Copy the source code from host machine to container
 COPY . .

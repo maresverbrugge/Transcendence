@@ -6,7 +6,11 @@ until pg_isready --host=trans-database --port=5432 --username=transcendancingque
   sleep 2
 done
 
-echo "Database is ready. Running migrations..."
+# echo "Database is ready. Running migrations..."
+
+# create a new migration file in the prisma/migrations directory.
+# only when creating new database volume or when schema.prisma file is changed
+npx prisma migrate dev --name init
 
 # Run migrations
 npx prisma migrate deploy
