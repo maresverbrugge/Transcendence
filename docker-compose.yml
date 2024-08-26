@@ -3,7 +3,6 @@ services:
     build: ./backend
     container_name: trans-backend
     volumes:
-      - ./backend:/app
       - /app/node_modules
     env_file :
       - ./.env
@@ -17,7 +16,6 @@ services:
     build: ./frontend
     container_name: trans-frontend
     volumes:
-      - ./frontend:/app
       - /app/node_modules
     env_file :
       - ./.env
@@ -28,12 +26,12 @@ services:
     restart: always
 
   database:
-    image: postgres:latest
+    build: ./database
     container_name: trans-database
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file :
-      - .env
+      - ./.env
     ports:
       - "5432:5432"
     restart: always

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "postgresql-client": "^2.13.0"
+  }
+}
