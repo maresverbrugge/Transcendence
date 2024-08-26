@@ -27,7 +27,6 @@ LIST_VOLUMES 	:= $(shell docker volume ls -q)
 #========================================#
 
 all:	up
-		@docker compose up --build
 		@echo "$(P)$(BOLD)======================== DONE BUILDING =========================$(RESET)"
 		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
 		@echo "$(BOLD)$(Y)$@ $(G)$@ $(B)$@ $(P)$@ $(R)$@$(RESET)"
@@ -69,6 +68,9 @@ down:
 		@docker compose down
 		@echo "$(BOLD)$(P)Docker containers are now down and removed!$(RESET)"
 
+# carefull with this one!
+re:		down all
+
 # stop all running containers and REMOVE them, remove all images and volumes.
 # carefull with this one!
 # the (|| true) is used so the Makefile doesn't exit when there's an error:
@@ -80,55 +82,20 @@ clean:
 		@docker volume rm $(LIST_VOLUMES) || true
 		@echo "$(BOLD)$(R)Docker containers and volumes deleted!$(RESET)"
 
-# carefull with this one!
-re:		down all
+
+
+#========================================#
+#=============== FOR GIT ================#
+#========================================#
 
 gclean:
 		@rm -f *.DS_Store ./.DS_Store
 		@rm -rf *.dSYM
-		@echo "$(C)$(BOLD)DELETED:    $(RESET)$(C)*._DS_Store and *.dSYM files"
+		@echo "$(C)$(BOLD)DELETED:    $(RESET)$(C)*._DS_Store and *.dSYM files$(RESET)\n"
 		git status
 		git add *
 		git status
 		@echo "$(G)$(BOLD)======================== READY TO COMMIT ========================$(RESET)"
-
-docker-pwd:
-	docker run \
-	-p 8081:8081 \
-	-p 8082:8082 \
-	-p 8083:8083 \
-	--name $(CONTAINER) \
-	-it \
-	--rm \
-	--init \
-	-v "$$PWD:/pwd" \
-	--cap-add=SYS_PTRACE \
-	--security-opt seccomp=unconfined \
-	-e CXX="clang++" \
-	-e CXXFLAGS="-Wall -Wextra -Werror -std=c++20 -g -gdwarf-4 -gstrict-dwarf" \
-	-e LDFLAGS="-g -gdwarf-4 -gstrict-dwarf" \
-	$(IMAGE) sh -c "cd /pwd; bash"
-
-docker-clean:
-	docker run \
-	-p 8081:8081 \
-	--name $(CONTAINER) \
-	-it \
-	--rm \
-	--init \
-	-v "$$PWD:/pwd" \
-	--cap-add=SYS_PTRACE \
-	--security-opt seccomp=unconfined \
-	-e CXX="clang++" \
-	-e CXXFLAGS="-Wall -Wextra -Werror -std=c++20" \
-	-e LDFLAGS="" \
-	$(IMAGE) sh -c "cd /pwd; bash"
-
-docker-build:
-	docker build -t $(IMAGE) .
-
-docker-exec:
-	docker exec -it $(CONTAINER) sh -c "cd /pwd; bash"
 
 #========================================#
 #=============== COLOURS ================#
