@@ -3,7 +3,6 @@ services:
     build: ./backend
     container_name: trans-backend
     volumes:
-    # - ./backend:/app
     - /app/node_modules
     env_file :
       - ./.env
@@ -17,7 +16,6 @@ services:
     build: ./frontend
     container_name: trans-frontend
     volumes:
-    # - ./frontend:/app
     - /app/node_modules
     env_file :
       - ./.env

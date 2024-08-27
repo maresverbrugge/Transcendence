@@ -15,9 +15,7 @@
 #================ DOCKER ================#
 #========================================#
 
-NAME			=	TranscendancingQueens
-CONTAINER		:=	Trans-container
-IMAGE			:=	Trans-image
+NAME			=	transcendence
 LIST_CONTAINERS	:= $(shell docker ps -qa)
 LIST_IMAGES 	:= $(shell docker images -qa)
 LIST_VOLUMES 	:= $(shell docker volume ls -q)
@@ -27,14 +25,13 @@ LIST_VOLUMES 	:= $(shell docker volume ls -q)
 #========================================#
 
 all:	up
-		@echo "$(P)$(BOLD)======================== DONE BUILDING =========================$(RESET)"
-		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
-		@echo "$(BOLD)$(Y)$@ $(G)$@ $(B)$@ $(P)$@ $(R)$@$(RESET)"
-		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
 
 # build or update the docker images
 build:
 		@docker compose build
+		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
+		@echo "$(BOLD)$(Y)$(NAME)$(G)$(NAME)$(B)$(NAME)$(P)$(NAME)$(R)$(NAME)$(RESET)"
+		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
 		@echo "$(BOLD)$(G)Docker containers are now build! $(RESET)$(Y)*but not running!$(RESET)"
 
 # build and start the containers
