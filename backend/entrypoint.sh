@@ -19,7 +19,7 @@ npx prisma migrate deploy
 if [ $? -eq 0 ]; then
   echo "Migrations applied successfully. Starting the application..."
   # Start the application
-  npm run start:prod
+  npm run start:dev
 else
   echo "Migrations failed. Exiting..."
   exit 1

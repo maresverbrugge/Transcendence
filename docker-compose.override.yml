@@ -1,12 +1,10 @@
-#This file adds the volume mounts for our local development environment:
+# This file adds the volume mounts for our local development environment:
 
 services:
   backend:
     volumes:
       - ./backend:/app
-    command: npm run start:dev # Optionally, use a development start script
 
   frontend:
     volumes:
       - ./frontend:/app
-    command: npm start # Optionally, use a development start script

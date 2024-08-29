@@ -73,13 +73,19 @@ re:		down all
 # the (|| true) is used so the Makefile doesn't exit when there's an error:
 # if there are no containers running to prevent the make command from stopping.
 clean: 
+		@rm -rf ./backend/dist
+		@rm -rf ./backend/node_modules
+		@rm -rf ./frontend/node_modules
 		@docker stop $(LIST_CONTAINERS) || true
 		@docker rm $(LIST_CONTAINERS) || true
 		@docker rmi -f $(LIST_IMAGES) || true
 		@docker volume rm $(LIST_VOLUMES) || true
 		@echo "$(BOLD)$(R)Docker containers and volumes deleted!$(RESET)"
 
-
+check_database:
+		@docker exec -it trans-database psql -U Transcendancingqueens -d pongdb
+# en erna \dt
+# om te zien of migration is gelukt
 
 #========================================#
 #=============== FOR GIT ================#
