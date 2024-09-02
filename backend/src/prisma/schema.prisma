@@ -6,25 +6,71 @@
 
 // prisma/schema.prisma
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // Use environment variables for database connection
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql" // or "mysql"
+  url      = env("DATABASE_URL")
+}
+
 model User {
-  id        Int     @id @default(autoincrement())
-  name      String
-  email     String  @unique
-  messages  Message[]
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  password       String
+  username       String    @unique
+  websocketId    String?   // The ID of the websocket, nullable
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  // Relations
+  chats          Chat[]    @relation("UserChats")
+  blockedUsers   BlockedUser[] @relation("BlockingUsers")
+  blockedByUsers BlockedUser[] @relation("BlockedByUsers")
+  sentMessages   Message[] @relation("SentMessages")
+  sentInvitations    GameInvitation[] @relation("SentInvitations")
+  receivedInvitations GameInvitation[] @relation("ReceivedInvitations")
 }
 
 model Message {
-  id        Int     @id @default(autoincrement())
-  content   String
-  senderId  Int
-  user      User    @relation(fields: [senderId], references: [id])
+  id            Int      @id @default(autoincrement())
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  sender        User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId      Int
+  chat          Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  chatId        Int
+}
+
+model Chat {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  messages      Message[] @relation("ChatMessages")
+  participants  User[]    @relation("UserChats")
+}
+
+model GameInvitation {
+  id            Int      @id @default(autoincrement())
+  inviter       User     @relation("SentInvitations", fields: [inviterId], references: [id])
+  inviterId     Int
+  invitee       User     @relation("ReceivedInvitations", fields: [inviteeId], references: [id])
+  inviteeId     Int
+  status        String   // "pending", "accepted", "rejected"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BlockedUser {
+  id            Int      @id @default(autoincrement())
+  blocker       User     @relation("BlockingUsers", fields: [blockerId], references: [id])
+  blockerId     Int
+  blocked       User     @relation("BlockedByUsers", fields: [blockedId], references: [id])
+  blockedId     Int
 }
