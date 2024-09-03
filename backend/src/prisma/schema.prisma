@@ -22,51 +22,51 @@ model User {
   websocketId       String?   // The ID of the websocket, nullable
   
   // Relations
-  chatsOwned        Chat[]        @relation("Owner")
-  chatMembers       ChatMember[]  @relation("Members")
-  blockedUsers      BlockedUser[] @relation("BlockingUsers")
-  blockedByUsers    BlockedUser[] @relation("BlockedByUsers")
+  chatsOwned        Chat[]
+  chatMembers       ChatMember[]
+  blockedUsers      BlockedUser[] @relation("blockedUsers")
+  blockedByUsers    BlockedUser[] @relation("blockedByUsers")
 }
 
 model Chat {
-  id            Int       @id @default(autoincrement())
-  password      String?   // Optional password field
+  id                Int           @id @default(autoincrement())
+  password          String?       // Optional password field
   
   // Relations
-  owner_id      Int
-  owner         User      @relation("Owner", fields: [owner_id], references: [id])
-  messages      Message[]
-  participants  ChatMember[]
+  owner_id          Int
+  owner             User          @relation(fields: [owner_id], references: [id])
+  messages          Message[]
+  members           ChatMember[]
 }
 
 model Message {
-  id            Int      @id @default(autoincrement())
-  content       String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                Int           @id @default(autoincrement())
+  content           String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   
   // Relations
-  chatId        Int
-  chat          Chat     @relation(fields: [chatId], references: [id])
+  chatId            Int
+  chat              Chat          @relation(fields: [chatId], references: [id])
 }
 
-model ChatMember {
-  id            Int       @id @default(autoincrement())
-  isAdmin       Boolean   @default(false)
-  isMuted       Boolean   @default(false)
-  isBanned      Boolean   @default(false)
+model ChatMember     {
+  id                Int           @id @default(autoincrement())
+  isAdmin           Boolean       @default(false)
+  isMuted           Boolean       @default(false)
+  isBanned          Boolean       @default(false)
 
   // Relations
-  member_id     Int
-  member        User    @relation("Members", fields: [member_id], references: [id])
-  chat_id       Int
-  chat          Chat    @relation(fields: [chat_id], references: [id])
+  member_id         Int
+  member            User          @relation(fields: [member_id], references: [id])
+  chat_id           Int
+  chat              Chat          @relation(fields: [chat_id], references: [id])
 }
 
 model BlockedUser {
-  id            Int      @id @default(autoincrement())
-  blocker       User     @relation("BlockingUsers", fields: [blockerId], references: [id])
-  blockerId     Int
-  blocked       User     @relation("BlockedByUsers", fields: [blockedId], references: [id])
-  blockedId     Int
+  id                Int           @id @default(autoincrement())
+  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
+  blockerId         Int
+  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
+  blockedId         Int
 }
