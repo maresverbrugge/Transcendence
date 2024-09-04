@@ -37,9 +37,8 @@ model User {
   websocketId       String?       // The ID of the websocket, nullable
   status            PlayerStatus  // ONLINE | OFFLINE | IN_GAME | AFK
   
-  player1Matches    Match[]       @relation("Player1Matches")
-  player2Matches    Match[]       @relation("Player2Matches")
-  Statistics        Statistics?
+  matchHistory      Match[]
+  statistics        Statistics?
   channelsOwned     Channel[]
   channelMembers    ChannelMember[]
   blockedUsers      BlockedUser[] @relation("blockedUsers")
@@ -54,10 +53,7 @@ model Match {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  player1Id         Int
-  player1           User          @relation("Player1Matches", fields: [player1Id], references: [id])
-  player2Id         Int?
-  player2           User?         @relation("Player2Matches", fields: [player2Id], references: [id])
+  players           User[]
 }
 
 model Statistics {
