@@ -6,25 +6,110 @@
 
 // prisma/schema.prisma
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // Use environment variables for database connection
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql" // or "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlayerStatus {
+  ONLINE
+  OFFLINE
+  IN_GAME
+  AFK
+}
+
+enum MatchStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model User {
-  id        Int     @id @default(autoincrement())
-  name      String
-  email     String  @unique
-  messages  Message[]
+  id                Int           @id @default(autoincrement())
+  username          String        @unique
+  intraUsername     String
+  avatar            Bytes?
+  Enabled2FA        Boolean
+  websocketId       String?       // The ID of the websocket, nullable
+  status            PlayerStatus  // ONLINE | OFFLINE | IN_GAME | AFK
+  
+  player1Matches    Match[]       @relation("Player1Matches")
+  player2Matches    Match[]       @relation("Player2Matches")
+  Statistics        Statistics?
+  channelsOwned     Channel[]
+  channelMembers    ChannelMember[]
+  blockedUsers      BlockedUser[] @relation("blockedUsers")
+  blockedByUsers    BlockedUser[] @relation("blockedByUsers")
+}
+
+model Match {
+  matchId           Int           @id @default(autoincrement())
+  status            MatchStatus   @default(PENDING) // PENDING | ACCEPTED | DECLINED
+  scorePlayer1      Int           @default(0)
+  scorePlayer2      Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  player1Id         Int
+  player1           User          @relation("Player1Matches", fields: [player1Id], references: [id])
+  player2Id         Int?
+  player2           User?         @relation("Player2Matches", fields: [player2Id], references: [id])
+}
+
+model Statistics {
+  id                Int           @id @default(autoincrement())
+  matchesPlayed     Int           @default(0)
+  wins              Int           @default(0)
+  losses            Int           @default(0)
+  totalScores       Int           @default(0)
+  rank              Int           @default(0)
+  //level             Int           @default(0)
+  //achievements      Achievements?
+
+  userId            Int           @unique
+  user              User          @relation(fields: [userId], references: [id])
+}
+
+model Channel {
+  id                Int           @id @default(autoincrement())
+  password          String?       // Optional password field
+  
+  ownerId           Int
+  owner             User          @relation(fields: [ownerId], references: [id])
+  messages          Message[]
+  members           ChannelMember[]
 }
 
 model Message {
-  id        Int     @id @default(autoincrement())
-  content   String
-  senderId  Int
-  user      User    @relation(fields: [senderId], references: [id])
+  id                Int           @id @default(autoincrement())
+  content           String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  channelId         Int
+  channel           Channel       @relation(fields: [channelId], references: [id])
+}
+
+model ChannelMember {
+  id                Int           @id @default(autoincrement())
+  isAdmin           Boolean       @default(false)
+  isMuted           Boolean       @default(false)
+  isBanned          Boolean       @default(false)
+
+  memberId          Int
+  member            User          @relation(fields: [memberId], references: [id])
+  channelId         Int
+  channel           Channel       @relation(fields: [channelId], references: [id])
+}
+
+model BlockedUser {
+  id                Int           @id @default(autoincrement())
+  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
+  blockerId         Int
+  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
+  blockedId         Int
 }
