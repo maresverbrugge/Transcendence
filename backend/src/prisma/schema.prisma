@@ -108,8 +108,9 @@ model ChannelMember {
 
 model BlockedUser {
   id                Int           @id @default(autoincrement())
-  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
+
   blockerId         Int
-  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
+  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
   blockedId         Int
+  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
 }
