@@ -16,27 +16,66 @@ datasource db {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
-  username          String    @unique
+  id                Int           @id @default(autoincrement())
+  username          String        @unique
+  intraUsername     String
   avatar            Bytes?
-  websocketId       String?   // The ID of the websocket, nullable
+  Enabled2FA        Boolean
+  websocketId       String?       // The ID of the websocket, nullable
+  status            Status        // ONLINE | OFFLINE | IN_GAME | AFK
   
-  // Relations
-  chatsOwned        Chat[]
-  chatMembers       ChatMember[]
+  player1Matches    Match[]       @relation("Player1Matches")
+  player2Matches    Match[]       @relation("Player2Matches")
+  Statistics        Statistics?
+  channelsOwned     Channel[]
+  channelMembers    ChannelMember[]
   blockedUsers      BlockedUser[] @relation("blockedUsers")
   blockedByUsers    BlockedUser[] @relation("blockedByUsers")
 }
 
-model Chat {
+enum Status {
+  ONLINE
+  OFFLINE
+  IN_GAME
+  AFK
+}
+
+model Match {
+  matchId           Int           @id @default(autoincrement())
+  status            String        @default("pending") // "pending", "accepted", "rejected"
+  scorePlayer1      Int           @default(0)
+  scorePlayer2      Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  player1Id         Int
+  player1           User          @relation("Player1Matches", fields: [player1Id], references: [id])
+  player2Id         Int?
+  player2           User?         @relation("Player2Matches", fields: [player2Id], references: [id])
+}
+
+model Statistics {
+  id                Int           @id @default(autoincrement())
+  matchesPlayed     Int           @default(0)
+  wins              Int           @default(0)
+  losses            Int           @default(0)
+  totalScores       Int           @default(0)
+  rank              Int           @default(0)
+  //level             Int           @default(0)
+  //achievements      Achievements?
+
+  userId            Int           @unique
+  user              User          @relation(fields: [userId], references: [id])
+}
+
+model Channel {
   id                Int           @id @default(autoincrement())
   password          String?       // Optional password field
   
-  // Relations
-  owner_id          Int
-  owner             User          @relation(fields: [owner_id], references: [id])
+  ownerId          Int
+  owner             User          @relation(fields: [ownerId], references: [id])
   messages          Message[]
-  members           ChatMember[]
+  members           ChannelMember[]
 }
 
 model Message {
@@ -45,22 +84,20 @@ model Message {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
-  // Relations
-  chatId            Int
-  chat              Chat          @relation(fields: [chatId], references: [id])
+  channelId         Int
+  channel           Channel       @relation(fields: [channelId], references: [id])
 }
 
-model ChatMember     {
+model ChannelMember {
   id                Int           @id @default(autoincrement())
   isAdmin           Boolean       @default(false)
   isMuted           Boolean       @default(false)
   isBanned          Boolean       @default(false)
 
-  // Relations
-  member_id         Int
-  member            User          @relation(fields: [member_id], references: [id])
-  chat_id           Int
-  chat              Chat          @relation(fields: [chat_id], references: [id])
+  memberId         Int
+  member            User          @relation(fields: [memberId], references: [id])
+  channelId        Int
+  channel           Channel       @relation(fields: [channelId], references: [id])
 }
 
 model BlockedUser {
