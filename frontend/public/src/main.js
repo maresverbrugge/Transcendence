@@ -1,3 +1,13 @@
+var paddleLeft;
+var paddleRight;
+scoreLeft = 0; //send to the client
+scoreRight = 0; //send to the client;
+var end = 0;
+up_arrow = 38;
+down_arrow = 40;
+w = 87;
+s = 83;
+
 class Ball {
 	constructor(x, y, diameter, context) {
 		this.x = x;
@@ -23,12 +33,12 @@ class Ball {
 		this.y += this.speedY;
 		this.x += this.speedX;
 		if (this.right() > width) {
-			// scoreLeft += 1;
+			scoreLeft += 1;
 			this.x = width/2;
 			this.y = height/2;
 		}
 		if (this.left() < 0) {
-			// scoreRight += 1;
+			scoreRight += 1;
 			this.x = width/2;
 			this.y = height/2;
 		}
@@ -53,14 +63,8 @@ class Paddle{
 		this.w = w;
 		this.h = h;
 		this.speedY = 0; //get from client
-		this.speedX = 0; //get from client
 		this.context = context;
 	}
-	move() {
-		this.y += this.speedY;
-		this.x += this.speedX;
-	};
-	//helper functions
 	left() {
 		return this.x-this.w/2;
 	};
@@ -73,33 +77,6 @@ class Paddle{
 	bottom() {
 		return this.y+this.h/2;
 	};
-	// keyPressed(){
-		// 			if(keyCode == UP_ARROW){
-			// 				paddleRight.speedY=-3;
-	// 				}
-	// 				if(keyCode == DOWN_ARROW){
-		// 					paddleRight.speedY=3;
-		// }
-		// if(key == 'a'){
-			// 	paddleLeft.speedY=-3;
-			// 	}
-	// 	if(key == 'z'){
-	// 		paddleLeft.speedY=3;
-	// 		}
-	// 	}
-	// keyReleased(){
-		// 			if(keyCode == UP_ARROW){
-			// paddleRight.speedY=0;
-			// }
-			// if(keyCode == DOWN_ARROW){
-				// 	paddleRight.speedY=0;
-				// 	}
-				// if(key == 'a'){
-					// 	paddleLeft.speedY=0;
-	// 	}
-	// 	if(key == 'z'){
-		// paddleLeft.speedY=0;
-		// }
 	display() {
 		// if (this.bottom() > height) {
 		// 	this.y = height-this.h/2;
@@ -113,8 +90,23 @@ class Paddle{
 	};
 };
 
+window.onkeydown = function(press){
+	if (end === 0 && press.keyCode === up_arrow){
+		this.paddleRight.y -= 3;
+	}
+	if (end === 0 && press.keyCode === down_arrow){
+		this.paddleRight.y += 3;
+	}
+	if (end === 0 && press.keyCode === w){
+		this.paddleLeft.y -= 3;
+	}
+	if (end === 0 && press.keyCode === s){
+		this.paddleLeft.y += 3;
+	}
+}
+
 function map_range(value, low1, high1, low2, high2) {
-    return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 	
 class DrawingApp {
@@ -127,40 +119,37 @@ class DrawingApp {
 		context.lineWidth = 1;
 		this.width = canvas.width;
 		this.height = canvas.height;
-		this.scoreLeft = 0; //send to the client
-		this.scoreRight = 0; //send to the client;
 		this.context = context;
 		this.ball = new Ball(this.width/2, this.height/2, 50, context);
 		this.ball.speedX = 5;
 		this.ball.speedY = Math.random(-3,3);
-		this.paddleLeft = new Paddle(15, this.height/2, 30, 200, context);
-		this.paddleRight = new Paddle(this.width-15, this.height/2, 30, 200, context);
+		paddleLeft = new Paddle(15, this.height/2, 30, 200, context);
+		paddleRight = new Paddle(this.width-15, this.height/2, 30, 200, context);
 	};
 	redraw() {
 		this.context.clearRect(0, 0, this.width, this.height);
-		this.ball.move();
+		this.ball.move(this.width, this.height);
 		this.ball.display();
-		// paddleLeft.move();
-		this.paddleLeft.display();
-		// paddleRight.move();
-		this.paddleRight.display();
-		if (this.ball.left() < this.paddleLeft.right() && this.ball.y > this.paddleLeft.top() && this.ball.y < this.paddleLeft.bottom()){
+		paddleLeft.display();
+		paddleRight.display();
+		if (this.ball.left() < paddleLeft.right() && this.ball.y > paddleLeft.top() && this.ball.y < paddleLeft.bottom()){
 			this.ball.speedX = -this.ball.speedX;
-			this.ball.speedY = map_range(this.ball.y - this.paddleLeft.y, -this.paddleLeft.h/2, this.paddleLeft.h/2, -10, 10);
+			this.ball.speedY = map_range(this.ball.y - paddleLeft.y, -paddleLeft.h/2, paddleLeft.h/2, -10, 10);
 		}
 		
-		if (this.ball.right() > this.paddleRight.left() && this.ball.y > this.paddleRight.top() && this.ball.y < this.paddleRight.bottom()) {
+		if (this.ball.right() > paddleRight.left() && this.ball.y > paddleRight.top() && this.ball.y < paddleRight.bottom()) {
 			this.ball.speedX = -this.ball.speedX;
-			this.ball.speedY = map_range(this.ball.y - this.paddleRight.y, -this.paddleRight.h/2, this.paddleRight.h/2, -10, 10);
+			this.ball.speedY = map_range(this.ball.y - paddleRight.y, -paddleRight.h/2, paddleRight.h/2, -10, 10);
 		}
-		this.context.fillText(this.scoreRight, this.width/2 + 30, 30); // Right side score
-		this.context.fillText(this.scoreLeft, this.width/2 - 30, 30); // Left side score
-		if (this.scoreLeft - this.scoreRight === 3 || this.scoreRight - this.scoreLeft === 3) {
+		this.context.fillText(scoreRight, this.width/2 + 30, 30); // Right side score
+		this.context.fillText(scoreLeft, this.width/2 - 30, 30); // Left side score
+		if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
 			this.context.fillText("You've won, nice game!", this.width/2, this.height/2);
-			// this.ball.x = this.width/2;
-			// this.ball.y = this.height/2;
-			// this.ball.speedX = 0;
-			// this.ball.speedY = 0;
+			end = 1;
+			this.ball.x = this.width/2;
+			this.ball.y = this.height/2;
+			this.ball.speedX = 0;
+			this.ball.speedY = 0;
 		}
 		window.requestAnimationFrame(this.redraw.bind(this));
 	};
