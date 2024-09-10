@@ -28,4 +28,4 @@ EXPOSE 3000
 
 # Start the application
 # Runs the serve command to serve the static files from the build directory
-CMD ["serve", "-s", "build"]
+CMD ["serve", "-s", "public"]
