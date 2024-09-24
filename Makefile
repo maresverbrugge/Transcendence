@@ -32,12 +32,12 @@ build:
 		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
 		@echo "$(BOLD)$(Y)$(NAME)$(G)$(NAME)$(B)$(NAME)$(P)$(NAME)$(R)$(NAME)$(RESET)"
 		@echo "\n$(W)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$(RESET)\n"
-		@echo "$(BOLD)$(G)Docker containers are now build! $(RESET)$(Y)*but not running!$(RESET)"
+		@echo "$(BOLD)$(G)Docker containers are now built! $(RESET)$(Y)*but not running!$(RESET)"
 
 # build and start the containers
 up:		build
 		docker compose up
-		@echo "$(BOLD)$(G)Docker containers are now build and up running!$(RESET)"
+		@echo "$(BOLD)$(G)Docker containers are now built and up running!$(RESET)"
 
 # start the containers
 start:

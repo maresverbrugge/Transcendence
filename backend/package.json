@@ -21,11 +21,12 @@
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^10.4.4",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.3.10",
     "@nestjs/websockets": "^10.3.10",
     "@prisma/client": "^5.18.0",
+    "axios": "^1.7.7",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
@@ -82,11 +83,15 @@
     "resolveJsonModule": true,
     "target": "es2020",
     "module": "commonjs",
-    "lib": ["es2020"],
+    "lib": [
+      "es2020"
+    ],
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@prisma/client": ["./node_modules/@prisma/client"]
+      "@prisma/client": [
+        "./node_modules/@prisma/client"
+      ]
     }
   }
 }
