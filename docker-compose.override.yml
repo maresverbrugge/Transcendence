@@ -1,0 +1,10 @@
+# This file adds the volume mounts for our local development environment:
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    volumes:
+      - ./frontend:/app

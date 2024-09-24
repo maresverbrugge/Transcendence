@@ -1,0 +1,37 @@
+# Prisma migrations
+backend/src/prisma/migrations
+
+# Node.js dependencies
+node_modules/
+
+# Build directories
+dist/
+build/
+
+# Environment variables
+# .env
+
+# Docker-related files
+*.log
+*.pid
+
+# IDE (Integrated Development Environment) and editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# operating system files
+.DS_Store
+Thumbs.db
+
+# Temporary files and caches
+tmp/
+cache/
+.tmp/
+.cache/
+
+# Test coverage
+coverage/
