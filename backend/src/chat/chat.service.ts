@@ -12,15 +12,14 @@ export class ChatService {
 async createMessage(senderName: string, content: string) {
   // Check if the user exists by name
   let user = await this.prisma.user.findFirst({
-    where: { name: senderName },
+    where: { username: senderName },
   });
 
   // If the user doesn't exist, create a new one
   if (!user) {
     user = await this.prisma.user.create({
       data: {
-        name: senderName,
-        email: `${senderName.toLowerCase()}@example.com`, // You can customize this as needed
+        username: senderName,
       },
     });
   }
@@ -35,10 +34,6 @@ async createMessage(senderName: string, content: string) {
 }
 
 async getMessages() {
-  return this.prisma.message.findMany({
-    include: {
-      user: true, // Include the user who sent the message
-    },
-  });
+  return this.prisma.message.findMany({});
 }
 }

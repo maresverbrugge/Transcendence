@@ -18,19 +18,19 @@ datasource db {
 model User {
   id                Int           @id @default(autoincrement())
   username          String        @unique
-  intraUsername     String
-  avatar            Bytes?
-  Enabled2FA        Boolean
-  websocketId       String?       // The ID of the websocket, nullable
-  status            Status        // ONLINE | OFFLINE | IN_GAME | AFK
+  // intraUsername     String
+  // avatar            Bytes?
+  // Enabled2FA        Boolean
+  // websocketId       String?       // The ID of the websocket, nullable
+  // status            Status        // ONLINE | OFFLINE | IN_GAME | AFK
   
-  player1Matches    Match[]       @relation("Player1Matches")
-  player2Matches    Match[]       @relation("Player2Matches")
-  Statistics        Statistics?
-  channelsOwned     Channel[]
-  channelMembers    ChannelMember[]
-  blockedUsers      BlockedUser[] @relation("blockedUsers")
-  blockedByUsers    BlockedUser[] @relation("blockedByUsers")
+  // player1Matches    Match[]       @relation("Player1Matches")
+  // player2Matches    Match[]       @relation("Player2Matches")
+  // Statistics        Statistics?
+  // channelsOwned     Channel[]
+  // channelMembers    ChannelMember[]
+  // blockedUsers      BlockedUser[] @relation("blockedUsers")
+  // blockedByUsers    BlockedUser[] @relation("blockedByUsers")
 }
 
 enum Status {
@@ -49,9 +49,9 @@ model Match {
   updatedAt         DateTime      @updatedAt
 
   player1Id         Int
-  player1           User          @relation("Player1Matches", fields: [player1Id], references: [id])
+  // player1           User          @relation("Player1Matches", fields: [player1Id], references: [id])
   player2Id         Int?
-  player2           User?         @relation("Player2Matches", fields: [player2Id], references: [id])
+  // player2           User?         @relation("Player2Matches", fields: [player2Id], references: [id])
 }
 
 model Statistics {
@@ -65,7 +65,7 @@ model Statistics {
   //achievements      Achievements?
 
   userId            Int           @unique
-  user              User          @relation(fields: [userId], references: [id])
+  // user              User          @relation(fields: [userId], references: [id])
 }
 
 model Channel {
@@ -73,8 +73,8 @@ model Channel {
   password          String?       // Optional password field
   
   ownerId          Int
-  owner             User          @relation(fields: [ownerId], references: [id])
-  messages          Message[]
+  // owner             User          @relation(fields: [ownerId], references: [id])
+  // messages          Message[]
   members           ChannelMember[]
 }
 
@@ -83,9 +83,10 @@ model Message {
   content           String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  senderId            Int
   
-  channelId         Int
-  channel           Channel       @relation(fields: [channelId], references: [id])
+  // channelId         Int
+  // channel           Channel       @relation(fields: [channelId], references: [id])
 }
 
 model ChannelMember {
@@ -95,15 +96,15 @@ model ChannelMember {
   isBanned          Boolean       @default(false)
 
   memberId         Int
-  member            User          @relation(fields: [memberId], references: [id])
+  // member            User          @relation(fields: [memberId], references: [id])
   channelId        Int
   channel           Channel       @relation(fields: [channelId], references: [id])
 }
 
 model BlockedUser {
   id                Int           @id @default(autoincrement())
-  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
+  // blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id])
   blockerId         Int
-  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
+  // blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id])
   blockedId         Int
 }
