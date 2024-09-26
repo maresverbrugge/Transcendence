@@ -22,10 +22,10 @@ RUN npm run build
 # Install the serve package globally to have a simple HTTP server to serve static files
 RUN npm install -g serve
 
-# Expose the application port 
+# Expose the application port
 # This is the port where the static files are served
 EXPOSE 3000
 
 # Start the application
 # Runs the serve command to serve the static files from the build directory
-CMD ["serve", "-s", "public"]
+CMD ["serve", "-s", "build"]
