@@ -7,4 +7,5 @@ services:
 
   frontend:
     volumes:
-      - ./frontend:/app
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
