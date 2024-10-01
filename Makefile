@@ -51,7 +51,7 @@ stop:
 		docker compose stop
 		@echo "$(BOLD)$(P)Docker containers are now stopped!$(RESET)"
 
-# immediately and forcecfully kill the running containers and network (sends SIGKILL)
+# immediately and forcefully kill the running containers and network (sends SIGKILL)
 # without removing the containers!
 # and without cleanup.
 kill:
@@ -59,18 +59,18 @@ kill:
 		@echo "$(BOLD)$(P)Docker containers are now killed!$(RESET)"
 
 # stop and REMOVE the containers, network, volumes and images created by up and the docker-compose.yml file
-# carefull with this one!
+# careful with this one!
 # to start them again, create first with ("build" and) "up"
 down:
 		@docker compose down
 		make clean
 		@echo "$(BOLD)$(P)Docker containers are now down and removed!$(RESET)"
 
-# carefull with this one!
+# careful with this one!
 re:		down all
 
 # stop all running containers and REMOVE them, remove all images and volumes.
-# carefull with this one!
+# careful with this one!
 # the (|| true) is used so the Makefile doesn't exit when there's an error:
 # if there are no containers running to prevent the make command from stopping.
 clean: 
