@@ -4,7 +4,9 @@ services:
   backend:
     volumes:
       - ./backend:/app
+    command: npm run start:dev  # Start in watch mode
 
   frontend:
     volumes:
-      - ./frontend:/app
+      - ./frontend/src:/app/src
+    command: npm start  # Run the frontend dev server
