@@ -63,6 +63,7 @@ kill:
 # to start them again, create first with ("build" and) "up"
 down:
 		@docker compose down
+		make clean
 		@echo "$(BOLD)$(P)Docker containers are now down and removed!$(RESET)"
 
 # careful with this one!
