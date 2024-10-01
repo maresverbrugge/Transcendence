@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
 var end = 0;
+var paddleLeft;
+var paddleRight;
+var scoreLeft = 0;
+var scoreRight = 0;
 
 class Ball {
 	constructor(x, y, diameter, context) {
@@ -24,9 +28,29 @@ class Ball {
 	bottom() {
 		return this.y+this.diameter/2;
 	};
-	move() {
+	move(width, height) {
 		this.x += this.speedX;
 		this.y += this.speedY;
+		if (this.right() > width) {
+			scoreLeft += 1;
+			// this.ws.send('left scored');
+			this.x = width/2;
+			this.y = height/2;
+		}
+		if (this.left() < 0) {
+			scoreRight += 1;
+			// this.ws.send('right scored');
+			this.x = width/2;
+			this.y = height/2;
+		}
+		if (this.bottom() > height) {
+			this.speedY = -this.speedY;
+			// this.ws.send('ball speedY reversed');
+		}
+		if (this.top() < 0) {
+			this.speedY = -this.speedY;
+			// this.ws.send('ball speedY reversed');
+		}
 	}
 	display() {
 		this.context.beginPath();
@@ -71,20 +95,20 @@ class Paddle{
 
 window.onkeydown = function(press){
 	if (end === 0 && press.keyCode === 38){
-		ws.send("right up");
-		this.paddleRight.y -= 3;
+		// ws.send("right up");
+		paddleRight.y -= 3;
 	}
 	if (end === 0 && press.keyCode === 40){
-		ws.send("right down");
-		this.paddleRight.y += 3;
+		// ws.send("right down");
+		paddleRight.y += 3;
 	}
 	if (end === 0 && press.keyCode === 87){
-		ws.send("left up");
-		this.paddleLeft.y -= 3;
+		// ws.send("left up");
+		paddleLeft.y -= 3;
 	}
 	if (end === 0 && press.keyCode === 83){
-		ws.send("left down");
-		this.paddleLeft.y += 3;
+		// ws.send("left down");
+		paddleLeft.y += 3;
 	}
 }
 
@@ -98,11 +122,9 @@ const GameApp = () => {
 	const canvas = React.useRef();
 	var width = 500;
 	var height = 500;
-	var paddleLeft;
-	var paddleRight;
 	var ball;
-	const [scoreLeft, setScoreLeft] = useState(0); //send to the client
-	const [scoreRight, setScoreRight] = useState(0); //send to the client;
+	// const [scoreLeft, setScoreLeft] = useState(0); //send to the client
+	// const [scoreRight, setScoreRight] = useState(0); //send to the client;
 	const draw = (ctx) => {
 		ctx.clearRect(0, 0, width, height)
 		ball.move(width, height);
@@ -129,17 +151,19 @@ const GameApp = () => {
 		}
 	  }
 
-	  useEffect(() => {
-		  const context = canvas.current.getContext('2d');
-	let frameCount = 0;
-	let frameId;
-	context.strokeStyle = 'black';
-	context.font = "80 px Arial";
-	context.textAlign = "center";
-	context.lineWidth = 1;
-	ball = new Ball(width/2, height/2, 50, context);
-	paddleLeft = new Paddle(15, height/2, 30, 200, context);
-	paddleRight = new Paddle(width-15, height/2, 30, 200, context);
+	useEffect(() => {
+		const context = canvas.current.getContext('2d');
+		let frameCount = 0;
+		let frameId;
+		context.strokeStyle = 'black';
+		context.font = "80 px Arial";
+		context.textAlign = "center";
+		context.lineWidth = 1;
+		ball = new Ball(width/2, height/2, 50, context);
+		ball.speedX = 5;
+		ball.speedY = Math.floor(Math.random() * 6 - 3); //get from server
+		paddleLeft = new Paddle(15, height/2, 30, 200, context);
+		paddleRight = new Paddle(width-15, height/2, 30, 200, context);
     // Initialize socket connection
     // const socketIo = io('http://localhost:3001', {
     //   transports: ['websocket', 'polling'],
