@@ -5,7 +5,7 @@ import React from 'react';
 function App() {
 	return (
 		<div>
-			<h1>Hello world!</h1>
+			<h1>Hello world from the FRONTEND!</h1>
 		</div>
 	);
 }
