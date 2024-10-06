@@ -4,31 +4,6 @@ const clientId = 'u-s4t2ud-44ff70cec9bab3625920e531e276724bfc868e5ec663c53d1a73a
 const redirectUri = 'http://localhost:3000/oauth/callback';
 const state = 'a_very_long_random_string_witchmust_be_unguessable';
 
-const Login = () => {
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const state = params.get('state');
-
-    if (code && state) {
-      fetch('/auth/callback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code, state }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          localStorage.setItem('token', data.access_token);
-          window.location.href = '/';
-        });
-    }
-  }, []);
-
-  return <div>Redirecting...</div>;
-};
-
 const handleLogin = () => {
   window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=public&state=${state}`;
 };
