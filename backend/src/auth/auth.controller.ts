@@ -1,4 +1,4 @@
-// src/auth/auth.controller.ts
+// Controller for the auth module
 
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';

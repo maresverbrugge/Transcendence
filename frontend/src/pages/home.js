@@ -1,3 +1,5 @@
+// Home page that is shown when the user goes to localhost:3000
+
 const Home = () => {
 	return (
 		<div>

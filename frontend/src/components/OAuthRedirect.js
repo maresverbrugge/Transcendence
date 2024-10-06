@@ -1,3 +1,7 @@
+// This component is used to handle the login redirect from the server.
+// When the user logs in, the server will redirect the user to /oauth/callback with a code and a state.
+// This is still a work in progress!
+
 import React, { useEffect } from 'react';
 
 const OAuthRedirect = () => {

@@ -1,3 +1,5 @@
+// Service to get the token from the 42 API.
+
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 

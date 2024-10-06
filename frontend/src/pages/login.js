@@ -1,3 +1,5 @@
+// Login page that is shown when the user goes to localhost:3000/login
+
 import React, { useEffect } from 'react';
 
 const clientId = 'u-s4t2ud-44ff70cec9bab3625920e531e276724bfc868e5ec663c53d1a73a93d465e03ce';

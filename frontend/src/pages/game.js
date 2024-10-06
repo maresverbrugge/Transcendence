@@ -1,3 +1,5 @@
+// Game page that is shown when the user goes to localhost:3000/game
+
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
