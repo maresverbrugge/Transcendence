@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/login';
 import GameApp from './pages/game';
 import Home from './pages/home';
-import OAuthRedirect from './components/OAuthRedirect';
+import LoginRedirect from './components/LoginRedirect';
 
 const App = () => {
   return (
@@ -15,7 +15,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/game" element={<GameApp />} />
-          <Route path="/oauth/callback" element={<OAuthRedirect />} />
+          <Route path="/login/callback" element={<LoginRedirect />} />
         </Routes>
       </div>
     </Router>
