@@ -73,13 +73,26 @@ const Channel = ({ channel, socket }) => {
     );
 };
 
-const Channels = ({ channels, socket }) => {
-    const [selectedChannel, setSelectedChannel] = useState(null); // Track the selected channel
-
+const Channels = ({ socket }) => {
+    
+    const [channels, setChannels] = useState([])
+    const [selectedChannel, setSelectedChannel] = useState(null);
+    
+    useEffect(() => {
+        socket.on('newChannel', (channel) => {
+            setChannels((prevChannels) => prevChannels.concat(channel))
+		})
+        
+        return () => {
+            socket.emit('leaveChannel', channel.id);
+            socket.off('newChannel');
+        };
+    }, []);
+    
     const handleSelectChannel = (channel) => {
-        setSelectedChannel(channel); // Update the selected channel
+        setSelectedChannel(channel);
     };
-
+    
     return (
         <div className="channels-container">
             {/* List of Channels */}

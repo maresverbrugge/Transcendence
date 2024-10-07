@@ -18,6 +18,12 @@ export class CommunicationGateway
   @WebSocketServer() server: Server;
 
   constructor(private readonly communicationService: CommunicationService) {}
+
+  @SubscribeMessage('getUsers')
+    async handleGetUsers(client: Socket) {
+      const users: User[] = await this.communicationService.getUsers()
+      client.emit('users', users);
+    }
   
   @SubscribeMessage('chatInvite')
     handleChatInvite(client: Socket, member: string ) {
@@ -47,10 +53,7 @@ export class CommunicationGateway
 
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
-
-      const users: User[] = await this.communicationService.getUsers();
-      client.emit('users', users);
-
+      //for now: create new users and let other users know theres a new user online
       const user = await this.communicationService.createUser(client.id)
       this.server.emit('userOnline', user)
   }

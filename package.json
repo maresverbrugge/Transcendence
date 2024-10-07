@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@nestjs/common": "^10.4.4",
     "postgresql-client": "^2.13.0"
   }
 }
