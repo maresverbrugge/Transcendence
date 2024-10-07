@@ -26,7 +26,7 @@ RUN npm run build
 
 # Expose the application port
 # This is the port where NestJS application will listen for incoming requests
-EXPOSE 3001
+EXPOSE 3000
 
 # Copy and set permissions for the entry point script
 COPY ./entrypoint.sh /entrypoint.sh

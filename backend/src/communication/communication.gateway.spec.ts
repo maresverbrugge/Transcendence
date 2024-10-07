@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GameGateway } from './game.gateway';
+import { CommunicationGateway } from './communication.gateway';
 
-describe('GameGateway', () => {
-  let gateway: GameGateway;
+describe('CommunicationGateway', () => {
+  let gateway: CommunicationGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GameGateway],
+      providers: [CommunicationGateway],
     }).compile();
 
-    gateway = module.get<GameGateway>(GameGateway);
+    gateway = module.get<CommunicationGateway>(CommunicationGateway);
   });
 
   it('should be defined', () => {
