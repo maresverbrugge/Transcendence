@@ -6,9 +6,9 @@ import React, { useEffect } from 'react';
 // The client ID you received from 42 when you registered.
 const clientId = 'u-s4t2ud-44ff70cec9bab3625920e531e276724bfc868e5ec663c53d1a73a93d465e03ce';
 // The URL in your app where users will be sent after authorization. 
-const redirectUri = 'http://localhost:3000/game';
+const redirectUri = 'http://localhost:3000/login/redirect';
 // An unguessable random string. It is used to protect against cross-site request forgery attacks.
-const state = 'a_very_long_random_string_witchmust_be_unguessable';
+const state = 'unguessable_state_string_wow';
 
 const handleLogin = () => {
   window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=public&state=${state}`;
