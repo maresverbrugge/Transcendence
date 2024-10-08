@@ -7,4 +7,8 @@ import { GameGateway } from './game.gateway';
   controllers: [GameController],
   providers: [GameService, GameGateway]
 })
-export class GameModule {}
+export class GameModule {
+	constructor() {
+		console.log('hei there');
+	}
+}
