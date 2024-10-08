@@ -5,16 +5,16 @@ var wss: any;
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-	
+
 	// Enable CORS with options
 	app.enableCors({
 		origin: 'http://localhost:3000', // Update with the client origin
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
 		credentials: true,
 	});
-	
+
 	await app.listen(3001);
-	console.log('Application is running on: http://localhost:3001');
+	console.log('Visit Transcendancing Queens\'s BACKEND on: http://localhost:3001\nVisit Transcendancing Queens\'s FRONTEND on: http://localhost:3000');
 }
 
 var paddleLeft: Paddle;
@@ -84,7 +84,7 @@ class Paddle{
 	h: number;
 	speedY: number;
 	// ws: WebSocket;
-	
+
 	constructor(x: number, y: number, w: number, h: number) {
 		this.x = x;
 		this.y = y;
@@ -145,7 +145,7 @@ class DrawingApp {
 			this.ball.speedY = map_range(this.ball.y - paddleLeft.y, -paddleLeft.h/2, paddleLeft.h/2, -10, 10);
 			// this.ws.send('ball speedY = ' + this.ball.speedY.toString());
 		}
-		
+
 		if (this.ball.right() > paddleRight.left() && this.ball.y > paddleRight.top() && this.ball.y < paddleRight.bottom()) {
 			this.ball.speedX = -this.ball.speedX;
 			// this.ws.send('ball speedX reversed');
