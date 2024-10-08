@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "postgresql-client": "^2.13.0"
+    "axios": "^1.7.7",
+    "postgresql-client": "^2.13.0",
+    "react-router-dom": "^6.26.2"
   }
 }
