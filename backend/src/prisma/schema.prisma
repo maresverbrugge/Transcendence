@@ -34,7 +34,7 @@ model User {
   intraUsername     String
   avatar            Bytes?
   Enabled2FA        Boolean
-  websocketId       String?       // The ID of the websocket, nullable
+  websocketId       String?       @unique// The ID of the websocket, nullable
   status            PlayerStatus  // ONLINE | OFFLINE | IN_GAME | AFK
   
   matchHistory      Match[]
@@ -43,6 +43,7 @@ model User {
   channelMembers    ChannelMember[]
   blockedUsers      BlockedUser[] @relation("blockedUsers")
   blockedByUsers    BlockedUser[] @relation("blockedByUsers")
+  messages          Message[]
 }
 
 model Match {
@@ -85,13 +86,17 @@ model Message {
   content           String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  senderName        String
   
+  senderId          Int
+  sender            User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
   channelId         Int
   channel           Channel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
 }
 
 model ChannelMember {
   id                Int           @id @default(autoincrement())
+  websocketId       String?       // The ID of the websocket, nullable
   isAdmin           Boolean       @default(false)
   isMuted           Boolean       @default(false)
   isBanned          Boolean       @default(false)

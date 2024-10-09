@@ -12,7 +12,9 @@ const Channel = ({ channel, socket }) => {
 
         // Handle new messages
         socket.on('newMessage', (message) => {
-            setMessages((prevMessages) => [...prevMessages, message]);
+            if (message) {
+                setMessages((prevMessages) => [...prevMessages, message]);
+            }
         });
 
         // Cleanup socket listeners when component unmounts
@@ -24,10 +26,7 @@ const Channel = ({ channel, socket }) => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            // Emit new message to the backend
             socket.emit('sendMessage', { channelId: channel.id, content: newMessage });
-
-            // Clear the input field
             setNewMessage('');
         }
     };
@@ -40,9 +39,6 @@ const Channel = ({ channel, socket }) => {
                 <ul>
                     {members.map((member) => (
                         <li key={member.id}>
-                            {console.log('member', member)}
-                            {console.log('user', member.user)}
-                            {console.log('member.member', member.member)}
                             {member.user.username} {member.isAdmin && '(Admin)'}
                         </li>
                     ))}
@@ -53,7 +49,7 @@ const Channel = ({ channel, socket }) => {
                 <ul>
                     {messages.map((message) => (
                         <li key={message.id}>
-                            <strong>{message.sender.username}: </strong>
+                            <strong>{message.username}: </strong>
                             {message.content}
                         </li>
                     ))}
@@ -80,6 +76,7 @@ const Channels = ({ socket }) => {
     
     useEffect(() => {
         socket.on('newChannel', (channel) => {
+            socket.emit('joinChannel', channel.id)
             setChannels((prevChannels) => prevChannels.concat(channel))
 		})
         

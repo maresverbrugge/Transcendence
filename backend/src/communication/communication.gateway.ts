@@ -1,7 +1,9 @@
 import {WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { CommunicationService } from './communication.service';
-import { User, Channel } from '@prisma/client'
+import { UserService } from './user/user.service';
+import { ChannelService } from './channel/channel.service'
+import { MessageService } from './message/message.service'
+import { User, Channel, Message } from '@prisma/client'
 
 @WebSocketGateway({
   cors: {
@@ -17,35 +19,37 @@ export class CommunicationGateway
   
   @WebSocketServer() server: Server;
 
-  constructor(private readonly communicationService: CommunicationService) {}
+  constructor(
+    private readonly channelService: ChannelService,
+    private readonly userService: UserService,
+    private readonly messageService: MessageService,
+  ) {}
 
   @SubscribeMessage('getUsers')
-    async handleGetUsers(client: Socket) {
-      const users: User[] = await this.communicationService.getUsers()
-      client.emit('users', users);
-    }
+    handleGetUsers(client: Socket) {this.userService.getUsers(client)}
   
-  @SubscribeMessage('chatInvite')
-    handleChatInvite(client: Socket, member: string ) {
-      console.log('Chat invite received from:', client.id);
-
-      // If the member is connected, send the chat invite to them
-      this.server.to(member).emit('chatInvite', {
-        owner: client.id,
-        member: member,
-    });
-      
-      console.log(`Chat invite sent to ${member}`);
+  @SubscribeMessage('channelInvite')
+    handleChannelInvite(client: Socket, memberId: number ) {
+      this.channelService.sendChannelInvite(client, this.server, memberId)
     }
 
-  @SubscribeMessage('acceptChatInvite')
-    async handleAcceptChatInvite(client: Socket, invite: { owner: string; member: string }) {
-      const { owner, member } = invite;
-      console.log(`${member} accepted ${owner} invitation`)
-      const newChannel: Channel = await this.communicationService.createChannel(owner, member)
-      this.server.to(owner).emit ('newChannel', newChannel)
-      this.server.to(member).emit('newChannel', newChannel)
+  @SubscribeMessage('acceptChannelInvite')
+    async handleAcceptChannelInvite(memberSocket: Socket, ownerSocketId: string) {
+      this.channelService.acceptChannelInvite(this.server, memberSocket, ownerSocketId)
     }
+
+  @SubscribeMessage('joinChannel')
+    handleJoinChannel(client: Socket, channelId: string) {
+      client.join(String(channelId))
+      console.log(`socket ${client.id} joined room ${channelId}`)
+    }
+
+  @SubscribeMessage('sendMessage')
+  async handleSendMessage(client: Socket, data: {content: string, channelId: number}) {
+      const senderId = await this.userService.getUserIdBySocketId(client.id)
+      const newMessage: Message = await this.messageService.createMessage(data.content, senderId, data.channelId)
+      this.server.to(String(data.channelId)).emit('newMessage', newMessage)
+  }
 
   afterInit(server: Server) {
     console.log('Communication Gateway Initialized');
@@ -54,12 +58,12 @@ export class CommunicationGateway
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
       //for now: create new users and let other users know theres a new user online
-      const user = await this.communicationService.createUser(client.id)
+      const user = await this.userService.createUser(client.id)
       this.server.emit('userOnline', user)
   }
 
   async handleDisconnect(client: Socket) {
-    const user = await this.communicationService.deleteUserByUsername(client.id)
+    const user = await this.userService.deleteUserByUsername(client.id)
     console.log(`Client disconnected: ${client.id}`);
     this.server.emit('userOffline', user)
   }

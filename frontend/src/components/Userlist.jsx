@@ -1,8 +1,8 @@
 // Userlist Component
 import React, { useState, useEffect } from 'react';
 
-const sendChatInvite = (socket, memberUsername) => {
-    socket.emit('chatInvite', memberUsername);
+const sendChannelInvite = (socket, memberId) => {
+    socket.emit('channelInvite', memberId);
 };
 
 const Userlist = ({ socket }) => {
@@ -13,9 +13,9 @@ const Userlist = ({ socket }) => {
         socket.on('users', (users) => setUserlist(users))
         socket.on('userOnline', (user) => setUserlist((prevUserList) => prevUserList.concat(user)))
         socket.on('userOffline', (user) => setUserlist((prevUserList) => prevUserList.filter((prevUser) => prevUser.username !== user.username)))
-        socket.on('chatInvite', (data) => {
-            if (confirm(`${data.owner} has sent you a chat invitation`)) {
-                socket.emit('acceptChatInvite', data)
+        socket.on('channelInvite', (data) => {
+            if (confirm(`${data.ownerUsername} has sent you a channel invitation`)) {
+                socket.emit('acceptChannelInvite', data.ownerSocketId)
             } else {
                 // sent inviteDecline en dan pop up op andere frontend?
             }
@@ -27,7 +27,7 @@ const Userlist = ({ socket }) => {
             socket.off('users');
             socket.off('userOnline');
             socket.off('userOffline');
-            socket.off('chatInvite');
+            socket.off('channelInvite');
         }
 
     }, []);
@@ -40,7 +40,7 @@ const Userlist = ({ socket }) => {
               user.websocketId !== socket.id && (
                 <li key={user.id}>
                   {user.username}
-                  <button onClick={() => sendChatInvite(socket, user.username)}>Send Chat Invite</button>
+                  <button onClick={() => sendChannelInvite(socket, user.id)}>Send Channel Invite</button>
                 </li>
               )
             ))}
