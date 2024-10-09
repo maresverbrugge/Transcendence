@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './Channels.css'; // Import the CSS file
 
 const Channel = ({ channel, socket }) => {
     const [messages, setMessages] = useState([]);
@@ -35,7 +36,6 @@ const Channel = ({ channel, socket }) => {
         <div className="channel-container">
             <div className="channel-header">
                 <h2>Channel: {channel.id}</h2>
-                <h3>Members</h3>
                 <ul>
                     {members.map((member) => (
                         <li key={member.id}>
@@ -49,7 +49,7 @@ const Channel = ({ channel, socket }) => {
                 <ul>
                     {messages.map((message) => (
                         <li key={message.id}>
-                            <strong>{message.username}: </strong>
+                            <strong>{message.senderName}: </strong>
                             {message.content}
                         </li>
                     ))}
@@ -76,7 +76,6 @@ const Channels = ({ socket }) => {
     
     useEffect(() => {
         socket.on('newChannel', (channel) => {
-            socket.emit('joinChannel', channel.id)
             setChannels((prevChannels) => prevChannels.concat(channel))
 		})
         

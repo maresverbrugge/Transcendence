@@ -34,5 +34,6 @@ const App = () => {
 			<Channels socket={socket} />
         </div>
     );}
+	
 
 export default App;

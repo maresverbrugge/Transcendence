@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
@@ -17,9 +18,8 @@ export class MessageService {
 
     async createMessage(content: string, senderId: number, channelId: number): Promise<Message> {
         
-      const channel = await this.channelService.getChannelByChannelId(channelId)
       const sender: User = await this.userService.getUserByUserId(senderId)
-      if (!channel || !sender) {
+      if (!sender) {
         throw new Error('Channel not found');
       }
     
@@ -35,6 +35,12 @@ export class MessageService {
           }
         }
       });
+    }
+
+    async sendMessage(server: Server, senderSocketId: string, content: string, channelId: number) {
+      const senderId = await this.userService.getUserIdBySocketId(senderSocketId)
+      const newMessage: Message = await this.createMessage(content, senderId, channelId)
+      server.to(String(channelId)).emit('newMessage', newMessage)
     }
 
 }

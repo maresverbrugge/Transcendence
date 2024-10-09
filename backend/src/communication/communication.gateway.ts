@@ -34,21 +34,13 @@ export class CommunicationGateway
     }
 
   @SubscribeMessage('acceptChannelInvite')
-    async handleAcceptChannelInvite(memberSocket: Socket, ownerSocketId: string) {
-      this.channelService.acceptChannelInvite(this.server, memberSocket, ownerSocketId)
-    }
-
-  @SubscribeMessage('joinChannel')
-    handleJoinChannel(client: Socket, channelId: string) {
-      client.join(String(channelId))
-      console.log(`socket ${client.id} joined room ${channelId}`)
+    async handleAcceptChannelInvite(client: Socket, data: { ownerId: number, memberId: number }) {
+      this.channelService.acceptChannelInvite(this.server, data.memberId, data.ownerId)
     }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: {content: string, channelId: number}) {
-      const senderId = await this.userService.getUserIdBySocketId(client.id)
-      const newMessage: Message = await this.messageService.createMessage(data.content, senderId, data.channelId)
-      this.server.to(String(data.channelId)).emit('newMessage', newMessage)
+    this.messageService.sendMessage(this.server, client.id, data.content, data.channelId)
   }
 
   afterInit(server: Server) {
