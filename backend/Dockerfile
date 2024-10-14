@@ -11,7 +11,6 @@ WORKDIR /app
 # Install dependencies specified in package.json
 COPY package*.json ./
 RUN npm install
-RUN npm install axios
 
 # Install PostgreSQL client tools
 RUN apk --no-cache add postgresql-client

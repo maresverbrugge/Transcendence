@@ -6,7 +6,4 @@ export class AppService {
   getHello(): string {
     return 'Hello World from the BACKEND!';
   }
-  getGame(): GameModule {
-	return new GameModule();
-  }
 }
