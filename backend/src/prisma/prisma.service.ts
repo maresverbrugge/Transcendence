@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
   constructor() {
     super();
+    log: ['query', 'info', 'warn', 'error']
     // You can set up additional configurations here if needed
   }
 
