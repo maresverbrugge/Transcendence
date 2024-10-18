@@ -12,7 +12,7 @@ import {
 
 @WebSocketGateway({
 	cors: {
-	  origin: 'http://localhost:3001', // Update with your client's origin
+	  origin: 'http://localhost:3000', // Update with your client's origin
 	  methods: ['GET', 'POST'],
 	  credentials: true,
 	},
@@ -28,6 +28,11 @@ export class GameGateway
 	  this.logger.log(`Message received from ${data.sender}: ${data.message}`);
 	  // Broadcast the message to all connected clients
 	  this.server.emit('message', data);
+	}
+
+	@SubscribeMessage('frame')
+	handleFrame() {
+		console.log('a frame is made in the backend');
 	}
 
 	afterInit(server: Server) {
