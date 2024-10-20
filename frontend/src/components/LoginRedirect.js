@@ -1,10 +1,8 @@
-// If the user grants the permission for your application to use the requested data, 
-// it will be redirected to your redirect_uri with a temporary code in a GET code parameter
-// as well as the state you provided in the previous step in a state parameter.
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-// Same state as in the frontend/src/pages/login.js file.
+// More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
+
 const original_state = 'unguessable_state_string_wow';
 
 const LoginRedirect = () => {
@@ -32,7 +30,7 @@ const LoginRedirect = () => {
         state: state,
       })
       .then(data => {
-        localStorage.setItem('token', data.access_token); // what is the purpose of this token?
+        localStorage.setItem('token', data.access_token);
         window.location.href = '/game';
       })
       .catch(err => {
