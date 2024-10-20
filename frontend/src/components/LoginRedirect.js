@@ -3,13 +3,12 @@ import axios from 'axios';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 
-const original_state = 'unguessable_state_string_wow';
-
 const LoginRedirect = () => {
   const [accessDenied, setAccessDenied] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
 
   useEffect(() => {
+    const original_state = process.env.REACT_APP_LOGIN_STATE;
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const state = params.get('state');
@@ -29,12 +28,16 @@ const LoginRedirect = () => {
         code: code,
         state: state,
       })
-      .then(data => {
+      .then(response => {
+        const data = response.data;
         localStorage.setItem('token', data.access_token);
         window.location.href = '/game';
       })
       .catch(err => {
         console.error('Error while logging in:', err);
+        if (err.response) {
+          console.log("response: ", err.response);
+        }
         setErrorOccurred(true);
       });
     }
