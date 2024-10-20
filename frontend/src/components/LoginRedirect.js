@@ -32,7 +32,7 @@ const LoginRedirect = () => {
       .then(response => {
         const data = response.data;
         localStorage.setItem('token', data.access_token);
-        window.location.href = '/game';
+        window.location.href = '/login/2fa';
       })
       .catch(err => {
         console.error('Error while logging in:', err);

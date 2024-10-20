@@ -6,6 +6,7 @@ import Channels from './components/Channels'
 import GameApp from './pages/game';
 import LoginPage from './pages/login';
 import LoginRedirect from './components/LoginRedirect';
+import Login2FA from './components/Login2FA';
 
 const App = () => {
 	const [socket, setSocket] = useState(null);
@@ -45,6 +46,7 @@ const App = () => {
 				<Route path="/" element={<LoginPage />} />
 				<Route path="/game" element={<GameApp />} />
 				<Route path="/login/redirect" element={<LoginRedirect />} />
+				<Route path="/login/2fa" element={<Login2FA />} />
 			</Routes>
 		</Router>
     );}
