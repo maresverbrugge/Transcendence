@@ -9,39 +9,44 @@ const original_state = 'unguessable_state_string_wow';
 
 const LoginRedirect = () => {
   const [accessDenied, setAccessDenied] = useState(false);
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const state = params.get('state');
 
-    // If the states don't match, the request has been created by a third party and the process should be aborted.
     if (state !== original_state) {
       console.error('Invalid state');
-      return; // Return some error page?
+      setAccessDenied(true);
+      return;
     }
-
-    if (code && state) {
+    else if (!code || !state) {
+      console.error('No code or state');
+      setAccessDenied(true);
+      return;
+    }
+    else {
       axios.post('http://localhost:3001/login/callback', {
         code: code,
         state: state,
       })
-        .then(response => response.json())
-        .then(data => {
-          // Save the token in the local storage, so that the user doesn't have to log in again after refreshing the page?
-          localStorage.setItem('token', data.access_token);
-          // Redirect the user to the home page.
-          window.location.href = '/game';
-        });
-    }
-    else {
-      console.error('No code or state');
-      setAccessDenied(true);
+      .then(data => {
+        localStorage.setItem('token', data.access_token); // what is the purpose of this token?
+        window.location.href = '/game';
+      })
+      .catch(err => {
+        console.error('Error while logging in:', err);
+        setErrorOccurred(true);
+      });
     }
   }, []);
 
   if (accessDenied) {
     return <div>Access denied</div>;
+  }
+  else if (errorOccurred) {
+    return <div>Error occurred</div>;
   }
   else {
     return <div>Redirecting...</div>;
