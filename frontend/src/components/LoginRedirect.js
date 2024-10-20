@@ -24,6 +24,7 @@ const LoginRedirect = () => {
       return;
     }
     else {
+      // Send the code and state to the backend to get the access token
       axios.post('http://localhost:3001/login/callback', {
         code: code,
         state: state,
@@ -43,6 +44,7 @@ const LoginRedirect = () => {
     }
   }, []);
 
+  // Render the component based on the login state
   if (accessDenied) {
     return <div>Access denied</div>;
   }

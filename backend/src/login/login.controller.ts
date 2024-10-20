@@ -12,6 +12,7 @@ export class LoginController {
       throw new Error('Invalid state');
     }
     const tokenData = await this.loginService.getToken(code);
+    // Return the token data to the frontend
     return tokenData;
   }
 }
