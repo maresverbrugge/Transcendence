@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import Userlist from './components/Userlist';
 import Channels from './components/Channels'
 import GameApp from './pages/game';
-//import LoginPage from './pages/login';
-//import LoginRedirect from './components/LoginRedirect';
+import LoginPage from './pages/login';
+import LoginRedirect from './components/LoginRedirect';
 
 const App = () => {
 	const [socket, setSocket] = useState(null);
@@ -37,9 +38,15 @@ const App = () => {
 			      <Channels socket={socket} />
             <LoginPage />
             <GameApp />
-            //<LoginPage />
-            //<LoginRedirect />
-        </div>
+        </div>,
+
+		<Router>
+			<Routes>
+				<Route path="/" element={<LoginPage />} />
+				<Route path="/game" element={<GameApp />} />
+				<Route path="/login/redirect" element={<LoginRedirect />} />
+			</Routes>
+		</Router>
     );}
 	
 
