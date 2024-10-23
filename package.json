@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@nestjs/common": "^10.4.4",
-    "postgrejs": "^2.21.1"
-    "axios": "^1.7.7",
-    "react-router-dom": "^6.26.2"
-  }
-}
