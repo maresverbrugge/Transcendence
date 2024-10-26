@@ -88,6 +88,12 @@ check_database:
 # en erna \dt
 # om te zien of migration is gelukt
 
+# run prisma studio on port 5555
+studio:
+		@export DATABASE_URL="postgresql://Transcendancingqueens:8:uizdY5._r-Pe+@localhost:5432/pongdb?schema=public"
+		@echo ${DATABASE_URL}
+		@npx prisma studio --schema ./backend/src/prisma/schema.prisma
+
 #========================================#
 #=============== FOR GIT ================#
 #========================================#

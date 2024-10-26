@@ -28,7 +28,9 @@ export class UserService {
                 websocketId: socketId,
                 Enabled2FA: true,
                 status: PlayerStatus.ONLINE,
-            },
+                friends: {
+                  connect: { id: 6900 }, // Connect Wilma (id: 69) as a friend
+                },            },
         });
     }
 
@@ -52,8 +54,8 @@ export class UserService {
         });
       }
 
-      async deleteUserByUsername(username: string): Promise<User | null> {
-        const userId = await this.getUserIdBySocketId(username);
+      async deleteUserBySocketID(socketID: string): Promise<User | null> {
+        const userId = await this.getUserIdBySocketId(socketID);
     
         if (userId) {
           return this.prisma.user.delete({
