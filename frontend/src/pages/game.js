@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
+var g_socket;
 var end = 0;
 var paddleLeft;
 var paddleRight;
@@ -97,20 +98,12 @@ class Paddle{
 
 window.onkeydown = function(press){
 	if (end === 0 && press.keyCode === 38){
-		// ws.send("right up");
-		paddleRight.y -= 3;
+		g_socket.emit("up");
+		// paddleRight.y -= 3;
 	}
 	if (end === 0 && press.keyCode === 40){
-		// ws.send("right down");
-		paddleRight.y += 3;
-	}
-	if (end === 0 && press.keyCode === 87){
-		// ws.send("left up");
-		paddleLeft.y -= 3;
-	}
-	if (end === 0 && press.keyCode === 83){
-		// ws.send("left down");
-		paddleLeft.y += 3;
+		g_socket.emit("down");
+		// paddleRight.y += 3;
 	}
 }
 
@@ -118,7 +111,7 @@ function map_range(value, low1, high1, low2, high2) {
 	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 
-const GameApp = () => {
+const Game = () => {
 	// const [messages, setMessages] = useState([]);
 	const [socket, setSocket] = useState(null);
 	const canvas = React.useRef();
@@ -128,7 +121,7 @@ const GameApp = () => {
 	// const [scoreLeft, setScoreLeft] = useState(0); //send to the client
 	// const [scoreRight, setScoreRight] = useState(0); //send to the client;
 	const draw = (ctx, socket) => {
-		socket.send('frame');
+		// socket.emit('frame');
 		ctx.clearRect(0, 0, width, height);
 		ball.move(width, height);
 		ball.display();
@@ -156,20 +149,25 @@ const GameApp = () => {
 	
 	useEffect(() => {
 		if (!socket) {
-		// Initialize socket connection
-		const socketIo = io('http://localhost:3001', {
-		  transports: ['websocket', 'polling'],
-		});
-		
-		// Set socket instance in state
-		setSocket(socketIo);
-		
-		// Handle incoming messages
-		socketIo.on('message', () => {
-			console.log('received a message');
-		});
+			// Initialize socket connection
+			const socketIo = io('http://localhost:3001', {
+			transports: ['websocket', 'polling'],
+			});
+			
+			// Set socket instance in state
+			setSocket(socketIo);
+			
+			// Handle incoming messages
+			socketIo.on('message', () => {
+				console.log('received a message');
+			});
+			socketIo.on('paddleY', (data) => {
+				console.log('y coordinate of right paddle updated');
+				paddleRight.y = parseInt(data);
+			});
 		}
 		if (socket !== null) {
+			g_socket = socket;
 			const context = canvas.current.getContext('2d');
 			let frameCount = 0;
 			let frameId;
@@ -198,4 +196,40 @@ const GameApp = () => {
   return <canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>;
 };
 
-export default GameApp;
+export default Game;
+
+const GameApp = () => {
+    const [socket, setSocket] = useState(null);
+    
+    useEffect(() => {
+        //because dev mode sometimes didnt disconnect old sockets
+        if (socket) {
+            socket.disconnect(); // Disconnect existing socket if any
+            console.log('Previous socket disconnected');
+        }
+        
+        // Initialize socket connection
+        const socketIo = io('http://localhost:3001/chat', {
+            transports: ['websocket', 'polling'],
+            query: { token: 'your_jwt_token' } // Hier de token uit localstorage halen
+        });
+
+        // Set socket instance in state
+        setSocket(socketIo);
+
+
+        return () => {
+            socketIo.disconnect(); // Disconnect the socket when the component unmounts
+        };
+    }, [])
+    
+    if (!socket) { return }
+    return (
+        <div>
+            {/* <LoginPage /> */}
+            <Game socket={socket} />
+        </div>
+    )
+}
+
+export default GameApp

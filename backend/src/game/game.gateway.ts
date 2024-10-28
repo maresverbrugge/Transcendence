@@ -18,21 +18,30 @@ import {
 	},
 })
 export class GameGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-	{
+implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+	paddleRightY = 250;
+	paddleLeftY = 250;
 	@WebSocketServer() server: Server;
 	private logger: Logger = new Logger('GameGateway');
 
-	@SubscribeMessage('message')
-	handleMessage(@MessageBody() data: { sender: string; message: string }) {
-	  this.logger.log(`Message received from ${data.sender}: ${data.message}`);
-	  // Broadcast the message to all connected clients
-	  this.server.emit('message', data);
-	}
+	// @SubscribeMessage('message')
+	// handleMessage(@MessageBody() data: { sender: string; message: string }) {
+	//   this.logger.log(`Message received from ${data.sender}: ${data.message}`);
+	//   // Broadcast the message to all connected clients
+	//   this.server.emit('message', data);
+	// }
 
 	@SubscribeMessage('frame')
 	handleFrame() {
 		console.log('a frame is made in the backend');
+	}
+
+	@SubscribeMessage('up')
+	handleUpKey() {
+		this.paddleRightY -= 3;
+		this.server.emit('paddleY', this.paddleRightY);
+		// console.log('the up arrow has been pressed');
 	}
 
 	afterInit(server: Server) {
