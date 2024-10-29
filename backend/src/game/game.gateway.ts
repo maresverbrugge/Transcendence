@@ -10,12 +10,13 @@ import {
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/communication/user/user.service';
+import { UserService } from '../chat/user/user.service';
 import { User, Match } from '@prisma/client'
 
 @WebSocketGateway({
+	namespace: 'game',
 	cors: {
-	  origin: 'http://localhost:3000/game', // Update with your client's origin
+	  origin: 'http://localhost:3000', // Update with your client's origin
 	  methods: ['GET', 'POST'],
 	  transports: ['websocket'],
 	  credentials: true,

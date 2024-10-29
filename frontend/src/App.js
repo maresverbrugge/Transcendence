@@ -1,68 +1,28 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { io } from 'socket.io-client';
-<<<<<<< Updated upstream
 // import GameApp from './pages/game';
-// import LoginPage from './pages/login';
-// import LoginRedirect from './components/LoginRedirect';
+import LoginPage from './pages/login';
+import LoginRedirect from './components/LoginRedirect';
+// import Login2FA from './components/Login2FA';
 import Chat from './pages/Chat'
-=======
-import Userlist from './components/Userlist';
-import Channels from './components/Channels'
-import Game from './pages/game';
-//import LoginPage from './pages/login';
-//import LoginRedirect from './components/LoginRedirect';
->>>>>>> Stashed changes
 
 const App = () => {
-	const [chatSocket, setChatSocket] = useState(null);
-	const [gameSocket, setGameSocket] = useState(null);
-
-	useEffect(() => {
-		//because dev mode sometimes didnt disconnect old sockets
-		if (chatSocket) {
-			chatSocket.disconnect(); // Disconnect existing socket if any
-			console.log('Previous socket disconnected');
-		}
-		if (gameSocket) {
-			gameSocket.disconnect(); // Disconnect existing socket if any
-			console.log('Previous socket disconnected');
-		}
-
-		// Initialize socket connection
-		const chatSocketIo = io('http://localhost:3001/chat', {
-          transports: ['websocket']
-        });
-		const gameSocketIo = io('http://localhost:3001/game', {
-			transports: ['websocket']
-		  });
-
-		// Set socket instance in state
-		setChatSocket(chatSocketIo);
-		setGameSocket(gameSocketIo);
-
-		return () => {
-            chatSocketIo.disconnect(); // Disconnect the socket when the component unmounts
-			gameSocketIo.disconnect(); // Disconnect the socket when the component unmounts
-        };
-	}, [])
-
-	if (!chatSocket || !gameSocket) { return }
 	return (
         <div>
-<<<<<<< Updated upstream
-            <Chat />
+            <LoginPage />
             {/* <GameApp /> */}
-            {/* <LoginPage /> */}
-            {/* <LoginRedirect /> */}
-=======
-            <Userlist socket={chatSocket} />
-			      <Channels socket={chatSocket} />
-            {/* <Game socket={gameSocket}/> */}
-            {/* <LoginPage />
-            <LoginRedirect /> */}
->>>>>>> Stashed changes
-        </div>
-    );
-}
+        </div>,
+
+		<Router>
+			<Routes>
+				<Route path="/" element={<LoginPage />} />
+				{/* <Route path="/game" element={<GameApp />} /> */}
+				<Route path="/login/redirect" element={<LoginRedirect />} />
+				{/* <Route path="/login/2fa" element={<Login2FA />} /> */}
+				<Route path="/chat" element={<Chat />} />
+			</Routes>
+		</Router>
+    );}
 
 export default App;

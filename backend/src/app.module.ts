@@ -9,13 +9,8 @@ import { MessageService } from './chat/message/message.service';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
-<<<<<<< Updated upstream
   imports: [PrismaModule, LoginModule, ChatModule],
   providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService],
-=======
-  imports: [PrismaModule, LoginModule],
-  providers: [PrismaService, CommunicationGateway, ChannelService, UserService, MessageService],
->>>>>>> Stashed changes
   exports: [PrismaService],
   controllers: [],
 })
