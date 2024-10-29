@@ -17,3 +17,19 @@
     justify-content: space-between;
     margin-bottom: 10px;
 }
+
+.friend-online {
+    color: green;
+}
+
+.friend-offline {
+    color: red;
+}
+
+.friend-ingame {
+    color: yellow;
+}
+
+.friend-afk {
+    color: orange;
+}

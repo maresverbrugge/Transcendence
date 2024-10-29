@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Channels.css'; // Import the CSS file
 
 const Channel = ({ channel, socket }) => {
@@ -11,23 +12,21 @@ const Channel = ({ channel, socket }) => {
         setMessages(channel.messages || []);
         setMembers(channel.members || []);
 
-        // Handle new messages
         socket.on('newMessage', (message) => {
             if (message) {
                 setMessages((prevMessages) => [...prevMessages, message]);
             }
         });
 
-        // Cleanup socket listeners when component unmounts
         return () => {
-            socket.emit('leaveChannel', channel.id);
             socket.off('newMessage');
         };
     }, []);
 
     const handleSendMessage = () => {
+        const senderID = 1; // HIER KOMT EEN Identifier op basis van de token?
         if (newMessage.trim()) {
-            socket.emit('sendMessage', { channelId: channel.id, content: newMessage });
+            socket.emit('sendMessage', { channelID: channel.id, senderID: senderID, content: newMessage });
             setNewMessage('');
         }
     };
@@ -35,7 +34,7 @@ const Channel = ({ channel, socket }) => {
     return (
         <div className="channel-container">
             <div className="channel-header">
-                <h2>Channel: {channel.id}</h2>
+                <h2>Channel: {channel.name}</h2>
                 <ul>
                     {members.map((member) => (
                         <li key={member.id}>
@@ -75,12 +74,25 @@ const Channels = ({ socket }) => {
     const [selectedChannel, setSelectedChannel] = useState(null);
     
     useEffect(() => {
+
+        // const userID = '1'; //userID ergens vandaan halen! misschien via localstorage acces token?
+        const fetchChannels = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3001/chat/channels`);
+                setChannels(response.data);
+            } catch (error) {
+                console.error('Error fetching channels:', error);
+            }
+        };
+    
+        fetchChannels();
+
         socket.on('newChannel', (channel) => {
             setChannels((prevChannels) => prevChannels.concat(channel))
 		})
         
         return () => {
-            socket.emit('leaveChannel', channel.id);
+            socket.emit('leaveChannel', selectedChannel.id);
             socket.off('newChannel');
         };
     }, []);

@@ -9,6 +9,7 @@ import { User, Channel, Message } from '@prisma/client'
   cors: {
     origin: 'http://localhost:3000', // Update with your client's origin
     methods: ['GET', 'POST'],
+	transports: ['websocket'],
     credentials: true,
   },
 })

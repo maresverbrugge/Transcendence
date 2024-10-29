@@ -12,6 +12,53 @@ export class ChannelService {
         private readonly userService: UserService,
     ) {}
 
+    async joinChannel(server: Server, channelID: number, userID: number) {
+        const user = await this.userService.getUserByUserId(userID);
+        //if !(user) ... misschien deze error throwen in getUserByUserID 
+        const socket: Socket = server.sockets.sockets.get(user.websocketId);
+        //if (!socket) ?
+        socket.join(String(channelID))
+    }
+
+    async newChannel(server: Server, data: { name: string, isPrivate: boolean, password?: string, ownerID: number, memberIDs: number[] }) {
+        const newChannel = await this.prisma.channel.create({
+            data: {
+                name: data.name,
+                password: data.password || null, // Optional password
+                ownerId: data.ownerID,
+                members: {
+                    create: [
+                        { userId: data.ownerID, isAdmin: true }, // Create the owner as admin
+                        ...data.memberIDs.map((memberID) => ({
+                            userId: memberID,
+                            isAdmin: false
+                        })) // Create each additional member as non-admin
+                    ]
+                }
+            },
+            include: {
+                members: {
+                    include: {
+                        user: true
+                    }
+                },
+                messages: true
+            }
+        });
+        await this.joinChannel(server, newChannel.id, data.ownerID);
+
+        // Create an array of promises
+        const memberJoinPromises = data.memberIDs.map(memberID => 
+            this.joinChannel(server, newChannel.id, memberID)
+        );
+
+        // Wait for all joinChannel calls to complete
+        await Promise.all(memberJoinPromises);
+
+        server.to(String(newChannel.id)).emit('newChannel', newChannel);
+        return newChannel;
+    }
+    
     async getChannelByChannelId(channelId: number): Promise <Channel | null> {
         return this.prisma.channel.findUnique({
             where: { id: channelId }
@@ -31,7 +78,7 @@ export class ChannelService {
         });
     }
 
-    async acceptChannelInvite(server: Server, memberId: number, ownerId: number, channelPassword?: string) {
+    async acceptChannelInvite(server: Server, memberId: number, ownerId: number, channelName: string, channelPassword?: string) {
         const owner = await this.userService.getUserByUserId(ownerId)
         const member = await this.userService.getUserByUserId(memberId)
         const ownerSocket: Socket = server.sockets.sockets.get(owner.websocketId);
@@ -43,6 +90,7 @@ export class ChannelService {
     
         const newChannel = await this.prisma.channel.create({
             data: {
+                name:  channelName,
                 password: channelPassword || null, // Optional password
                 ownerId: ownerId,
                 members: {
@@ -57,7 +105,8 @@ export class ChannelService {
                   include: {
                     user: true
                   }
-                }
+                },
+                messages: true
             },
         });
         memberSocket.join(String(newChannel.id))

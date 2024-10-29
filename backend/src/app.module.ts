@@ -2,15 +2,21 @@ import { Module } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoginModule } from './login/login.module';
-import { GameGateway } from './game/game.gateway';
-import { CommunicationGateway } from './communication/communication.gateway';
-import { ChannelService } from './communication/channel/channel.service';
-import { UserService } from './communication/user/user.service';
-import { MessageService } from './communication/message/message.service';
+import { ChatGateway } from './chat/chat.gateway';
+import { ChannelService } from './chat/channel/channel.service';
+import { UserService } from './chat/user/user.service';
+import { MessageService } from './chat/message/message.service';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
+<<<<<<< Updated upstream
+  imports: [PrismaModule, LoginModule, ChatModule],
+  providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService],
+=======
   imports: [PrismaModule, LoginModule],
-  providers: [PrismaService, CommunicationGateway, ChannelService, UserService, MessageService, GameGateway],
+  providers: [PrismaService, CommunicationGateway, ChannelService, UserService, MessageService],
+>>>>>>> Stashed changes
   exports: [PrismaService],
+  controllers: [],
 })
 export class AppModule {}

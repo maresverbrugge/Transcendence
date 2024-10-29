@@ -111,9 +111,9 @@ function map_range(value, low1, high1, low2, high2) {
 	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 
-const Game = () => {
-	// const [messages, setMessages] = useState([]);
-	const [socket, setSocket] = useState(null);
+const Game = ({ socket }) => {
+	const [games, setGames] = useState([]);
+	const [selectedGame, setSelectedGame] = useState(null);
 	const canvas = React.useRef();
 	var width = 500;
 	var height = 500;
@@ -148,88 +148,87 @@ const Game = () => {
 	}
 	
 	useEffect(() => {
-		if (!socket) {
-			// Initialize socket connection
-			const socketIo = io('http://localhost:3001', {
-			transports: ['websocket', 'polling'],
-			});
-			
-			// Set socket instance in state
-			setSocket(socketIo);
-			
-			// Handle incoming messages
-			socketIo.on('message', () => {
-				console.log('received a message');
-			});
-			socketIo.on('paddleY', (data) => {
-				console.log('y coordinate of right paddle updated');
-				paddleRight.y = parseInt(data);
-			});
-		}
-		if (socket !== null) {
-			g_socket = socket;
-			const context = canvas.current.getContext('2d');
-			let frameCount = 0;
-			let frameId;
-			context.strokeStyle = 'black';
-			context.font = "80 px Arial";
-			context.textAlign = "center";
-			context.lineWidth = 1;
-			ball = new Ball(width/2, height/2, 50, context);
-			ball.speedX = 5;
-			ball.speedY = Math.floor(Math.random() * 6 - 3); //get from server
-			paddleLeft = new Paddle(15, height/2, 30, 200, context);
-			paddleRight = new Paddle(width-15, height/2, 30, 200, context);
+		// g_socket = socket;
+		// const context = canvas.current.getContext('2d');
+		// let frameCount = 0;
+		// let frameId;
+		// context.strokeStyle = 'black';
+		// context.font = "80 px Arial";
+		// context.textAlign = "center";
+		// context.lineWidth = 1;
+		// ball = new Ball(width/2, height/2, 50, context);
+		// ball.speedX = 5;
+		// ball.speedY = Math.floor(Math.random() * 6 - 3); //get from server
+		// paddleLeft = new Paddle(15, height/2, 30, 200, context);
+		// paddleRight = new Paddle(width-15, height/2, 30, 200, context);
 
-			const render = () => {
-				frameCount++;
-				draw(context, socket);
-				frameId = window.requestAnimationFrame(render);
-			}
-			render();
-			return () => {
-				window.cancelAnimationFrame(frameId);
-				socketIo.disconnect();
-			}
-		}
-  }, [draw]);
-  return <canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>;
+		// const render = () => {
+		// 	frameCount++;
+		// 	draw(context, socket);
+		// 	frameId = window.requestAnimationFrame(render);
+		// }
+		// render();
+		// return () => {
+		// 	window.cancelAnimationFrame(frameId);
+		// 	socketIo.disconnect();
+		// }
+		socket.of("/game").on('newGame', (data) => {
+            if (confirm(`${data.ownerUsername} wants to play a game, join?`)) {
+				console.log('accepted');
+                // socket.emit('acceptGame', data.memberId, user.id);
+            } else {
+                // sent inviteDecline en dan pop up op andere frontend?
+            }
+        });
+
+		socket.of("/game").on('newGame', (game) => {
+            setGames((prevGames) => prevGames.concat(game))
+		})
+        
+        return () => {
+            // socket.emit('leaveGame', game.id);
+            socket.off('newGame');
+        };
+  });
+
+  const handleSelectGame = (game) => {
+	setSelectedGame(game);
+  }
+
+  const createNewGame = (socket) => {
+	socket.emit('createNewGame', socket.id);
+  }
+
+  return (
+	<div className="games-container">
+		{/* List of games */}
+		<div className="games-list">
+			<h2>Available games</h2>
+			<ul>
+				{games.map((game) => (
+					<li key={game.id}>
+						<button onClick={() => handleSelectGame(game)}>
+							{`game ${game.id}`} {/* Display game id */}
+						</button>
+					</li>
+				))}
+				<button onClick={() => createNewGame(socket)}>
+					{`create a new game`}
+				</button>
+			</ul>
+		</div>
+
+		{/* Display selected game */}
+		{/* <div className="game-details">
+			{selectedGame ? (
+				<Game channel={selectedGame} socket={socket}/>
+			) : (
+				<p>Select or create a game to play.</p>
+			)}
+		</div> */}
+	</div>
+);
+{/* <canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>; */}
 };
 
 export default Game;
-
-const GameApp = () => {
-    const [socket, setSocket] = useState(null);
-    
-    useEffect(() => {
-        //because dev mode sometimes didnt disconnect old sockets
-        if (socket) {
-            socket.disconnect(); // Disconnect existing socket if any
-            console.log('Previous socket disconnected');
-        }
-        
-        // Initialize socket connection
-        const socketIo = io('http://localhost:3001/chat', {
-            transports: ['websocket', 'polling'],
-            query: { token: 'your_jwt_token' } // Hier de token uit localstorage halen
-        });
-
-        // Set socket instance in state
-        setSocket(socketIo);
-
-
-        return () => {
-            socketIo.disconnect(); // Disconnect the socket when the component unmounts
-        };
-    }, [])
-    
-    if (!socket) { return }
-    return (
-        <div>
-            {/* <LoginPage /> */}
-            <Game socket={socket} />
-        </div>
-    )
-}
-
-export default GameApp
