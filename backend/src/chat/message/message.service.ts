@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
@@ -39,8 +39,9 @@ export class MessageService {
       });
     }
 
-    async sendMessage(server: Server, data: { channelID: number, senderID: number, content: string }) {
-      const newMessage: Message = await this.createMessage(data.channelID, data.senderID, data.content)
+    async sendMessage(server: Namespace, data: { channelID: number, ownerToken: string, content: string }) {
+      const sender = await this.userService.getUserBySocketId(data.ownerToken)
+      const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
       server.to(String(data.channelID)).emit('newMessage', newMessage)
     }
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const NewChannel = ({ friendList, socket }) => {
+const NewChannel = ({ friendList, socket, ownerToken }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [channelName, setChannelName] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
@@ -17,12 +17,11 @@ const NewChannel = ({ friendList, socket }) => {
     };
 
     const handleCreateChannel = () => {
-        const userID = 1; //HIER KOMT EEN identifyer dmv de token?
         const newChannelData = {
             name: channelName,
             isPrivate,
             password: passwordEnabled ? password : null,
-            ownerID: userID,
+            ownerToken: ownerToken,
             memberIDs: selectedMemberIDs,
         };
         socket.emit('newChannel', newChannelData);
