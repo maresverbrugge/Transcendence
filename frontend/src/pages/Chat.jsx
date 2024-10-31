@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 import Channels from '../components/Channels';
 import Friends from '../components/Friends';
-
+import { io } from 'socket.io-client';
+import { useEffect, useState } from 'react';
 
 const Chat = () => {
+    
     const [socket, setSocket] = useState(null);
     const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
     
@@ -17,7 +17,7 @@ const Chat = () => {
         
         // Initialize socket connection
         const token = localStorage.getItem('token');
-        const socketIo = io('http://localhost:3001/chat', {
+        const socketIo = io('http://localhost:3001', {
             transports: ['websocket', 'polling'],
             query: { token: token } // Hier de token uit localstorage halen
         });
@@ -35,8 +35,9 @@ const Chat = () => {
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
+
+	if (!socket) return null;
     
-    if (!socket || !tempToken) { return }
     return (
         <div>
             <Channels socket={socket} token={tempToken}/>
