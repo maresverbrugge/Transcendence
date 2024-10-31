@@ -34,9 +34,12 @@ model User {
   intraUsername     String
   avatar            Bytes?
   Enabled2FA        Boolean
+  token             String?
   websocketId       String?       @unique// The ID of the websocket, nullable
   status            PlayerStatus  // ONLINE | OFFLINE | IN_GAME | AFK
   
+  friends           User[]        @relation("Friends")
+  friendsOf         User[]        @relation("Friends")
   matchHistory      Match[]
   statistics        Statistics?
   channelsOwned     Channel[]
@@ -73,6 +76,8 @@ model Statistics {
 
 model Channel {
   id                Int           @id @default(autoincrement())
+  name              String
+  isPrivate         Boolean       @default(false)
   password          String?       // Optional password field
   
   ownerId           Int

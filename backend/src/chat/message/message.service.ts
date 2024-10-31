@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
@@ -16,11 +16,11 @@ export class MessageService {
       private readonly channelService: ChannelService
     ) {}  
 
-    async createMessage(content: string, senderId: number, channelId: number): Promise<Message> {
+    async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
         
-      const sender: User = await this.userService.getUserByUserId(senderId)
+      const sender: User = await this.userService.getUserByUserId(senderID)
       if (!sender) {
-        throw new Error('Channel not found');
+        throw new Error('User not found');
       }
     
       return this.prisma.message.create({
@@ -28,19 +28,21 @@ export class MessageService {
           content: content,
           senderName: sender.username,
           sender: {
-            connect: { id: senderId }
+            connect: { id: senderID }
           },
+
+
           channel: {
-            connect: { id: channelId }
+            connect: { id: channelID }
           }
         }
       });
     }
 
-    async sendMessage(server: Server, senderSocketId: string, content: string, channelId: number) {
-      const senderId = await this.userService.getUserIdBySocketId(senderSocketId)
-      const newMessage: Message = await this.createMessage(content, senderId, channelId)
-      server.to(String(channelId)).emit('newMessage', newMessage)
+    async sendMessage(server: Namespace, data: { channelID: number, ownerToken: string, content: string }) {
+      const sender = await this.userService.getUserBySocketId(data.ownerToken)
+      const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
+      server.to(String(data.channelID)).emit('newMessage', newMessage)
     }
 
 }
