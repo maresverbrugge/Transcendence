@@ -1,234 +1,96 @@
 // Game page that is shown when the user goes to localhost:3000/game
 
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { io } from 'socket.io-client';
+import GameLogic from '../components/GameLogic';
 
-var g_socket;
-var end = 0;
-var paddleLeft;
-var paddleRight;
-var scoreLeft = 0;
-var scoreRight = 0;
-
-class Ball {
-	constructor(x, y, diameter, context) {
-		this.x = x;
-		this.y = y;
-		this.diameter = diameter;
-		this.speedX = 0;
-		this.speedY = 0;
-		this.context = context;
-	}
-	left() {
-		return this.x-this.diameter/2;
-	};
-	right() {
-		return this.x+this.diameter/2;
-	};
-	top() {
-		return this.y-this.diameter/2;
-	};
-	bottom() {
-		return this.y+this.diameter/2;
-	};
-	move(width, height) {
-		this.x += this.speedX;
-		this.y += this.speedY;
-		if (this.right() > width) {
-			scoreLeft += 1;
-			// this.ws.send('left scored');
-			this.x = width/2;
-			this.y = height/2;
-		}
-		if (this.left() < 0) {
-			scoreRight += 1;
-			// this.ws.send('right scored');
-			this.x = width/2;
-			this.y = height/2;
-		}
-		if (this.bottom() > height) {
-			this.speedY = -this.speedY;
-			// this.ws.send('ball speedY reversed');
-		}
-		if (this.top() < 0) {
-			this.speedY = -this.speedY;
-			// this.ws.send('ball speedY reversed');
-		}
-	}
-	display() {
-		this.context.beginPath();
-		this.context.arc(this.x,this.y,this.diameter / 2, 0, 2 * Math.PI);
-		this.context.stroke();
-	};
-};
-
-class Paddle{
-	constructor(x, y, w, h, context) {
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
-		this.speedY = 0; //get from client
-		this.context = context;
-	}
-	left() {
-		return this.x-this.w/2;
-	};
-	right() {
-		return this.x+this.w/2;
-	};
-	top() {
-		return this.y-this.h/2;
-	};
-	bottom() {
-		return this.y+this.h/2;
-	};
-	display(height) {
-		if (this.bottom() > height) {
-			this.y = height-this.h/2;
-		}
-		if (this.top() < 0) {
-			this.y = this.h/2;
-		}
-		this.context.beginPath();
-		this.context.rect(this.x-this.w/2,this.y-this.h/2,this.w,this.h);
-		this.context.stroke();
-	};
-};
-
-window.onkeydown = function(press){
-	if (end === 0 && press.keyCode === 38){
-		g_socket.emit("up");
-		// paddleRight.y -= 3;
-	}
-	if (end === 0 && press.keyCode === 40){
-		g_socket.emit("down");
-		// paddleRight.y += 3;
-	}
-}
-
-function map_range(value, low1, high1, low2, high2) {
-	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-}
-
-const Game = ({ socket }) => {
+const Game = () => {
+	const [socket, setSocket] = useState(null);
 	const [games, setGames] = useState([]);
 	const [selectedGame, setSelectedGame] = useState(null);
-	const canvas = React.useRef();
-	var width = 500;
-	var height = 500;
-	var ball;
-	// const [scoreLeft, setScoreLeft] = useState(0); //send to the client
-	// const [scoreRight, setScoreRight] = useState(0); //send to the client;
-	const draw = (ctx, socket) => {
-		// socket.emit('frame');
-		ctx.clearRect(0, 0, width, height);
-		ball.move(width, height);
-		ball.display();
-		paddleLeft.display(height);
-		paddleRight.display(height);
-		if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()){
-			ball.speedX = -ball.speedX;
-			ball.speedY = map_range(ball.y - paddleLeft.y, -paddleLeft.h/2, paddleLeft.h/2, -10, 10);
-		}
-		if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-			ball.speedX = -ball.speedX;
-			ball.speedY = map_range(ball.y - paddleRight.y, -paddleRight.h/2, paddleRight.h/2, -10, 10);
-		}
-		ctx.fillText(scoreRight, width/2 + 30, 30); // Right side score
-		ctx.fillText(scoreLeft, width/2 - 30, 30); // Left side score
-		if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
-			ctx.fillText("You've won, nice game!", width/2, height/2);
-			end = 1;
-			ball.x = width/2;
-			ball.y = height/2;
-			ball.speedX = 0;
-			ball.speedY = 0;
-		}
-	}
-	
-	useEffect(() => {
-		// g_socket = socket;
-		// const context = canvas.current.getContext('2d');
-		// let frameCount = 0;
-		// let frameId;
-		// context.strokeStyle = 'black';
-		// context.font = "80 px Arial";
-		// context.textAlign = "center";
-		// context.lineWidth = 1;
-		// ball = new Ball(width/2, height/2, 50, context);
-		// ball.speedX = 5;
-		// ball.speedY = Math.floor(Math.random() * 6 - 3); //get from server
-		// paddleLeft = new Paddle(15, height/2, 30, 200, context);
-		// paddleRight = new Paddle(width-15, height/2, 30, 200, context);
-
-		// const render = () => {
-		// 	frameCount++;
-		// 	draw(context, socket);
-		// 	frameId = window.requestAnimationFrame(render);
-		// }
-		// render();
-		// return () => {
-		// 	window.cancelAnimationFrame(frameId);
-		// 	socketIo.disconnect();
-		// }
-		socket.of("/game").on('newGame', (data) => {
-            if (confirm(`${data.ownerUsername} wants to play a game, join?`)) {
-				console.log('accepted');
-                // socket.emit('acceptGame', data.memberId, user.id);
-            } else {
-                // sent inviteDecline en dan pop up op andere frontend?
-            }
-        });
-
-		socket.of("/game").on('newGame', (game) => {
-            setGames((prevGames) => prevGames.concat(game))
-		})
+    
+    useEffect(() => {
+        //because dev mode sometimes didnt disconnect old sockets
+        if (socket) {
+			socket.disconnect(); // Disconnect existing socket if any
+            console.log('Previous socket disconnected');
+        }
         
-        return () => {
-            // socket.emit('leaveGame', game.id);
-            socket.off('newGame');
+        // Initialize socket connection
+        const socketIo = io('http://localhost:3001/game', {
+			transports: ['websocket', 'polling'],
+            query: { token: 'your_jwt_token' } // Hier de token uit localstorage halen
+        });
+		
+        // Set socket instance in state
+        setSocket(socketIo);
+
+		const fetchGames = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3001/game/matches`);
+                setGames(response.data);
+            } catch (error) {
+                console.error('Error fetching games:', error);
+            }
         };
-  });
+    
+        fetchGames();
+		
+		socketIo.on('newGame', (data) => {
+			if (confirm(`game ${data.gameId} is looking for another player, join?`)) {
+				console.log('accepted');
+				setSelectedGame(data.gameId);
+				socketIo.emit('acceptGame', data.gameId);
+			} else {
+				// sent inviteDecline en dan pop up op andere frontend?
+			}
+		});
 
-  const handleSelectGame = (game) => {
-	setSelectedGame(game);
-  }
+        return () => {
+            socketIo.disconnect(); // Disconnect the socket when the component unmounts
+        };
+    }, [])
 
-  const createNewGame = (socket) => {
-	socket.emit('createNewGame', socket.id);
-  }
+	const handleSelectGame = (gameId) => {
+		setSelectedGame(gameId);
+	}
 
-  return (
-	<div className="games-container">
-		{/* List of games */}
-		<div className="games-list">
-			<h2>Available games</h2>
-			<ul>
-				{games.map((game) => (
-					<li key={game.id}>
-						<button onClick={() => handleSelectGame(game)}>
-							{`game ${game.id}`} {/* Display game id */}
-						</button>
-					</li>
-				))}
-				<button onClick={() => createNewGame(socket)}>
-					{`create a new game`}
-				</button>
-			</ul>
+	const createNewGame = (socket) => {
+		socket.emit('createNewGame', socket.id);
+	}
+    
+    if (!socket) { return }
+
+    return (
+        <div className="games-container">
+			{/* List of games */}
+			<div className="games-list">
+				<h2>Available games</h2>
+				<ul>
+					{games.map((game) => (
+						<li key={game.matchId}>
+							<button onClick={() => handleSelectGame(game.matchId)}>
+								{`game ${game.matchId}`} {/* Display game id */}
+							</button>
+						</li>
+					))}
+					<button onClick={() => createNewGame(socket)}>
+						{`create a new game`}
+					</button>
+				</ul>
+			</div>
+
+			{/* Display selected game */}
+			<div className="game-details">
+				{selectedGame ? (
+					<GameLogic game={selectedGame} socket={socket}/>
+				) : (
+					<p>Select or create a game to play.</p>
+				)}
+			</div>
 		</div>
-
-		{/* Display selected game */}
-		{/* <div className="game-details">
-			{selectedGame ? (
-				<Game channel={selectedGame} socket={socket}/>
-			) : (
-				<p>Select or create a game to play.</p>
-			)}
-		</div> */}
-	</div>
-);
-{/* <canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>; */}
-};
+    )
+}
 
 export default Game;

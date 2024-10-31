@@ -10,7 +10,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../chat/user/user.service';
+import { UserService } from 'src/chat/user/user.service';
 import { User, Match } from '@prisma/client'
 
 @WebSocketGateway({
@@ -42,33 +42,34 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	// }
 
 	@SubscribeMessage('createNewGame')
-	async handleNewGame(clientId: string) {
-		const member: User = await this.userService.getUserBySocketId(clientId)
-		this.server.emit('newGame', {
-			memberUsername: member.username,
-			memberId: member.id
-        });
-	}
-
-	@SubscribeMessage('acceptGame')
-	handleNewGameCreation(memberId1 : string, memberId2: string) {
+	async handleNewGame(client: any, clientId: string) {
+		// const member: User = await this.userService.getUserBySocketId(clientId)
 		// const member1: User = await this.userService.getUserByUserId(memberId1)
 		// const memberSocket1: Socket = this.server.sockets.sockets.get(member1.websocketId);
 		// const member2: User = await this.userService.getUserByUserId(memberId2)
 		// const memberSocket2: Socket = this.server.sockets.sockets.get(member2.websocketId);
-		// const newGame : Match = await this.prisma.match.create({
-		// 	data: {
-		// 		status: MatchStatus.ACCEPTED,
-		// 		players: {
-		// 			member1,
-		// 			member2
-		// 		},
-		// 	}
-		// });
-		console.log('a new game is made and added to the database');
-		this.server.emit('newGame', {
-			// gameId: newGame.matchId
+		const newGame : Match = await this.prisma.match.create({
+			data: {
+				status: "PENDING",
+			}
 		});
+		this.server.emit('newGame', {
+			gameId: newGame.matchId
+        });
+	}
+
+	@SubscribeMessage('acceptGame')
+	async handleNewGameAccept(client: any, gameId: string) {
+		const id: number = parseInt(gameId);
+		const updatedMatch: Match = await this.prisma.match.update({
+			where: {
+				matchId: id,
+			},
+			data: {
+				status: "ACCEPTED",
+				updatedAt: new Date(),
+			},
+		})
 	}
 
 	@SubscribeMessage('frame')
