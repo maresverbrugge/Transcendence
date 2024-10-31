@@ -42,6 +42,7 @@ up:		build
 # start the containers
 start:
 		docker compose start
+		@docker compose logs -f backend
 		@echo "$(BOLD)$(G)Docker containers are now started and up running!$(RESET)"
 
 # stop the running containers without removing them (sends SIGTERM)
@@ -87,12 +88,6 @@ check_database:
 		@docker exec -it trans-database psql -U Transcendancingqueens -d pongdb
 # en erna \dt
 # om te zien of migration is gelukt
-
-# run prisma studio on port 5555
-studio:
-		@export DATABASE_URL="postgresql://Transcendancingqueens:8:uizdY5._r-Pe+@localhost:5432/pongdb?schema=public"
-		@echo ${DATABASE_URL}
-		@npx prisma studio --schema ./backend/src/prisma/schema.prisma
 
 #========================================#
 #=============== FOR GIT ================#

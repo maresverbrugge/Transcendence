@@ -54,7 +54,7 @@ export class UserService {
     }
 
     async removeWebsocketIDFromUser(websocketID: string) {
-      const user = await this.getUserBySocketId(websocketID);
+      const user = await this.getUserBySocketID(websocketID);
       if (user) {
         return await this.prisma.user.update({
           where: { id: user.id },
@@ -69,10 +69,14 @@ export class UserService {
         client.emit('users', users);
       }
 
-    async getUserByUserId(userId: number): Promise<User | null> {
-      return this.prisma.user.findUnique({
-        where: { id: userId },
+    async getUserByUserID(userID: number): Promise<User | null> {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userID },
       });
+      if (!user) {
+        throw new Error(`User with ID ${userID} not found.`);
+      }
+      return (user)
     }
 
     async createUser(socketId: string): Promise<User> {
@@ -87,7 +91,7 @@ export class UserService {
         });
     }
 
-    async getUserIdBySocketId(socketId: string): Promise<number | null> {
+    async getUserIdBySocketID(socketId: string): Promise<number | null> {
         const user = await this.prisma.user.findUnique({
           where: {
             websocketId: socketId,
@@ -99,7 +103,7 @@ export class UserService {
         return user?.id || null; // Return the user ID if found, otherwise return null
       }
 
-      async getUserBySocketId(socketId: string): Promise<User | null> {
+      async getUserBySocketID(socketId: string): Promise<User | null> {
         return this.prisma.user.findUnique({
           where: {
             websocketId: socketId,
@@ -108,7 +112,7 @@ export class UserService {
       }
 
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
-        const userId = await this.getUserIdBySocketId(socketID);
+        const userId = await this.getUserIdBySocketID(socketID);
     
         if (userId) {
           return this.prisma.user.delete({

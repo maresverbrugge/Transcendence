@@ -41,9 +41,19 @@ export class ChatGateway
     this.channelService.newChannel(this.server, data)
   }
 
+  @SubscribeMessage('joinChannel')
+  async handleJoinChannel(client: Socket, channelID: number) {
+    this.channelService.joinChannel(this.server, channelID, client.id)
+  }
+
+  @SubscribeMessage('leaveChannel')
+  async handleLeaveChannel(client: Socket, channelID: number) {
+    this.channelService.leaveChannel(this.server, channelID, client.id)
+  }
+
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
-    this.messageService.sendMessage(this.server, data)
+    this.messageService.sendMessage(this.server, client, data)
   }
 
   afterInit(server: Namespace) {
@@ -63,7 +73,7 @@ export class ChatGateway
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    const user = await this.userService.getUserBySocketId(client.id);
+    const user = await this.userService.getUserBySocketID(client.id);
     await this.userService.removeWebsocketIDFromUser(client.id)
     if (user) {
       this.server.emit('userStatusChange', user.id, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket

@@ -1,34 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Channels.css'; // Import the CSS file
+import AlertMessage from './AlertMessage';
 
 const Channel = ({ channel, socket, token }) => {
     const [messages, setMessages] = useState([]);
     const [members, setMembers] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    console.log('channel', channel)
+    const [showBannedAlert, setShowBannedAlert] = useState(false);
+    const [showMutedAlert, setShowMutedAlert] = useState(false);
+
     useEffect(() => {
 
         const fetchChannel = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/channels/${channel.id}`);
+                const response = await axios.get(`http://localhost:3001/chat/channels/${channel.id}/${token}`);
                 setMessages(response.data.messages);
-                setMembers(response.data.members)
+                setMembers(response.data.members);
             } catch (error) {
-                console.error('Error fetching channels:', error);
+                if (error.response && error.response.status === 403) {
+                    setShowBannedAlert(true);
+                } else {
+                    console.error('Error fetching channels:', error);
+                }
             }
         };
-    
+
         fetchChannel();
 
+        socket.emit('joinChannel', channel.id);
+
         socket.on('newMessage', (message) => {
-            if (message?.channelID == channel.channelID) {
+            if (message?.channelID === channel.channelID) {
                 setMessages((prevMessages) => [...prevMessages, message]);
             }
         });
 
+        socket.on('youAreMuted', () => {
+            setShowMutedAlert(true);
+        });
+
         return () => {
             socket.off('newMessage');
+            socket.off('youAreMuted')
+            socket.emit('leaveChannel', channel.id);
         };
     }, [channel]);
 
@@ -39,8 +54,14 @@ const Channel = ({ channel, socket, token }) => {
         }
     };
 
+    const handleCloseBannedAlert = () => setShowBannedAlert(false);
+    const handleCloseMutedAlert = () => setShowMutedAlert(false);
+
     return (
         <div className="channel-container">
+            {showBannedAlert && (<AlertMessage message="You are banned from this channel." onClose={handleCloseBannedAlert} />)}
+            {showMutedAlert && (<AlertMessage message="You are muted in this channel." onClose={handleCloseMutedAlert} />)}
+
             <div className="channel-header">
                 <h2>Channel: {channel.name}</h2>
                 <ul>
@@ -98,19 +119,19 @@ const Channels = ({ socket, token }) => {
             setChannels((prevChannels) => prevChannels.concat(channel));
         });
 
-        socket.on('newMessage', (message) => {
+        socket.on('newMessageOnChannel', (channelID) => {
             // Update unread count if the message is for an unselected channel
-            if (message?.channelID !== selectedChannel?.id) {
+            if (channelID !== selectedChannel?.id) {
                 setUnreadCounts((prevCounts) => ({
                     ...prevCounts,
-                    [message.channelID]: (prevCounts[message.channelID] || 0) + 1,
+                    [channelID]: (prevCounts[channelID] || 0) + 1,
                 }));
             }
         });
 
         return () => {
             socket.off('newChannel');
-            socket.off('newMessage');
+            socket.off('newMessageOnChannel');
         };
     }, [selectedChannel]);
 
@@ -133,7 +154,7 @@ const Channels = ({ socket, token }) => {
                         <li key={channel.id}>
                             <button onClick={() => handleSelectChannel(channel)}>
                                 {channel.name || `Channel ${channel.id}`}
-                                {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]})`}
+                                {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
                             </button>
                         </li>
                     ))}

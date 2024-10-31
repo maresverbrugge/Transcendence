@@ -1,11 +1,15 @@
 import { Controller, Get, NotFoundException, InternalServerErrorException, Param, ParseIntPipe } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChannelService } from './channel.service';
 
 
 @Controller('chat/channels')
 export class ChannelController {
 
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+      private readonly prisma: PrismaService,
+      private readonly channelService: ChannelService
+    ) {}
 
     @Get()
     async getChannels() {
@@ -20,22 +24,8 @@ export class ChannelController {
       }
     }
 
-    @Get(':channelID')
-    async getChannel(@Param('channelID', ParseIntPipe) channelID: number) {
-      const channel = await this.prisma.channel.findUnique({
-        where: {id: channelID},
-        include: {
-          members: {
-            include: {
-              user: true,
-            },
-          },
-          messages: true
-        },
-      })
-      if (!channel) {
-        throw new NotFoundException('User not found');
-      }
-      return (channel)
+    @Get(':channelID/:userToken')
+    async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('userToken') userToken: string) {
+      return this.channelService.getChannelByChannelIDAndAddUser(channelID, userToken)
     }
 }
