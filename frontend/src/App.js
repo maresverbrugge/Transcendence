@@ -6,7 +6,7 @@ import LoginRedirect from './components/LoginRedirect';
 import UserAccount from './pages/userAccount';
 import Chat from './pages/Chat'
 // import GameApp from './pages/game';
-// import Login2FA from './components/Login2FA';
+import Login2FA from './components/Login2FA';
 
 const App = () => {
 	return (
@@ -18,7 +18,7 @@ const App = () => {
 				<Route path="/account" element={<UserAccount />} />
 				<Route path="/chat" element={<Chat />} />
 				{/* <Route path="/game" element={<GameApp />} /> */}
-				{/* <Route path="/login/2fa" element={<Login2FA />} /> */}
+				<Route path="/login/2fa" element={<Login2FA />} />
 			</Routes>
 		</Router>
     );}

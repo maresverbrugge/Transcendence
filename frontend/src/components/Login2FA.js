@@ -10,6 +10,9 @@ const Login2FA = () => {
 	}
 
 	const handleSetup2FA = () => {
+		axios.post('http://localhost:3001/two-factor/callback', {
+			something: "yay we made it"
+		})
 		// Redirect to 2FA setup page
 	}
 
