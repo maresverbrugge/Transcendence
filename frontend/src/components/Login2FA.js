@@ -4,6 +4,7 @@ import axios from 'axios';
 const twoFactorAuthenticationEnabled = false; // This should be a database value
 
 const Login2FA = () => {
+	const [qrcodeUrl, setQrcodeUrl] = useState(null);
 
 	const start2FA = () => {
 		// Do the authentication
@@ -13,7 +14,13 @@ const Login2FA = () => {
 		axios.post('http://localhost:3001/two-factor/callback', {
 			something: "yay we made it"
 		})
-		// Redirect to 2FA setup page
+		.then(response => {
+			console.log('response', response.data);
+			setQrcodeUrl(response.data);
+		})
+		.catch(err => {
+			console.error('Error while setting up 2FA:', err);
+		});
 	}
 
 	const handleSkip2FA = () => {
@@ -22,6 +29,14 @@ const Login2FA = () => {
 
 	if (twoFactorAuthenticationEnabled) {
 		start2FA();
+	}
+	else if (qrcodeUrl) {
+		return (
+			<div>
+				<img src={qrcodeUrl}/>
+				<p>Scan this QR code with your 2FA app</p>
+			</div>
+		)
 	}
 	else {
 		return (
