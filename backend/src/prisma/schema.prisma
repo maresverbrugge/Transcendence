@@ -106,6 +106,7 @@ model ChannelMember {
   muteUntil         DateTime?
   isMuted           Boolean       @default(false)
   isBanned          Boolean       @default(false)
+  banUntil          DateTime?
 
   userId            Int
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
