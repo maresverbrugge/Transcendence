@@ -75,7 +75,12 @@ export class ChannelService {
             include: {
               members: {
                 include: {
-                  user: true,
+                  user: {
+                    select: {
+                      id: true,
+                      username: true,
+                    },
+                  },
                 },
               },
               messages: true,

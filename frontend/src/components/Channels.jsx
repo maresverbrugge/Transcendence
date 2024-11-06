@@ -7,26 +7,9 @@ const Channel = ({ channel, socket, token }) => {
     const [messages, setMessages] = useState([]);
     const [members, setMembers] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const [showBannedAlert, setShowBannedAlert] = useState(false);
     const [showMutedAlert, setShowMutedAlert] = useState(false);
 
     useEffect(() => {
-
-        const fetchChannel = async () => {
-            try {
-                const response = await axios.get(`http://localhost:3001/chat/channels/${channel.id}/${token}`);
-                setMessages(response.data.messages);
-                setMembers(response.data.members);
-            } catch (error) {
-                if (error.response && error.response.status === 403) {
-                    setShowBannedAlert(true);
-                } else {
-                    console.error('Error fetching channels:', error);
-                }
-            }
-        };
-
-        fetchChannel();
 
         socket.emit('joinChannel', channel.id);
 
@@ -54,12 +37,10 @@ const Channel = ({ channel, socket, token }) => {
         }
     };
 
-    const handleCloseBannedAlert = () => setShowBannedAlert(false);
     const handleCloseMutedAlert = () => setShowMutedAlert(false);
 
     return (
         <div className="channel-container">
-            {showBannedAlert && (<AlertMessage message="You are banned from this channel." onClose={handleCloseBannedAlert} />)}
             {showMutedAlert && (<AlertMessage message="You are muted in this channel." onClose={handleCloseMutedAlert} />)}
 
             <div className="channel-header">
@@ -101,6 +82,7 @@ const Channels = ({ socket, token }) => {
     const [channels, setChannels] = useState([]);
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [unreadCounts, setUnreadCounts] = useState({}); // Track unread messages per channel
+    const [showBannedAlert, setShowBannedAlert] = useState(false);
 
     useEffect(() => {
         const fetchChannels = async () => {
@@ -135,17 +117,35 @@ const Channels = ({ socket, token }) => {
         };
     }, [selectedChannel]);
 
-    const handleSelectChannel = (channel) => {
-        setSelectedChannel(channel);
-        // Reset unread count for the selected channel
-        setUnreadCounts((prevCounts) => ({
-            ...prevCounts,
-            [channel.id]: 0,
-        }));
+    const handleSelectChannel = async (channel) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/chat/channels/${channel.id}/${token}`);
+            setSelectedChannel({
+                ...channel,
+                messages: response.data.messages,
+                members: response.data.members,
+            });
+            // Reset unread count for the selected channel
+            setUnreadCounts((prevCounts) => ({
+                ...prevCounts,
+                [channel.id]: 0,
+            }));
+        } catch (error) {
+            if (error.response && error.response.status === 403) {
+                setShowBannedAlert(true);
+            } else {
+                console.error('Error fetching channel:', error);
+            }
+            setSelectedChannel(null)
+        }
     };
+    
+
+    const handleCloseBannedAlert = () => setShowBannedAlert(false);
 
     return (
         <div className="channels-container">
+            {showBannedAlert && (<AlertMessage message="You are banned from this channel." onClose={handleCloseBannedAlert} />)}
             {/* List of Channels */}
             <div className="channels-list">
                 <h2>Available Channels</h2>
@@ -164,7 +164,7 @@ const Channels = ({ socket, token }) => {
             {/* Display selected Channel */}
             <div className="channel-details">
                 {selectedChannel ? (
-                    <Channel channel={selectedChannel} socket={socket} token={token} />
+                    <Channel channel={selectedChannel} socket={socket} token={token}/>
                 ) : (
                     <p>Select a channel to view its messages and members.</p>
                 )}
