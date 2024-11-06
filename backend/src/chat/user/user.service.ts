@@ -91,7 +91,7 @@ export class UserService {
         });
     }
 
-    async getUserIdBySocketID(socketId: string): Promise<number | null> {
+    async getUserIDBySocketID(socketId: string): Promise<number | null> {
         const user = await this.prisma.user.findUnique({
           where: {
             websocketId: socketId,
@@ -112,7 +112,7 @@ export class UserService {
       }
 
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
-        const userId = await this.getUserIdBySocketID(socketID);
+        const userId = await this.getUserIDBySocketID(socketID);
     
         if (userId) {
           return this.prisma.user.delete({

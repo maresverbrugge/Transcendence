@@ -102,6 +102,7 @@ model Message {
 model ChannelMember {
   id                Int           @id @default(autoincrement())
   websocketId       String?       // The ID of the websocket, nullable
+  isOwner           Boolean       @default(false)
   isAdmin           Boolean       @default(false)
   muteUntil         DateTime?
   isMuted           Boolean       @default(false)

@@ -12,6 +12,5 @@ import { ChatModule } from './chat/chat.module';
   imports: [PrismaModule, LoginModule, ChatModule],
   providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService],
   exports: [PrismaService],
-  controllers: [],
 })
 export class AppModule {}

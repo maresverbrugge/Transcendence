@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { Channel, User, ChannelMember } from '@prisma/client'
+import { Channel, ChannelMember } from '@prisma/client'
 
 type ChannelWithMembers = Channel & {
     members: ChannelMember[];
@@ -36,8 +36,7 @@ export class ChannelService {
     
 
     async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
-        const ownerID = await this.userService.getUserIdBySocketID(data.ownerToken) // later veranderen naar token
-        console.log('ownerID', ownerID)
+        const ownerID = await this.userService.getUserIDBySocketID(data.ownerToken) // later veranderen naar token
         const newChannel = await this.prisma.channel.create({
             data: {
                 name: data.name,
@@ -45,7 +44,7 @@ export class ChannelService {
                 ownerId: ownerID,
                 members: {
                     create: [
-                        { userId: ownerID, isAdmin: true }, // Create the owner as admin
+                        { userId: ownerID, isOwner: true, isAdmin: true }, // Create as owner and admin
                         ...data.memberIDs.map((memberID) => ({
                             userId: memberID,
                             isAdmin: false
@@ -95,7 +94,7 @@ export class ChannelService {
     }
 
     async addMemberToChannel(channelID: number, userToken: string): Promise<ChannelWithMembers | null> {
-        const userId = await this.userService.getUserIdBySocketID(userToken);
+        const userId = await this.userService.getUserIDBySocketID(userToken);
     
         try {
             const channel = await this.prisma.channel.update({
@@ -138,8 +137,26 @@ export class ChannelService {
         return channel;
     }
 
+    async getChannelMember(channelID: number, userToken: string): Promise <ChannelMember | null> {
+        const userID = await this.userService.getUserIDBySocketID(userToken); //later veranderen naar token
+    
+
+        const channelMember = this.prisma.channelMember.findFirst({
+            where: {
+                channelId: channelID,
+                userId: userID,
+            },
+        })
+
+        if (!channelMember) {
+            throw new NotFoundException('ChannelMember not found')
+        }
+
+        return channelMember;
+    }
+
     async isMuted(channelID: number, userToken: string): Promise<boolean> {
-        const userID = await this.userService.getUserIdBySocketID(userToken); // later change to token
+        const userID = await this.userService.getUserIDBySocketID(userToken); // later change to token
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {
                 channelId: channelID,

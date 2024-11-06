@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChannelService } from './channel.service';
 
 
-@Controller('chat/channels')
+@Controller('chat/channel')
 export class ChannelController {
 
     constructor(
@@ -27,5 +27,10 @@ export class ChannelController {
     @Get(':channelID/:userToken')
     async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('userToken') userToken: string) {
       return this.channelService.getChannelByChannelIDAndAddUser(channelID, userToken)
+    }
+
+    @Get('/member/:channelID/:userToken')
+    async getChannelMember(@Param('channelID', ParseIntPipe) channelID: number, @Param('userToken') userToken: string) {
+      return this.channelService.getChannelMember(channelID, userToken)
     }
 }

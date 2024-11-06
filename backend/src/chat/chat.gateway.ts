@@ -37,7 +37,6 @@ export class ChatGateway
 
   @SubscribeMessage('newChannel')
   async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
-    console.log('dubbelcheck:', client.id)
     this.channelService.newChannel(this.server, data)
   }
 
