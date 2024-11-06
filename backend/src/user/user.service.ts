@@ -15,7 +15,7 @@ export class UserService {
       const emptyWebSocketUser = await this.prisma.user.findFirst({
         where: { websocketId: null },
       });
-    
+
       if (emptyWebSocketUser) {
         // Assign socketID if user with empty websocketId is found
         return await this.prisma.user.update({
@@ -24,7 +24,7 @@ export class UserService {
                   token: token },
         });
       }
-    
+
       // Step 2: Check if any user has an inactive websocketId
       const users = await this.prisma.user.findMany(); // Fetch all users
       for (const user of users) {
@@ -46,7 +46,7 @@ export class UserService {
           console.log('error fetching socket: ', error)
         }
       }
-    
+
       // Step 3: If no users have an empty or inactive websocketId, create a new user
       return await this.prisma.user.create({
         data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: PlayerStatus.ONLINE, websocketId: socketID, token: token },
@@ -63,7 +63,6 @@ export class UserService {
       }
     }
     
-
     async getUsers(client: Socket) {
         const users: User[] = await this.prisma.user.findMany(); // Fetch all users from the User model
         client.emit('users', users);
@@ -85,6 +84,15 @@ export class UserService {
                 status: PlayerStatus.ONLINE,
                 },
         });
+    }
+
+  // NEW TEST FUNCTION BY MRAZ:
+  // Update user details (for example, to update avatar or other profile details)
+    async updateUser(userId: number, data: Partial<User>): Promise<User> {
+      return this.prisma.user.update({
+        where: { id: userId },
+        data,
+      });
     }
 
     async getUserIdBySocketId(socketId: string): Promise<number | null> {
@@ -109,7 +117,7 @@ export class UserService {
 
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
         const userId = await this.getUserIdBySocketId(socketID);
-    
+
         if (userId) {
           return this.prisma.user.delete({
             where: {
