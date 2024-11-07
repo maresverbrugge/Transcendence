@@ -46,6 +46,11 @@ const Channels = ({ socket, token }) => {
     }, [selectedChannel]);
 
     const handleSelectChannel = async (channel) => {
+        if (channel?.id === selectedChannel?.id) {
+            return
+        }
+        console.log(channel)
+        console.log(selectedChannel)
         const fetchcurrentUserChannelMember = async () => {
             try {
                 const response = await axios.get(`http://localhost:3001/chat/channel/member/${channel.id}/${token}`);

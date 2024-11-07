@@ -11,8 +11,8 @@ export class UserController {
         private readonly userService: UserService
       ) {}
 
-    @Get('/id/:userToken')
-    async getChannel(@Param('userToken') userToken: string) {
-      return this.userService.getUserIDBySocketID(userToken) //later veranderen naar Token
+    @Get('/id/:token')
+    async getChannel(@Param('token') token: string) {
+      return this.userService.getUserIDBySocketID(token) //later veranderen naar Token
     }
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import './Channel.css'; // Import the CSS file
+import './Channel.css';
 import AlertMessage from './AlertMessage';
 import Confirm from './Confirm';
+import ChannelMemberList from './ChannelMemberList'; // Import the new ChannelMemberList component
 
 const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
     const [messages, setMessages] = useState([]);
@@ -13,9 +14,7 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
     const [selectedMemberID, setSelectedMemberID] = useState(null);
 
     useEffect(() => {
-
         socket.emit('joinChannel', channel.id);
-
         setMembers(channel.members);
 
         socket.on('newMessage', (message) => {
@@ -30,19 +29,10 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
 
         return () => {
             socket.off('newMessage');
-            socket.off('youAreMuted')
+            socket.off('youAreMuted');
             socket.emit('leaveChannel', channel.id);
         };
     }, [channel]);
-
-    const sortedMembers = members.sort((a, b) => {
-        // Sort by owner, then admins, then others
-        if (a.isOwner) return -1;
-        if (b.isOwner) return 1;
-        if (a.isAdmin && !b.isAdmin) return -1;
-        if (b.isAdmin && !a.isAdmin) return 1;
-        return 0;
-    });
 
     const confirmMessageMap = {
         demote: "Are you sure you want to demote this admin?",
@@ -67,47 +57,12 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
         setShowConfirm(true);
     };
 
-    const handleConfirmOK = () => {
-        if (confirmAction && selectedMemberID) {
-            switch (confirmAction) {
-                case "demote":
-                    handleDemoteAdmin(selectedMemberID);
-                    break;
-                case "makeAdmin":
-                    handleMakeAdmin(selectedMemberID);
-                    break;
-                case "mute":
-                    handleMute(selectedMemberID);
-                    break;
-                case "kick":
-                    handleKick(selectedMemberID);
-                    break;
-                case "ban":
-                    handleBan(selectedMemberID);
-                    break;
-                default:
-                    break;
-            }
-        }
+    const handleAction = () => {
+        socket.emit(confirmAction, { targetUserID: selectedMemberID, token, channelID: channel.id });
         setShowConfirm(false);
     };
 
     const handleConfirmCancel = () => setShowConfirm(false);
-    const handleDemoteAdmin = (userID) => {
-        console.log('handleDemoteAdmin called')
-    }
-    const handleMakeAdmin = (userID) => {
-        console.log('handleMakeAdmin called')
-    }
-    const handleMute = (userID) => {
-        console.log('handleMute Called')
-    }
-    const handleKick = (userID) => {
-        console.log('handleKick called')
-    }
-    const handleBan = (userID) => {
-        console.log('handleBan called')
-    }
 
     return (
         <div className="channel-container">
@@ -115,59 +70,22 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
 
             <div className="channel-header">
                 <h2>Channel: {channel.name}</h2>
-                <ul>
-                    {sortedMembers.map((member) => {
-                        const isCurrentUser = member.user.id === currentUserChannelMember.userId;
-                        const roleLabel = member.isOwner
-                            ? "Owner"
-                            : member.isAdmin
-                            ? "Admin"
-                            : "";
-                        return (
-                            <li key={member.id}>
-                                {isCurrentUser
-                                    ? `You${roleLabel ? ` (${roleLabel})` : ""}`
-                                    : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ""}`}
-
-                                <div className="actions">
-                                    {currentUserChannelMember.isOwner && !member.isOwner && (
-                                        <>
-                                            {member.isAdmin ? (
-                                                <button onClick={() => handleActionClick("demote", member.id)}>Demote Admin</button>
-                                            ) : (
-                                                <>
-                                                    <button onClick={() => handleActionClick("makeAdmin", member.id)}>Make Admin</button>
-                                                    <button onClick={() => handleActionClick("mute", member.id)}>Mute</button>
-                                                    <button onClick={() => handleActionClick("kick", member.id)}>Kick</button>
-                                                    <button onClick={() => handleActionClick("ban", member.id)}>Ban</button>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {/* Admins see options for non-admin members */}
-                                    {currentUserChannelMember.isAdmin && !currentUserChannelMember.isOwner && !member.isAdmin && !member.isOwner && (
-                                        <>
-                                            <button onClick={() => handleActionClick("mute", member.id)}>Mute</button>
-                                            <button onClick={() => handleActionClick("kick", member.id)}>Kick</button>
-                                            <button onClick={() => handleActionClick("ban", member.id)}>Ban</button>
-                                        </>
-                                    )}
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
+                <ChannelMemberList
+                    initialMembers={members}
+                    currentUserChannelMember={currentUserChannelMember}
+                    handleActionClick={handleActionClick}
+                    socket={socket}
+                />
             </div>
-            <div>
+
             {showConfirm && (
                 <Confirm
                     message={confirmMessageMap[confirmAction]}
-                    onOK={handleConfirmOK}
+                    onOK={handleAction}
                     onCancel={handleConfirmCancel}
                 />
             )}
-            </div>
+
             <div className="channel-messages">
                 <ul>
                     {messages.map((message) => (
@@ -192,4 +110,4 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
     );
 };
 
-export default Channel
+export default Channel;

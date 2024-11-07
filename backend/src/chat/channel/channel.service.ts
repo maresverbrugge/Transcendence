@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
@@ -19,7 +19,7 @@ export class ChannelService {
     async joinChannel(server: Namespace, channelID: number, websocketID: string) {
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket) {
-            throw new Error(`Socket with id ${websocketID} not found.`);
+            throw new NotFoundException(`Socket with id ${websocketID} not found.`);
         }
         socket.join(String(channelID))
         console.log(`${websocketID} joined channel ${channelID}`)
@@ -28,7 +28,7 @@ export class ChannelService {
     async leaveChannel(server: Namespace, channelID: number, websocketID: string) {
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket) {
-            throw new Error(`Socket with id ${websocketID} not found.`);
+            throw new NotFoundException(`Socket with id ${websocketID} not found.`);
         }
         socket.leave(String(channelID));
         console.log(`${websocketID} left channel ${channelID}`)
@@ -93,8 +93,8 @@ export class ChannelService {
           return channel;
     }
 
-    async addMemberToChannel(channelID: number, userToken: string): Promise<ChannelWithMembers | null> {
-        const userId = await this.userService.getUserIDBySocketID(userToken);
+    async addMemberToChannel(channelID: number, token: string): Promise<ChannelWithMembers | null> {
+        const userId = await this.userService.getUserIDBySocketID(token);
     
         try {
             const channel = await this.prisma.channel.update({
@@ -118,27 +118,27 @@ export class ChannelService {
             return channel;
         } catch (error) {
             console.error(`Failed to add member to channel: ${error.message}`);
-            throw new Error('An error occurred while adding the member to the channel.');
+            throw new InternalServerErrorException('An error occurred while adding the member to the channel.');
         }
     }
     
-    async getChannelByChannelIDAndAddUser(channelID: number, userToken: string): Promise <Channel | null> {
-        const user = await this.userService.getUserBySocketID(userToken); //later veranderen naar token
+    async getChannelByChannelIDAndAddUser(channelID: number, token: string): Promise <Channel | null> {
+        const user = await this.userService.getUserBySocketID(token); //later veranderen naar token
     
         const channel = await this.getChannelByChannelID(channelID)
 
         const channelMember = channel.members.find(member => member.userId === user.id);
 
         if (!channelMember) {
-            this.addMemberToChannel(channelID, userToken)
+            this.addMemberToChannel(channelID, token)
         } else if (channelMember.isBanned) {
             throw new ForbiddenException('You are banned from this channel');
         }
         return channel;
     }
 
-    async getChannelMember(channelID: number, userToken: string): Promise <ChannelMember | null> {
-        const userID = await this.userService.getUserIDBySocketID(userToken); //later veranderen naar token
+    async getChannelMember(channelID: number, token: string): Promise <ChannelMember | null> {
+        const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
     
 
         const channelMember = this.prisma.channelMember.findFirst({
@@ -155,8 +155,8 @@ export class ChannelService {
         return channelMember;
     }
 
-    async isMuted(channelID: number, userToken: string): Promise<boolean> {
-        const userID = await this.userService.getUserIDBySocketID(userToken); // later change to token
+    async isMuted(channelID: number, token: string): Promise<boolean> {
+        const userID = await this.userService.getUserIDBySocketID(token); // later change to token
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {
                 channelId: channelID,

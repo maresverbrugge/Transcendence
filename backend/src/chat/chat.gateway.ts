@@ -3,6 +3,7 @@ import { Socket, Namespace } from 'socket.io';
 import { UserService } from './user/user.service';
 import { ChannelService } from './channel/channel.service'
 import { MessageService } from './message/message.service'
+import { ChannelMemberService } from './channel-member/channel-member.service';
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -23,6 +24,7 @@ export class ChatGateway
     private readonly channelService: ChannelService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
+    private readonly channelMemberService: ChannelMemberService,
   ) {}
   
   // @SubscribeMessage('channelInvite')
@@ -53,6 +55,11 @@ export class ChatGateway
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
     this.messageService.sendMessage(this.server, client, data)
+  }
+
+  @SubscribeMessage('makeAdmin')
+  async handleMakeAdmin(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.makeAdmin(this.server, data.targetUserID, data.token, data.channelID)
   }
 
   afterInit(server: Namespace) {

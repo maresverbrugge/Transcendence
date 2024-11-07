@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, PlayerStatus } from '@prisma/client'
@@ -74,7 +74,7 @@ export class UserService {
         where: { id: userID },
       });
       if (!user) {
-        throw new Error(`User with ID ${userID} not found.`);
+        throw new NotFoundException(`User with ID ${userID} not found.`);
       }
       return (user)
     }

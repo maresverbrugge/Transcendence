@@ -24,13 +24,13 @@ export class ChannelController {
       }
     }
 
-    @Get(':channelID/:userToken')
-    async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('userToken') userToken: string) {
-      return this.channelService.getChannelByChannelIDAndAddUser(channelID, userToken)
+    @Get(':channelID/:token')
+    async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
+      return this.channelService.getChannelByChannelIDAndAddUser(channelID, token)
     }
 
-    @Get('/member/:channelID/:userToken')
-    async getChannelMember(@Param('channelID', ParseIntPipe) channelID: number, @Param('userToken') userToken: string) {
-      return this.channelService.getChannelMember(channelID, userToken)
+    @Get('/member/:channelID/:token')
+    async getChannelMember(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
+      return this.channelService.getChannelMember(channelID, token)
     }
 }

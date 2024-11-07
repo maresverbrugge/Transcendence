@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
@@ -20,7 +20,7 @@ export class MessageService {
         
       const sender: User = await this.userService.getUserByUserID(senderID)
       if (!sender) {
-        throw new Error('User not found');
+        throw new NotFoundException('User not found');
       }
     
       return this.prisma.message.create({
