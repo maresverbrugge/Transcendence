@@ -34,18 +34,30 @@ function UserProfile({ userId }) {
     return <p>User not found</p>;
   }
 
+  const handleChangeUsername = async () => {
+    try {
+      const response = await axios.patch(`http://localhost:3001/user/${userId}`, {
+        username: username,
+      });
+      console.log('Username updated successfully', response.data);
+      // Optionally update the frontend to reflect the new username
+    } catch (err) {
+      console.error('Error updating username', err);
+    }
+  };
+
   return (
     <div>
       <h1>{user.username}</h1>
-      <img src={user.avatarUrl || 'https://via.placeholder.com/150'} alt={`${user.username}'s avatar`} />
+     
       <div>
         <input
           type="text"
+          placeholder="Change Your Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Update Username"
         />
-        <button onClick={() => {/* Update function here */}}>Update Username</button>
+        <button onClick={handleChangeUsername}>Change Username</button>
       </div>
     </div>
   );

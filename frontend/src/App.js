@@ -12,14 +12,14 @@ const App = () => {
 	return (
 		<Router>
 			<Routes>
-				<Route path="/" element={<LoginPage />} />
-				<Route path="/login/redirect" element={<LoginRedirect />} />
-				<Route path="/main" element={<MainPage />} />
-				<Route path="/account" element={<UserAccount />} />
-				<Route path="/user/:id" element={<UserAccount />} />
-				<Route path="/chat" element={<Chat />} />
-				{/* <Route path="/game" element={<GameApp />} /> */}
-				{/* <Route path="/login/2fa" element={<Login2FA />} /> */}
+				<Route path="/" element={<LoginPage/>} />
+				<Route path="/login/redirect" element={<LoginRedirect/>} />
+				<Route path="/main" element={<MainPage/>} />
+				<Route path="/account" element={<UserAccount/>} />
+				<Route path="/user/:ID" element={<UserAccount/>} />
+				<Route path="/chat" element={<Chat/>} />
+				{/* <Route path="/game" element={<GameApp/>} /> */}
+				{/* <Route path="/login/2fa" element={<Login2FA/>} /> */}
 			</Routes>
 		</Router>
     );}

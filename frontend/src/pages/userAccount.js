@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL
 import UserProfile from '../components/UserProfile';
 
 function UserAccount() {
-  const [userId, setUserId] = useState(null);
+  const { ID } = useParams();
+  console.log("URL ID:", ID);
+  const [currentID, setCurrentID] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching the user ID from a session or context
-    const fakeUserId = 1; // Replace with actual logic if available
-    setUserId(fakeUserId);
-  }, []);
+    if (ID) {
+      setCurrentID(Number(ID));
+      console.log("Current User ID set to:", ID);
+    }
+  }, [ID]);
+
+  console.log("currentID:", currentID);
 
   return (
     <div>
       <h2>Your Account</h2>
-      {userId ? <UserProfile userId={userId} /> : <p>Loading user...</p>}
+      {currentID ? <UserProfile userId={currentID} /> : <p>Loading user...</p>}
     </div>
   );
 }

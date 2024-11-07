@@ -86,13 +86,18 @@ export class UserService {
         });
     }
 
-  // NEW TEST FUNCTION BY MRAZ:
-  // Update user details (for example, to update avatar or other profile details)
-    async updateUser(userId: number, data: Partial<User>): Promise<User> {
-      return this.prisma.user.update({
-        where: { id: userId },
-        data,
-      });
+    // NEW TEST FUNCTION BY MRAZ:
+    // Change Username
+    async updateUsername(userId: number, newUsername: string) {
+      try {
+        const updatedUser = await this.prisma.user.update({
+          where: { id: userId },
+          data: { username: newUsername },
+        });
+        return updatedUser;
+      } catch (error) {
+        throw new Error('Error updating username');
+      }
     }
 
     async getUserIdBySocketId(socketId: string): Promise<number | null> {
