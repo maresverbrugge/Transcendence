@@ -16,6 +16,7 @@ const App = () => {
 				<Route path="/login/redirect" element={<LoginRedirect />} />
 				<Route path="/main" element={<MainPage />} />
 				<Route path="/account" element={<UserAccount />} />
+				<Route path="/user/:id" element={<UserAccount />} />
 				<Route path="/chat" element={<Chat />} />
 				{/* <Route path="/game" element={<GameApp />} /> */}
 				{/* <Route path="/login/2fa" element={<Login2FA />} /> */}
