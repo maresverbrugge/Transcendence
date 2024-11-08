@@ -43,13 +43,13 @@ export class ChatGateway
   }
 
   @SubscribeMessage('joinChannel')
-  async handleJoinChannel(client: Socket, channelID: number) {
-    this.channelService.joinChannel(this.server, channelID, client.id)
+  async handleJoinChannel(client: Socket, channelID: number, token:string) {
+    this.channelService.joinChannel(this.server, channelID, client.id, token)
   }
 
   @SubscribeMessage('leaveChannel')
-  async handleLeaveChannel(client: Socket, channelID: number) {
-    this.channelService.leaveChannel(this.server, channelID, client.id)
+  async handleLeaveChannel(client: Socket, channelID: number, token: string) {
+    this.channelService.leaveChannelRemoveChannelMember(this.server, channelID, client.id, token)
   }
 
   @SubscribeMessage('sendMessage')
@@ -62,6 +62,26 @@ export class ChatGateway
     this.channelMemberService.makeAdmin(this.server, data.targetUserID, data.token, data.channelID)
   }
 
+  @SubscribeMessage('demote')
+  async handleDemote(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.demote(this.server, data.targetUserID, data.token, data.channelID)
+  }
+
+  @SubscribeMessage('mute')
+  async handleMute(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.mute(this.server, data.targetUserID, data.token, data.channelID)
+  }
+
+  @SubscribeMessage('kick')
+  async handleKick(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.kick(this.server, data.targetUserID, data.token, data.channelID)
+  }
+
+  @SubscribeMessage('ban')
+  async handleBan(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.ban(this.server, data.targetUserID, data.token, data.channelID)
+  }
+
   afterInit(server: Namespace) {
     console.log('Chat Gateway Initialized');
   }
@@ -69,9 +89,8 @@ export class ChatGateway
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
     let token = client.handshake.query.token; // er komt een identifiyer via de token
-    if (Array.isArray(token)) {
+    if (Array.isArray(token))
       token = token[0]; // Use the first element if token is an array
-    }
     const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(client.id, token as string, this.server) // voor nu om de socket toe te wijzen aan een user zonder token
     this.server.emit('userStatusChange', user.id, 'ONLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
     client.emit('token', client.id) //even socketID voor token vervangen tijdelijk
@@ -81,9 +100,8 @@ export class ChatGateway
     console.log(`Client disconnected: ${client.id}`);
     const user = await this.userService.getUserBySocketID(client.id);
     await this.userService.removeWebsocketIDFromUser(client.id)
-    if (user) {
+    if (user)
       this.server.emit('userStatusChange', user.id, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
-    }
   }
 
 }

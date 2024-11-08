@@ -19,9 +19,8 @@ export class MessageService {
     async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
         
       const sender: User = await this.userService.getUserByUserID(senderID)
-      if (!sender) {
+      if (!sender)
         throw new NotFoundException('User not found');
-      }
     
       return this.prisma.message.create({
         data: {

@@ -8,9 +8,8 @@ export class LoginController {
   @Post('callback')
   async callback(@Body() body: { code: string; state: string }) {
     const { code, state } = body;
-    if (state !== process.env.REACT_APP_LOGIN_STATE) {
+    if (state !== process.env.REACT_APP_LOGIN_STATE)
       throw new Error('Invalid state');
-    }
     const tokenData = await this.loginService.getToken(code);
     // Return the token data to the frontend
     return tokenData;

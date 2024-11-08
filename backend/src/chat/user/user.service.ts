@@ -16,14 +16,13 @@ export class UserService {
         where: { websocketId: null },
       });
     
-      if (emptyWebSocketUser) {
+      if (emptyWebSocketUser)
         // Assign socketID if user with empty websocketId is found
         return await this.prisma.user.update({
           where: { id: emptyWebSocketUser.id },
           data: { websocketId: socketID,
                   token: token },
         });
-      }
     
       // Step 2: Check if any user has an inactive websocketId
       const users = await this.prisma.user.findMany(); // Fetch all users
@@ -32,14 +31,13 @@ export class UserService {
         try {
           if (user.websocketId) {
             const socket = server.sockets.get(user.websocketId);
-            if (!socket) {
+            if (!socket)
               // Replace websocketId if an inactive socket is found
               return await this.prisma.user.update({
                 where: { id: user.id },
                 data: { websocketId: socketID,
                   token: token },
               });
-            }
           }
         }
         catch (error) {
@@ -55,12 +53,11 @@ export class UserService {
 
     async removeWebsocketIDFromUser(websocketID: string) {
       const user = await this.getUserBySocketID(websocketID);
-      if (user) {
+      if (user)
         return await this.prisma.user.update({
           where: { id: user.id },
           data: { websocketId: null },
         });
-      }
     }
     
 
@@ -73,9 +70,8 @@ export class UserService {
       const user = await this.prisma.user.findUnique({
         where: { id: userID },
       });
-      if (!user) {
+      if (!user)
         throw new NotFoundException(`User with ID ${userID} not found.`);
-      }
       return (user)
     }
 
@@ -114,12 +110,11 @@ export class UserService {
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
         const userId = await this.getUserIDBySocketID(socketID);
     
-        if (userId) {
+        if (userId)
           return this.prisma.user.delete({
             where: {
-              id: userId, // Deleting user by ID
+              id: userId,
             },
           });
-        }
       }
 }

@@ -18,9 +18,8 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
         setMembers(channel.members);
 
         socket.on('newMessage', (message) => {
-            if (message?.channelID === channel.channelID) {
+            if (message?.channelID === channel.channelID)
                 setMessages((prevMessages) => [...prevMessages, message]);
-            }
         });
 
         socket.on('youAreMuted', () => {
@@ -30,7 +29,7 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
         return () => {
             socket.off('newMessage');
             socket.off('youAreMuted');
-            socket.emit('leaveChannel', channel.id);
+            socket.emit('leaveChannel', channel.id, token);
         };
     }, [channel]);
 

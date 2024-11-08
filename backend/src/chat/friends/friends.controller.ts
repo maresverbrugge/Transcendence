@@ -14,9 +14,8 @@ export class FriendsController {
         include: { friends: true },
       });
     
-      if (!user) {
+      if (!user)
         throw new NotFoundException('User not found');
-      }
     
       return user.friends;
     }

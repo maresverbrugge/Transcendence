@@ -27,9 +27,8 @@ const Friend = ({ friend, socket }) => {
         };
 
         socket.on('userStatusChange', (userID, userStatus) => {
-            if (friend.id === userID) {
+            if (friend.id === userID)
                 setStatus(getStatusClass(userStatus))
-            }
         })
         
 
@@ -58,17 +57,13 @@ const Friends = ({ socket, token }) => {
         const fetchFriends = async () => {
             try {
                 const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
-                if (response.data) {
+                if (response.data)
                     setFriendlist(response.data);
-                }
             } catch (error) {
-                if (error.response && error.response.status === 404) {
+                if (error.response && error.response.status === 404)
                   console.error("User not found");
-                  // Handle user not found
-                } else {
+                else
                   console.error("An error occurred", error);
-                  // Handle other errors
-                }
             };
         }
     
@@ -78,11 +73,10 @@ const Friends = ({ socket, token }) => {
         // socket.on('userOnline', (userID) => setFriendlist((prevFriendlist) => prevFriendlist.concat(user)))
         // socket.on('userOffline', (userID) => setFriendlist((prevFriendlist) => prevFriendlist.filter((prevUser) => prevUser.username !== user.username)))
         // socket.on('channelInvite', (data) => {
-        //     if (confirm(`${data.ownerUsername} has sent you a channel invitation`)) {
+        //     if (confirm(`${data.ownerUsername} has sent you a channel invitation`))
         //         socket.emit('acceptChannelInvite', data)
-        //     } else {
+        //     else
         //         // sent inviteDecline en dan pop up op andere frontend?
-        //     }
         // });        
         return () => {
             // socket.off('userOnline');

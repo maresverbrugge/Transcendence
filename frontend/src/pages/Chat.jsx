@@ -9,12 +9,6 @@ const Chat = () => {
     const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
     
     useEffect(() => {
-        //because dev mode sometimes didnt disconnect old sockets
-        if (socket) {
-            socket.disconnect(); // Disconnect existing socket if any
-            console.log('Previous socket disconnected');
-        }
-        
         // Initialize socket connection
         const token = localStorage.getItem('token');
         const socketIo = io('http://localhost:3001/chat', {
@@ -36,7 +30,7 @@ const Chat = () => {
         };
     }, [])
     
-    if (!socket || !tempToken) { return }
+    if (!socket || !tempToken) return
     return (
         <div>
             <Channels socket={socket} token={tempToken}/>

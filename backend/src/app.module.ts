@@ -11,7 +11,7 @@ import { ChannelMemberService } from './chat/channel-member/channel-member.servi
 
 @Module({
   imports: [PrismaModule, LoginModule, ChatModule],
-  providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService,ChannelMemberService],
+  providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService, ChannelMemberService],
   exports: [PrismaService],
 })
 export class AppModule {}

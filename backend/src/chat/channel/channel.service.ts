@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException, Inject, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { Channel, ChannelMember } from '@prisma/client'
+import { ChannelMemberService } from '../channel-member/channel-member.service';
 
 type ChannelWithMembers = Channel & {
     members: ChannelMember[];
@@ -14,26 +15,37 @@ export class ChannelService {
     constructor(
         private prisma: PrismaService,
         private readonly userService: UserService,
+        @Inject(forwardRef(() => ChannelMemberService))
+        private readonly channelMemberService: ChannelMemberService
     ) {}
 
-    async joinChannel(server: Namespace, channelID: number, websocketID: string) {
+    async joinChannel(server: Namespace, channelID: number, websocketID: string, token: string) {
         const socket: Socket = server.sockets.get(websocketID);
-        if (!socket) {
+        if (!socket)
             throw new NotFoundException(`Socket with id ${websocketID} not found.`);
-        }
         socket.join(String(channelID))
-        console.log(`${websocketID} joined channel ${channelID}`)
+        console.log(`${websocketID} joined channel ${channelID}`) //remove later
     }
 
     async leaveChannel(server: Namespace, channelID: number, websocketID: string) {
         const socket: Socket = server.sockets.get(websocketID);
-        if (!socket) {
+        if (!socket)
             throw new NotFoundException(`Socket with id ${websocketID} not found.`);
-        }
         socket.leave(String(channelID));
-        console.log(`${websocketID} left channel ${channelID}`)
+        console.log(`${websocketID} left channel ${channelID}`) //remove later
     }
     
+    async leaveChannelRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
+        console.log('token: ', token)
+        const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
+        this.leaveChannel(server, channelID, websocketID);
+        const channelMember = await this.prisma.channelMember.findFirst({
+            where: {userId: userID, channelId: channelID},
+            select: {id: true, isBanned: true},
+        })
+        if (!channelMember.isBanned)
+            this.channelMemberService.removeChannelMember(channelMember.id)
+    }
 
     async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
         const ownerID = await this.userService.getUserIDBySocketID(data.ownerToken) // later veranderen naar token
@@ -86,9 +98,8 @@ export class ChannelService {
             },
           });
     
-          if (!channel) {
+          if (!channel)
             throw new NotFoundException('Channel not found');
-          }
     
           return channel;
     }
@@ -117,12 +128,11 @@ export class ChannelService {
     
             return channel;
         } catch (error) {
-            console.error(`Failed to add member to channel: ${error.message}`);
             throw new InternalServerErrorException('An error occurred while adding the member to the channel.');
         }
     }
     
-    async getChannelByChannelIDAndAddUser(channelID: number, token: string): Promise <Channel | null> {
+    async getChannelAddUser(channelID: number, token: string): Promise <Channel | null> {
         const user = await this.userService.getUserBySocketID(token); //later veranderen naar token
     
         const channel = await this.getChannelByChannelID(channelID)
@@ -130,9 +140,15 @@ export class ChannelService {
         const channelMember = channel.members.find(member => member.userId === user.id);
 
         if (!channelMember) {
-            this.addMemberToChannel(channelID, token)
+            this.addMemberToChannel(channelID, token);
         } else if (channelMember.isBanned) {
-            throw new ForbiddenException('You are banned from this channel');
+            if (!channelMember.banUntil) {
+                throw new ForbiddenException('You are banned from this channel');
+            } else {
+                const currentTime = new Date();
+                const remainingTimeInSeconds = Math.ceil((channelMember.banUntil.getTime() - currentTime.getTime()) / 1000);
+                throw new ForbiddenException(`You are kicked from this channel. Try again in ${remainingTimeInSeconds} seconds.`);
+            }
         }
         return channel;
     }
@@ -148,9 +164,8 @@ export class ChannelService {
             },
         })
 
-        if (!channelMember) {
+        if (!channelMember)
             throw new NotFoundException('ChannelMember not found')
-        }
 
         return channelMember;
     }
@@ -169,13 +184,11 @@ export class ChannelService {
             },
         });
     
-        if (!channelMember) {
+        if (!channelMember)
             throw new NotFoundException('User is not a member of this channel');
-        }
     
-        if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil > new Date()) {
+        if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil > new Date())
             return true;
-        }
     
         if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil <= new Date()) {
             await this.prisma.channelMember.update({
@@ -192,9 +205,8 @@ export class ChannelService {
     // async sendChannelInvite(ownerSocket: Socket, server: Namespace, memberId: number) {
     //     const member: User = await this.userService.getUserByUserID(memberId)
     //     const owner: User = await this.userService.getUserBySocketID(ownerSocket.id)
-    //     if (!member || !owner) {
+    //     if (!member || !owner)
     //         throw new Error('One or both users not found')
-    //     }
     //     server.to(member.websocketId).emit('channelInvite', {
     //         ownerUsername: owner.username,
     //         ownerId: owner.id,
@@ -208,9 +220,8 @@ export class ChannelService {
     //     const ownerSocket: Socket = server.sockets.get(owner.websocketId);
     //     const memberSocket: Socket = server.sockets.get(member.websocketId);
     
-    //     if (!owner || !member || !ownerSocket || !memberSocket) {
+    //     if (!owner || !member || !ownerSocket || !memberSocket)
     //         throw new Error('One or both users not found or not connected');
-    //     }
     
     //     const newChannel = await this.prisma.channel.create({
     //         data: {

@@ -37,24 +37,20 @@ const LoginRedirect = () => {
       })
       .catch(err => {
         console.error('Error while logging in:', err);
-        if (err.response) {
+        if (err.response)
           console.log("response: ", err.response);
-        }
         setErrorOccurred(true);
       });
     }
   }, []);
 
   // Render the component based on the login state
-  if (accessDenied) {
+  if (accessDenied)
     return <div>Access denied</div>;
-  }
-  else if (errorOccurred) {
+  else if (errorOccurred)
     return <div>Error occurred</div>;
-  }
-  else {
+  else
     return <div>Redirecting...</div>;
-  }
 };
 
 export default LoginRedirect;

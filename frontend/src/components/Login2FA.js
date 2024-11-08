@@ -17,10 +17,9 @@ const Login2FA = () => {
 		window.location.href = '/game';
 	}
 
-	if (twoFactorAuthenticationEnabled) {
+	if (twoFactorAuthenticationEnabled)
 		start2FA();
-	}
-	else {
+	else
 		return (
 			<div>
 				<p>Do you want to set up 2FA?</p>
@@ -28,7 +27,6 @@ const Login2FA = () => {
 				<button onClick={handleSkip2FA}>Skip</button>
 			</div>
 		);
-	}
 }
 
 export default Login2FA;

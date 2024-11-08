@@ -31,12 +31,11 @@ const Channels = ({ socket, token }) => {
 
         socket.on('newMessageOnChannel', (channelID) => {
             // Update unread count if the message is for an unselected channel
-            if (channelID !== selectedChannel?.id) {
+            if (channelID !== selectedChannel?.id)
                 setUnreadCounts((prevCounts) => ({
                     ...prevCounts,
                     [channelID]: (prevCounts[channelID] || 0) + 1,
                 }));
-            }
         });
 
         return () => {
@@ -46,9 +45,8 @@ const Channels = ({ socket, token }) => {
     }, [selectedChannel]);
 
     const handleSelectChannel = async (channel) => {
-        if (channel?.id === selectedChannel?.id) {
+        if (channel?.id === selectedChannel?.id)
             return
-        }
         console.log(channel)
         console.log(selectedChannel)
         const fetchcurrentUserChannelMember = async () => {
@@ -73,11 +71,10 @@ const Channels = ({ socket, token }) => {
                 [channel.id]: 0,
             }));
         } catch (error) {
-            if (error.response && error.response.status === 403) {
+            if (error.response && error.response.status === 403)
                 setShowBannedAlert(true);
-            } else {
+            else
                 console.error('Error fetching channel:', error);
-            }
             setSelectedChannel(null)
         }
     };
