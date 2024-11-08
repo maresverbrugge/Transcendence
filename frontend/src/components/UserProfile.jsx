@@ -3,20 +3,15 @@ import axios from 'axios';
 
 function UserProfile({ userId }) {
   console.log("User ID:", userId);
-  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) {
-      console.error("User ID is undefined");
-      return;
-    }
-
     // Fetch user data based on userId
     axios.get(`http://localhost:3001/user/${userId}`)
       .then(response => {
-        setUser(response.data);
+        setUserData(response.data);
         setUsername(response.data.username);
         setLoading(false);
       })
@@ -26,19 +21,17 @@ function UserProfile({ userId }) {
       });
   }, [userId]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!user) {
-    return <p>User not found</p>;
-  }
-
   const handleChangeUsername = async () => {
+    if (!username) {
+      setError("Username cannot be empty");
+      return;
+    }
+
     try {
       const response = await axios.patch(`http://localhost:3001/user/${userId}`, {
         username: username,
       });
+      setUserData(response.data); // Update user data with the new username
       console.log('Username updated successfully', response.data);
       // Optionally update the frontend to reflect the new username
     } catch (err) {
@@ -46,10 +39,33 @@ function UserProfile({ userId }) {
     }
   };
 
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (!userData) {
+    return <p>User not found</p>;
+  }
+
+  // URL for the default avatar stored on your backend
+  let avatarURL = 'http://localhost:3001/images/default-avatar.png';
+  if (userData.avatar)
+    avatarURL = `data:image/png;base64,${userData.avatar.toString('base64')}`;
+
   return (
     <div>
-      <h1>{user.username}</h1>
+      <h1>{userData.username}'s Profile</h1>
      
+     {/* Avatar display */}
+     <div>
+        <img
+          src={avatarURL}
+          alt="User Avatar"
+          style={{ width: '100px', height: '100px', borderRadius: '50%' }}
+        />
+      </div>
+
+      {/* Change Username Functionality */}
       <div>
         <input
           type="text"

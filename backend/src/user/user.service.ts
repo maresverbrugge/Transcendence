@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, PlayerStatus } from '@prisma/client'
@@ -74,6 +74,10 @@ export class UserService {
       });
     }
 
+    async getImage(image_name: string){
+      
+    }
+
     async createUser(socketId: string): Promise<User> {
         return this.prisma.user.create({
             data: {
@@ -86,8 +90,6 @@ export class UserService {
         });
     }
 
-    // NEW TEST FUNCTION BY MRAZ:
-    // Change Username
     async updateUsername(userId: number, newUsername: string) {
       try {
         const updatedUser = await this.prisma.user.update({

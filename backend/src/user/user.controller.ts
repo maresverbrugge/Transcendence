@@ -6,24 +6,25 @@ import { User } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // GET /user/:id - Get a user by ID
   @Get(':id')
   async getUserByUserId(@Param('id') id: string): Promise<User | null> {
     return this.userService.getUserByUserId(Number(id));
   }
 
-  // POST /user - Create a new user
+  @Get('/images/:image_name')
+  async getImage(@Param('image_name') image_name: string){
+    return this.userService.getImage(image_name);
+  }
+
   @Post()
   async createUser(@Body() body: { username: string }): Promise<User> {
     return this.userService.createUser(body.username);
   }
 
-  // PATCH /user/:id - Change Username
   @Patch(':id')
   async changeUsername(
     @Param('id', ParseIntPipe) userId: number,
-    @Body('username') newUsername: string,
-  ) {
-    return this.userService.updateUsername(userId, newUsername);
+    @Body('username') newUsername: string,) {
+      return this.userService.updateUsername(userId, newUsername);
   }
 }

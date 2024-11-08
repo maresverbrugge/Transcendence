@@ -4,17 +4,13 @@ import UserProfile from '../components/UserProfile';
 
 function UserAccount() {
   const { ID } = useParams();
-  console.log("URL ID:", ID);
   const [currentID, setCurrentID] = useState(null);
 
   useEffect(() => {
     if (ID) {
       setCurrentID(Number(ID));
-      console.log("Current User ID set to:", ID);
     }
   }, [ID]);
-
-  console.log("currentID:", currentID);
 
   return (
     <div>
