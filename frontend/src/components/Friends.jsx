@@ -49,22 +49,20 @@ const Friend = ({ friend, socket }) => {
     );
 };
 
-const Friends = ({ socket }) => {
+const Friends = ({ socket, token }) => {
     
     const [friendlist, setFriendlist] = useState([])
-
     
     useEffect(() => {
         
-        const userID = '1'; //userID ergens vandaan halen! misschien via localstorage acces token?
         const fetchFriends = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/friends/${userID}`);
+                const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
                 if (response.data) {
                     setFriendlist(response.data);
                 }
             } catch (error) {
-                if (error.response.status === 404) {
+                if (error.response && error.response.status === 404) {
                   console.error("User not found");
                   // Handle user not found
                 } else {
@@ -107,7 +105,7 @@ const Friends = ({ socket }) => {
                     />
                 ))}
             </ul>
-            <NewChannel friendList={friendlist} socket={socket} />
+            <NewChannel friendList={friendlist} socket={socket} ownerToken={token} />
         </div>
     );   
 };

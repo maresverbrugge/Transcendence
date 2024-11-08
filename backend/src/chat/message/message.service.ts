@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Namespace, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
@@ -18,9 +18,9 @@ export class MessageService {
 
     async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
         
-      const sender: User = await this.userService.getUserByUserId(senderID)
+      const sender: User = await this.userService.getUserByUserID(senderID)
       if (!sender) {
-        throw new Error('User not found');
+        throw new NotFoundException('User not found');
       }
     
       return this.prisma.message.create({
@@ -39,9 +39,14 @@ export class MessageService {
       });
     }
 
-    async sendMessage(server: Server, data: { channelID: number, senderID: number, content: string }) {
-      const newMessage: Message = await this.createMessage(data.channelID, data.senderID, data.content)
+    async sendMessage(server: Namespace, client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
+      if (await this.channelService.isMuted(data.channelID, data.ownerToken)) {
+        client.emit('youAreMuted')
+        return;
+      }
+      const sender = await this.userService.getUserBySocketID(data.ownerToken)
+      const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
       server.to(String(data.channelID)).emit('newMessage', newMessage)
+      server.emit('newMessageOnChannel', data.channelID)
     }
-
 }

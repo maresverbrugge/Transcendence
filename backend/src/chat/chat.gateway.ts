@@ -1,8 +1,9 @@
 import {WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Socket, Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { UserService } from './user/user.service';
 import { ChannelService } from './channel/channel.service'
 import { MessageService } from './message/message.service'
+import { ChannelMemberService } from './channel-member/channel-member.service';
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -17,12 +18,13 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server: Namespace;
 
   constructor(
     private readonly channelService: ChannelService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
+    private readonly channelMemberService: ChannelMemberService,
   ) {}
   
   // @SubscribeMessage('channelInvite')
@@ -36,32 +38,52 @@ export class ChatGateway
   //   }
 
   @SubscribeMessage('newChannel')
-  async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, password?: string, ownerID: number, memberIDs: number[] }) {
+  async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
     this.channelService.newChannel(this.server, data)
   }
 
-  @SubscribeMessage('sendMessage')
-  async handleSendMessage(client: Socket, data: { channelID: number, senderID: number, content: string }) {
-    this.messageService.sendMessage(this.server, data)
+  @SubscribeMessage('joinChannel')
+  async handleJoinChannel(client: Socket, channelID: number) {
+    this.channelService.joinChannel(this.server, channelID, client.id)
   }
 
-  afterInit(server: Server) {
-    console.log('Communication Gateway Initialized');
+  @SubscribeMessage('leaveChannel')
+  async handleLeaveChannel(client: Socket, channelID: number) {
+    this.channelService.leaveChannel(this.server, channelID, client.id)
+  }
+
+  @SubscribeMessage('sendMessage')
+  async handleSendMessage(client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
+    this.messageService.sendMessage(this.server, client, data)
+  }
+
+  @SubscribeMessage('makeAdmin')
+  async handleMakeAdmin(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
+    this.channelMemberService.makeAdmin(this.server, data.targetUserID, data.token, data.channelID)
+  }
+
+  afterInit(server: Namespace) {
+    console.log('Chat Gateway Initialized');
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
-    const token = client.handshake.query.token;
-    const userID = 1; //Hier komt een identifier via de token!
-    this.userService.createUser(client.id); // voor nu even create user. Dit wordt update user om socket aan user toe te voegen
-    this.server.emit('userStatusChange', userID, 'ONLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+    let token = client.handshake.query.token; // er komt een identifiyer via de token
+    if (Array.isArray(token)) {
+      token = token[0]; // Use the first element if token is an array
+    }
+    const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(client.id, token as string, this.server) // voor nu om de socket toe te wijzen aan een user zonder token
+    this.server.emit('userStatusChange', user.id, 'ONLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+    client.emit('token', client.id) //even socketID voor token vervangen tijdelijk
   }
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    this.userService.deleteUserBySocketID(client.id)
-    const userID = 1; //Hier komt een identifier via de token!
-    this.server.emit('userStatusChange', userID, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+    const user = await this.userService.getUserBySocketID(client.id);
+    await this.userService.removeWebsocketIDFromUser(client.id)
+    if (user) {
+      this.server.emit('userStatusChange', user.id, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+    }
   }
 
 }

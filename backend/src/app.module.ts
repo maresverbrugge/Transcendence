@@ -9,10 +9,11 @@ import { MessageService } from './chat/message/message.service';
 import { ChatModule } from './chat/chat.module';
 import { GameGateway } from './game/game.gateway';
 import { GameController } from './game/game.controller';
+import { ChannelMemberService } from './chat/channel-member/channel-member.service';
 
 @Module({
   imports: [PrismaModule, LoginModule, ChatModule],
-  providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService, GameGateway],
+  providers: [PrismaService, ChatGateway, ChannelService, UserService, MessageService, GameGateway, ChannelMemberService],
   exports: [PrismaService],
   controllers: [GameController],
 })

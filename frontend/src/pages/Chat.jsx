@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import LoginPage from './login'
 import Channels from '../components/Channels';
 import Friends from '../components/Friends';
 
 
 const Chat = () => {
     const [socket, setSocket] = useState(null);
+    const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
     
     useEffect(() => {
         //because dev mode sometimes didnt disconnect old sockets
@@ -16,26 +16,31 @@ const Chat = () => {
         }
         
         // Initialize socket connection
+        const token = localStorage.getItem('token');
         const socketIo = io('http://localhost:3001/chat', {
             transports: ['websocket', 'polling'],
-            query: { token: 'your_jwt_token' } // Hier de token uit localstorage halen
+            query: { token: token } // Hier de token uit localstorage halen
         });
+
+        //temporary replacing token for websocketID for testing
+        socketIo.on('token', (websocketID) => {
+            setTempToken(websocketID);
+            console.log('replaced token with websocketID')
+        })
 
         // Set socket instance in state
         setSocket(socketIo);
-
 
         return () => {
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
     
-    if (!socket) { return }
+    if (!socket || !tempToken) { return }
     return (
         <div>
-            <LoginPage />
-            <Channels socket={socket} />
-            <Friends socket={socket} />
+            <Channels socket={socket} token={tempToken}/>
+            <Friends socket={socket} token={tempToken}/>
         </div>
     )
 }

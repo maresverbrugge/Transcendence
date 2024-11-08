@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
-const NewChannel = ({ friendList, socket }) => {
+const NewChannel = ({ friendList, socket, ownerToken }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [channelName, setChannelName] = useState('');
-    const [isPrivate, setIsPrivate] = useState(false);
+    const [isPrivate, setIsPrivate] = useState(false);  // Default to public
     const [passwordEnabled, setPasswordEnabled] = useState(false);
     const [password, setPassword] = useState('');
     const [selectedMemberIDs, setSelectedMemberIDs] = useState([]);
@@ -17,13 +17,12 @@ const NewChannel = ({ friendList, socket }) => {
     };
 
     const handleCreateChannel = () => {
-        const userID = 1; //HIER KOMT EEN identifyer dmv de token?
         const newChannelData = {
             name: channelName,
             isPrivate,
-            password: passwordEnabled ? password : null,
-            ownerID: userID,
-            memberIDs: selectedMemberIDs,
+            password: isPrivate && passwordEnabled ? password : null,  // Set password only for private channels if enabled
+            ownerToken,
+            memberIDs: isPrivate ? selectedMemberIDs : [],  // Only include members if private
         };
         socket.emit('newChannel', newChannelData);
         resetForm();
@@ -32,7 +31,7 @@ const NewChannel = ({ friendList, socket }) => {
     const resetForm = () => {
         setIsCreating(false);
         setChannelName('');
-        setIsPrivate(false);
+        setIsPrivate(false);  // Reset to public
         setPasswordEnabled(false);
         setPassword('');
         setSelectedMemberIDs([]);
@@ -50,43 +49,63 @@ const NewChannel = ({ friendList, socket }) => {
                         value={channelName}
                         onChange={(e) => setChannelName(e.target.value)}
                     />
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={isPrivate}
-                            onChange={(e) => setIsPrivate(e.target.checked)}
-                        />
-                        Private
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={passwordEnabled}
-                            onChange={(e) => setPasswordEnabled(e.target.checked)}
-                        />
-                        Password
-                    </label>
-                    {passwordEnabled && (
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                    )}
                     <div>
-                        <h4>Add Members:</h4>
-                        {friendList.map((friend) => (
-                            <label key={friend.id}>
+                        <label>
+                            <input
+                                type="radio"
+                                name="channelType"
+                                checked={!isPrivate}
+                                onChange={() => { setIsPrivate(false); setPasswordEnabled(false); }}
+                            />
+                            Public
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="channelType"
+                                checked={isPrivate}
+                                onChange={() => { setIsPrivate(true); setPasswordEnabled(false); setPassword(''); }}
+                            />
+                            Private
+                        </label>
+                    </div>
+                    {!isPrivate && (
+                        <div>
+                            <label>
                                 <input
                                     type="checkbox"
-                                    checked={selectedMemberIDs.includes(friend.id)}
-                                    onChange={() => toggleMember(friend.id)}
+                                    checked={passwordEnabled}
+                                    onChange={(e) => setPasswordEnabled(e.target.checked)}
                                 />
-                                {friend.username}
+                                Password
                             </label>
-                        ))}
-                    </div>
+                            <div>
+                            {passwordEnabled && (
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            )}
+                            </div>
+                        </div>
+                    )}
+                    {isPrivate && (  // Invite members only for private channels
+                        <div>
+                            <h4>Add Members:</h4>
+                            {friendList.map((friend) => (
+                                <label key={friend.id}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMemberIDs.includes(friend.id)}
+                                        onChange={() => toggleMember(friend.id)}
+                                    />
+                                    {friend.username}
+                                </label>
+                            ))}
+                        </div>
+                    )}
                     <button onClick={handleCreateChannel}>Done</button>
                     <button onClick={resetForm}>Cancel</button>
                 </div>
