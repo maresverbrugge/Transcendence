@@ -3,6 +3,9 @@ import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, PlayerStatus } from '@prisma/client'
 
+interface UserProfile extends User {
+  avatarURL: string;
+}
 
 @Injectable()
 export class UserService {
@@ -74,8 +77,24 @@ export class UserService {
       });
     }
 
-    async getImage(image_name: string){
+    async getUserProfileByUserId(userId: number): Promise<UserProfile | null> {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) return null;
+      console.log("user.avatar = ", user.avatar);
+
+      const avatarURL = user.avatar
+        ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
+        : 'http://localhost:3001/images/default-avatar.png';
       
+      console.log("avatarURL = ", avatarURL);
+      
+      return {
+        ...user,
+        avatarURL, // Attach either the user's avatar or the default avatar URL
+      };
     }
 
     async createUser(socketId: string): Promise<User> {

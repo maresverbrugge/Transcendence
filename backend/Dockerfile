@@ -18,6 +18,8 @@ RUN apk --no-cache add postgresql-client
 # Copy the source code from host machine to container
 COPY . .
 
+COPY ./src/public ./dist/public
+
 # Run database migration and generate Prisma client
 RUN npx prisma generate
 

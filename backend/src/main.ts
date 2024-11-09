@@ -13,9 +13,8 @@ async function bootstrap() {
 		credentials: true,
 	});
 
-	// Serve static files from the "public" directory as URL
-	app.useStaticAssets(join(__dirname, '..', 'public'));
-
+	app.useStaticAssets(join(__dirname, '..', 'src', 'public'));
+	
 	await app.listen(3001);
 	console.log('Visit Transcendancing Queens\'s BACKEND on: http://localhost:3001\nVisit Transcendancing Queens\'s FRONTEND on: http://localhost:3000');
 }

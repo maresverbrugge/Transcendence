@@ -47,11 +47,8 @@ function UserProfile({ userId }) {
     return <p>User not found</p>;
   }
 
-  // URL for the default avatar stored on your backend
-  let avatarURL = 'http://localhost:3001/images/default-avatar.png';
-  if (userData.avatar)
-    avatarURL = `data:image/png;base64,${userData.avatar.toString('base64')}`;
-
+  console.log('{userData.avatarURL} = ', userData.avatarURL);
+  
   return (
     <div>
       <h1>{userData.username}'s Profile</h1>
@@ -59,7 +56,7 @@ function UserProfile({ userId }) {
      {/* Avatar display */}
      <div>
         <img
-          src={avatarURL}
+          src={userData.avatarURL}
           alt="User Avatar"
           style={{ width: '100px', height: '100px', borderRadius: '50%' }}
         />
