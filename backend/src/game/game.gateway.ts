@@ -8,7 +8,7 @@ import {
 	OnGatewayDisconnect,
   } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/chat/user/user.service';
 import { User, Match } from '@prisma/client'
@@ -31,7 +31,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
         private prisma: PrismaService,
         private readonly userService: UserService,
     ) {}
-	@WebSocketServer() server: Server;
+	@WebSocketServer() server: Namespace;
 	private logger: Logger = new Logger('GameGateway');
 
 	// @SubscribeMessage('message')
@@ -84,15 +84,27 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 		// console.log('the up arrow has been pressed');
 	}
 
-	afterInit(server: Server) {
+	afterInit(server: Namespace) {
 	  this.logger.log('WebSocket Gateway Initialized');
 	}
 
-	handleConnection(client: Socket, ...args: any[]) {
-	  this.logger.log(`Client connected: ${client.id}`);
+	async handleConnection(client: Socket, ...args: any[]) {
+		console.log(`Client connected: ${client.id}`);
+		let token = client.handshake.query.token; // er komt een identifiyer via de token
+		if (Array.isArray(token)) {
+		  token = token[0]; // Use the first element if token is an array
+		}
+		const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(client.id, token as string, this.server) // voor nu om de socket toe te wijzen aan een user zonder token
+		this.server.emit('userStatusChange', user.id, 'ONLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+		client.emit('token', client.id) //even socketID voor token vervangen tijdelijk
 	}
 
-	handleDisconnect(client: Socket) {
-	  this.logger.log(`Client disconnected: ${client.id}`);
+	async handleDisconnect(client: Socket) {
+		console.log(`Client disconnected: ${client.id}`);
+		const user = await this.userService.getUserBySocketID(client.id);
+		await this.userService.removeWebsocketIDFromUser(client.id)
+		if (user) {
+		  this.server.emit('userStatusChange', user.id, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+		}
 	}
 }

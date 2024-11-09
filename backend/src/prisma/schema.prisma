@@ -34,20 +34,21 @@ model User {
   intraUsername String
   avatar        Bytes?
   Enabled2FA    Boolean
+  token         String?
   websocketId   String?      @unique // The ID of the websocket, nullable
   status        PlayerStatus // ONLINE | OFFLINE | IN_GAME | AFK
 
   friends        User[]          @relation("Friends")
   friendsOf      User[]          @relation("Friends")
   matchHistory   Match[]         @relation("played")
-  watchingMatch  Match?          @relation("watched", fields: [matchMatchId], references: [matchId])
+  watchingMatch  Match?          @relation("watched", fields: [matchId], references: [matchId])
   statistics     Statistics?
   channelsOwned  Channel[]
   channelMembers ChannelMember[]
   blockedUsers   BlockedUser[]   @relation("blockedUsers")
   blockedByUsers BlockedUser[]   @relation("blockedByUsers")
   messages       Message[]
-  matchMatchId   Int
+  matchId        Int
 }
 
 model Match {

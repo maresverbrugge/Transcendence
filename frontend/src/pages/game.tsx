@@ -7,6 +7,7 @@ import GameLogic from '../components/GameLogic';
 
 const Game = () => {
 	const [socket, setSocket] = useState(null);
+	const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
 	const [games, setGames] = useState([]);
 	const [selectedGame, setSelectedGame] = useState(null);
     
@@ -18,10 +19,17 @@ const Game = () => {
         }
         
         // Initialize socket connection
+		const token = localStorage.getItem('token');
         const socketIo = io('http://localhost:3001/game', {
 			transports: ['websocket', 'polling'],
-            query: { token: 'your_jwt_token' } // Hier de token uit localstorage halen
+            query: { token: token } // Hier de token uit localstorage halen
         });
+
+		//temporary replacing token for websocketID for testing
+        socketIo.on('token', (websocketID) => {
+            setTempToken(websocketID);
+            console.log('replaced token with websocketID')
+        })
 		
         // Set socket instance in state
         setSocket(socketIo);
@@ -38,8 +46,8 @@ const Game = () => {
         fetchGames();
 		
 		socketIo.on('newGame', (data) => {
+			setGames((prevGames) => prevGames.concat(data.gameId));
 			if (confirm(`game ${data.gameId} is looking for another player, join?`)) {
-				console.log('accepted');
 				setSelectedGame(data.gameId);
 				socketIo.emit('acceptGame', data.gameId);
 			} else {
@@ -48,11 +56,13 @@ const Game = () => {
 		});
 
         return () => {
+			socket.off('newGame');
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
 
 	const handleSelectGame = (gameId) => {
+		socket.emit('acceptGame', gameId);
 		setSelectedGame(gameId);
 	}
 
@@ -63,28 +73,34 @@ const Game = () => {
     if (!socket) { return }
 
     return (
-        <div className="games-container">
+        <div className="games-startup">
 			{/* List of games */}
 			<div className="games-list">
-				<h2>Available games</h2>
-				<ul>
-					{games.map((game) => (
-						<li key={game.matchId}>
-							<button onClick={() => handleSelectGame(game.matchId)}>
-								{`game ${game.matchId}`} {/* Display game id */}
-							</button>
-						</li>
-					))}
-					<button onClick={() => createNewGame(socket)}>
-						{`create a new game`}
-					</button>
-				</ul>
+			{selectedGame ? (
+				<p></p>
+				) : (
+					<div className="games-container">
+						<h2>Available games</h2>
+						<ul>
+							{games.map((game) => (
+								<li key={game.matchId}>
+									<button onClick={() => handleSelectGame(game.matchId)}>
+										{`game ${game.matchId}`} {/* Display game id */}
+									</button>
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+				<button onClick={() => createNewGame(socket)}>
+					{`create a new game`}
+				</button>
 			</div>
 
 			{/* Display selected game */}
 			<div className="game-details">
 				{selectedGame ? (
-					<GameLogic game={selectedGame} socket={socket}/>
+					<GameLogic gameId={selectedGame} socket={socket}/>
 				) : (
 					<p>Select or create a game to play.</p>
 				)}

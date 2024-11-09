@@ -164,10 +164,6 @@ const GameLogic = ({ game, socket }) => {
 		}
 		render();
 		
-		socket.on('newGame', (game) => {
-			setGames((prevGames) => prevGames.concat(game))
-		})
-		
 		return () => {
 			window.cancelAnimationFrame(frameId);
 		}
