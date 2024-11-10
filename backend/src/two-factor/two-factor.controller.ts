@@ -13,10 +13,10 @@ constructor(private readonly twoFactorService: TwoFactorService) {}
   }
 
   @Post('verify')
-  async verify(@Body() body: { one_time_password: string }) {
-	const { one_time_password } = body;
+  async verify(@Body() body: { oneTimePassword: string }) {
+	const { oneTimePassword } = body;
 	console.log("2FA controller verify!");
-	const verified = await this.twoFactorService.verifyOneTimePassword(one_time_password);
+	const verified = await this.twoFactorService.verifyOneTimePassword(oneTimePassword);
 	return verified
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
 
-const SECRET = '{dn4KV)lHN^{Sr29I?R:4a^p#oh/0PG7';
+const SECRET = 'dZwW4A)!qcey/QN)KxzWwnhTJtTEySFn';
 
 @Injectable()
 export class TwoFactorService {
@@ -22,12 +22,12 @@ export class TwoFactorService {
 		}
 	}
 
-	async verifyOneTimePassword(one_time_password: string): Promise<any> {
-		console.log("one_time_password: ", one_time_password);
+	async verifyOneTimePassword(oneTimePassword: string): Promise<any> {
+		console.log("oneTimePassword: ", oneTimePassword);
 		const verified = speakeasy.totp.verify({
 			secret: SECRET,
 			encoding: 'ascii',
-			token: one_time_password,
+			token: oneTimePassword,
 		});
 		return verified
 	}

@@ -31,7 +31,7 @@ const Login2FA = () => {
 
 	const verifyOneTimePassword = () => {
 		axios.post('http://localhost:3001/two-factor/verify', {
-			oneTimePassword
+			oneTimePassword: oneTimePassword
 		})
 		.then(response => {
 			console.log('verified:', response.data);
@@ -66,6 +66,7 @@ const Login2FA = () => {
 			<div>
 				<p>Enter your one time password:</p>
 				<input 
+					id="one-time-password"
 					type="text"
 					value={oneTimePassword}
 					onChange={(e) => setOneTimePassword(e.target.value)}
