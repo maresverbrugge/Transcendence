@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const twoFactorAuthenticationEnabled = false; // This should be a database value
 
 const Login2FA = () => {
+	const [twoFactorAuthenticationEnabled, setTwoFactorAuthenticationEnabled] = useState(true);
 	const [qrcodeUrl, setQrcodeUrl] = useState(null);
+	const [oneTimePassword, setOneTimePassword] = useState('');
+	const [passwordVerified, setPasswordVerified] = useState(false);
 
-	const start2FA = () => {
-		// Do the authentication
-	}
-
-	const handleSetup2FA = () => {
-		axios.post('http://localhost:3001/two-factor/callback', {
-			something: "yay we made it"
+	const setup2FA = () => {
+		axios.get('http://localhost:3001/two-factor/qrcode', {
 		})
 		.then(response => {
-			console.log('response', response.data);
+			console.log('response:', response.data);
+			setTwoFactorAuthenticationEnabled(false);
 			setQrcodeUrl(response.data);
 		})
 		.catch(err => {
@@ -23,27 +21,70 @@ const Login2FA = () => {
 		});
 	}
 
-	const handleSkip2FA = () => {
+	const skip2FA = () => {
 		window.location.href = '/game';
 	}
 
-	if (twoFactorAuthenticationEnabled) {
-		start2FA();
+	const enable2FA = () => {
+		setTwoFactorAuthenticationEnabled(true);
 	}
-	else if (qrcodeUrl) {
+
+	const verifyOneTimePassword = () => {
+		axios.post('http://localhost:3001/two-factor/verify', {
+			oneTimePassword
+		})
+		.then(response => {
+			console.log('verified:', response.data);
+			setPasswordVerified(response.data);
+		})
+		.catch(err => {
+			console.error('Error while verifying one time password:', err);
+		});
+	}
+
+	if (!twoFactorAuthenticationEnabled && qrcodeUrl == null) {
+		return (
+			<div>
+				<p>Do you want to set up 2FA?</p>
+				<button onClick={setup2FA}>Yes</button>
+				<button onClick={skip2FA}>Skip</button>
+			</div>
+		);
+	}
+	else if (!twoFactorAuthenticationEnabled && qrcodeUrl != null) {
 		return (
 			<div>
 				<img src={qrcodeUrl}/>
-				<p>Scan this QR code with your 2FA app</p>
+				<p>Scan this QR code to set up 2FA with your 2FA app</p>
+				<button onClick={enable2FA}>Done</button>
+				<button onClick={skip2FA}>Skip</button>
 			</div>
 		)
+	}
+	else if (twoFactorAuthenticationEnabled && !passwordVerified) {
+		return (
+			<div>
+				<p>Enter your one time password:</p>
+				<input 
+					type="text"
+					value={oneTimePassword}
+					onChange={(e) => setOneTimePassword(e.target.value)}
+				/>
+				<button onClick={verifyOneTimePassword}>Submit</button>
+			</div>
+		);
+	}
+	else if (twoFactorAuthenticationEnabled && passwordVerified) {
+		return (
+			<div>
+				<p>Successful login!</p>
+			</div>
+		);
 	}
 	else {
 		return (
 			<div>
-				<p>Do you want to set up 2FA?</p>
-				<button onClick={handleSetup2FA}>Yes</button>
-				<button onClick={handleSkip2FA}>Skip</button>
+				<p>2FA error! Saddd</p>
 			</div>
 		);
 	}
