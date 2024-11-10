@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import axios from 'axios';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
@@ -20,11 +20,11 @@ export class LoginService {
         code: response_code,
         redirect_uri: redirectUri,
       });
-      // Return the token data to the controller
+      // Return the token to the controller
       return response.data;
     } catch (error) {
       console.error('Error during token exchange:', error.response ? error.response.data : error.message);
-      throw error;
+      throw new InternalServerErrorException('Error during token exchange');
     }
   }
 }

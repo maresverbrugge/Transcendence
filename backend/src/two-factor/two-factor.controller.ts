@@ -7,7 +7,6 @@ constructor(private readonly twoFactorService: TwoFactorService) {}
 
   @Get('qrcode')
   async qrcode() {
-    console.log("2FA controller qrcode!");
 	const qrcode = await this.twoFactorService.getQRCode();
 	return qrcode
   }
@@ -15,7 +14,6 @@ constructor(private readonly twoFactorService: TwoFactorService) {}
   @Post('verify')
   async verify(@Body() body: { oneTimePassword: string }) {
 	const { oneTimePassword } = body;
-	console.log("2FA controller verify!");
 	const verified = await this.twoFactorService.verifyOneTimePassword(oneTimePassword);
 	return verified
   }

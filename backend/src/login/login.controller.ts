@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { LoginService } from './login.service';
 
 @Controller('login')
@@ -9,10 +9,9 @@ export class LoginController {
   async callback(@Body() body: { code: string; state: string }) {
     const { code, state } = body;
     if (state !== process.env.REACT_APP_LOGIN_STATE) {
-      throw new Error('Invalid state');
+      throw new BadRequestException('Invalid state');
     }
-    const tokenData = await this.loginService.getToken(code);
-    // Return the token data to the frontend
-    return tokenData;
+    const token = await this.loginService.getToken(code);
+    return token;
   }
 }

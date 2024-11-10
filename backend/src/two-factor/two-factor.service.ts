@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
 
@@ -12,18 +12,18 @@ export class TwoFactorService {
 			var secret = speakeasy.generateSecret({
 				name: "Transcendancing Queens"
 			});
-			console.log("unique secret:", secret.ascii);
+			console.log("Unique secret:", secret.ascii); // For debugging
 			const dataURL = await qrcode.toDataURL(secret.otpauth_url);
 			return dataURL
 
 		} catch (error) {
-			console.log("error in 2FA service:", error);
-			throw new Error("Error generating QR code");
+			console.error("Error in 2FA service:", error);
+			throw new InternalServerErrorException("Error generating QR code");
 		}
 	}
 
 	async verifyOneTimePassword(oneTimePassword: string): Promise<any> {
-		console.log("oneTimePassword: ", oneTimePassword);
+		console.log("oneTimePassword: ", oneTimePassword); // For debugging
 		const verified = speakeasy.totp.verify({
 			secret: SECRET,
 			encoding: 'ascii',

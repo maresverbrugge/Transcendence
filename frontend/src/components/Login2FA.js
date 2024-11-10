@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 
@@ -12,7 +12,6 @@ const Login2FA = () => {
 		axios.get('http://localhost:3001/two-factor/qrcode', {
 		})
 		.then(response => {
-			console.log('response:', response.data);
 			setTwoFactorAuthenticationEnabled(false);
 			setQrcodeUrl(response.data);
 		})
@@ -34,7 +33,7 @@ const Login2FA = () => {
 			oneTimePassword: oneTimePassword
 		})
 		.then(response => {
-			console.log('verified:', response.data);
+			console.log('Verified:', response.data); // For debugging
 			setPasswordVerified(response.data);
 		})
 		.catch(err => {
@@ -66,7 +65,6 @@ const Login2FA = () => {
 			<div>
 				<p>Enter your one time password:</p>
 				<input 
-					id="one-time-password"
 					type="text"
 					value={oneTimePassword}
 					onChange={(e) => setOneTimePassword(e.target.value)}
