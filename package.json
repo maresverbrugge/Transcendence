@@ -8,6 +8,7 @@
     "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.9.0"
   }
 }

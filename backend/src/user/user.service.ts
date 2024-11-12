@@ -121,6 +121,13 @@ export class UserService {
       }
     }
 
+    async updateAvatar(userID: number, avatar: Buffer) {
+      return await this.prisma.user.update({
+          where: { id: userID },
+          data: { avatar },
+      });
+    }
+
     async getUserIdBySocketId(socketId: string): Promise<number | null> {
         const user = await this.prisma.user.findUnique({
           where: {

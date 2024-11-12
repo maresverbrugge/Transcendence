@@ -9,7 +9,7 @@ const MainPage = () => {
             <h1>Welcome to the Main Page</h1>
             <button onClick={() => navigate('/game')}>Go to Game</button>
             <button onClick={() => navigate('/chat')}>Go to Chat</button>
-            <button onClick={() => navigate('/account')}>User Account</button>
+            <button onClick={() => navigate('/account/:id')}>User Account</button>
         </div>
     );
 };

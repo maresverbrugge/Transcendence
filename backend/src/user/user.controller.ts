@@ -1,31 +1,37 @@
-import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
 import { User } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // @Get(':id')
-  // async getUserByUserId(@Param('id') id: string): Promise<User | null> {
-  //   return this.userService.getUserByUserId(Number(id));
-  // }
+  @Get('/account/:id')
+  async getUserByUserId(@Param('id') id: string): Promise<User | null> {
+    return this.userService.getUserByUserId(Number(id));
+  }
 
   @Get(':id')
   async getUserProfileByUserId(@Param('id') id: string): Promise<User | null> {
     return this.userService.getUserProfileByUserId(Number(id));
   }
-
-  // @Get('/images/:image_name')
-  // async getImage(@Param('image_name') image_name: string){
-  //   return this.userService.getImage(image_name);
-  // }
-
+  
   @Post()
   async createUser(@Body() body: { username: string }): Promise<User> {
     return this.userService.createUser(body.username);
   }
 
+  @Post(':id/avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  async uploadAvatar(
+    @Param('id', ParseIntPipe) userID: number,
+    @UploadedFile() file: Multer.File) {
+      const fileBuffer = file.buffer;
+      return this.userService.updateAvatar(userID, fileBuffer);
+  }
+  
   @Patch(':id')
   async changeUsername(
     @Param('id', ParseIntPipe) userId: number,
