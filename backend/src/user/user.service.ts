@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, PlayerStatus } from '@prisma/client'
@@ -10,7 +10,9 @@ interface UserProfile extends User {
 @Injectable()
 export class UserService {
 
-    constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(UserService.name); // ! for testing
+
+  constructor(private prisma: PrismaService) {}
 
     //temporary function
     async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
@@ -83,13 +85,13 @@ export class UserService {
       });
 
       if (!user) return null;
-      console.log("user.avatar = ", user.avatar);
+      this.logger.log(`FROM SERVICE.TS: user.avatar =  ${user.avatar}`); 
 
       const avatarURL = user.avatar
         ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
       
-      console.log("avatarURL = ", avatarURL);
+        this.logger.log(`FROM SERVICE.TS: user.avatar =  ${avatarURL}`);
       
       return {
         ...user,

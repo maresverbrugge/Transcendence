@@ -13,6 +13,7 @@ function UserProfile({ userId }) {
     // Fetch user data based on userId
     axios.get(`http://localhost:3001/user/${userId}`)
       .then(response => {
+        console.log("User data fetched:", response.data);
         setUserData(response.data);
         setUsername(response.data.username);
         setAvatarURL(response.data.avatarURL);
@@ -77,6 +78,7 @@ function UserProfile({ userId }) {
       }
   };
 
+  console.log('User data:', userData); // Check the user data being returned
   console.log('{userData.avatarURL} = ', userData.avatarURL);
   
   if (loading) {
