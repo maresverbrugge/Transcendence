@@ -85,13 +85,13 @@ export class UserService {
       });
 
       if (!user) return null;
-      this.logger.log(`FROM SERVICE.TS: user.avatar =  ${user.avatar}`); 
 
+      console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
       const avatarURL = user.avatar
         ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
       
-        this.logger.log(`FROM SERVICE.TS: user.avatar =  ${avatarURL}`);
+      // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
       
       return {
         ...user,

@@ -1,33 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 
-function UserProfile({ userId }) {
+interface UserProfileProps {
+  userId: number;
+}
+
+interface UserData {
+  username: string;
+  avatarURL: string;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
   console.log("User ID:", userId);
-  const [userData, setUserData] = useState(null);
-  const [username, setUsername] = useState('');
-  const [avatarURL, setAvatarURL] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [username, setUsername] = useState<string>('');
+  const [avatarURL, setAvatarURL] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Fetch user data based on userId
-    axios.get(`http://localhost:3001/user/${userId}`)
-      .then(response => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3001/user/${userId}`);
         console.log("User data fetched:", response.data);
         setUserData(response.data);
         setUsername(response.data.username);
         setAvatarURL(response.data.avatarURL);
         setLoading(false);
-      })
-      .catch(error => {
+      } catch(error){
         console.error("Error fetching user data:", error);
         setLoading(false);
-      });
+      }
+    };
+    fetchUserData();
   }, [userId]);
 
   const handleChangeUsername = async () => {
     if (!username) {
-      setError("Username cannot be empty");
+      alert("Username cannot be empty!");
       return;
     }
 
@@ -36,22 +47,23 @@ function UserProfile({ userId }) {
         username: username,
       });
       setUserData(prevData => ({
-        ...prevData,
-        username: response.data.username,  // Update only new username in user data
+        ...prevData!,
+        username: response.data.username, // Update only new username in user data
     }));
     
       console.log('Username updated successfully', response.data);
-      // Optionally update the frontend to reflect the new username
     } catch (err) {
       console.error('Error updating username', err);
     }
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
       setSelectedFile(event.target.files[0]);
+    }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent) => {
       event.preventDefault();
       if (selectedFile) {
           const formData = new FormData();
@@ -60,27 +72,25 @@ function UserProfile({ userId }) {
           try {
             await axios.post(`http://localhost:3001/user/${userId}/avatar`, formData, {
               headers: { 'Content-Type': 'multipart/form-data' }
-            });
-              alert('Avatar uploaded successfully!');
+              });
+            alert('Avatar uploaded successfully!');
 
-              // After uploading, fetch the updated user data (including the new avatar URL)
-              axios.get(`http://localhost:3001/user/${userId}`)
-                .then(response => {
-                  setUserData(response.data);
-                  setAvatarURL(response.data.avatarURL); // Update avatar URL
-                })
-                .catch(error => {
-                  console.error("Error fetching updated user data:", error);
-                });
+            // After uploading, fetch the updated user data (including the new avatar URL)
+            const response = await axios.get(`http://localhost:3001/user/${userId}`);
+            setUserData(response.data);
+            setAvatarURL(response.data.avatarURL); // Update avatar URL
           } catch (error) {
               console.error("Error uploading avatar:", error);
           }
       }
   };
 
-  console.log('User data:', userData); // Check the user data being returned
-  console.log('{userData.avatarURL} = ', userData.avatarURL);
-  
+  // Check the user data being returned:
+  // console.log('User data:', userData);
+  // if (userData)
+  //   console.log('userData.avatarURL = ', userData.avatarURL);
+  // console.log('avatarURL = ', avatarURL);
+
   if (loading) {
     return <p>Loading...</p>;
   }
