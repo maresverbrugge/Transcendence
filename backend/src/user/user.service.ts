@@ -86,7 +86,7 @@ export class UserService {
 
       if (!user) return null;
 
-      console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
+      // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
       const avatarURL = user.avatar
         ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
@@ -127,6 +127,13 @@ export class UserService {
       return await this.prisma.user.update({
           where: { id: userID },
           data: { avatar },
+      });
+    }
+
+    async toggle2FA(userID: number, enable: boolean) {
+      return await this.prisma.user.update({
+          where: { id: userID },
+          data: { Enabled2FA: enable },
       });
     }
 

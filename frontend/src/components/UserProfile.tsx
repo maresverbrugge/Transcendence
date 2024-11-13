@@ -8,6 +8,7 @@ interface UserProfileProps {
 interface UserData {
   username: string;
   avatarURL: string;
+  twoFactorEnabled: boolean;
 }
 
 const UserProfile = ({ userId }: UserProfileProps) => {
@@ -15,6 +16,7 @@ const UserProfile = ({ userId }: UserProfileProps) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [username, setUsername] = useState<string>('');
   const [avatarURL, setAvatarURL] = useState<string>('');
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -27,6 +29,7 @@ const UserProfile = ({ userId }: UserProfileProps) => {
         setUserData(response.data);
         setUsername(response.data.username);
         setAvatarURL(response.data.avatarURL);
+        setIsTwoFactorEnabled(response.data.twoFactorEnabled);
         setLoading(false);
       } catch(error){
         console.error("Error fetching user data:", error);
@@ -85,6 +88,18 @@ const UserProfile = ({ userId }: UserProfileProps) => {
       }
   };
 
+  const handleToggleTwoFactor = async () => {
+    try {
+      const response = await axios.patch(`http://localhost:3001/user/${userId}/2fa`, {
+        enable: !isTwoFactorEnabled,
+      });
+      setIsTwoFactorEnabled(response.data.Enabled2FA); // Update 2FA status
+      console.log('2FA status updated successfully', response.data);
+    } catch (error) {
+      console.error('Error toggling 2FA:', error);
+    }
+  };
+
   // Check the user data being returned:
   // console.log('User data:', userData);
   // if (userData)
@@ -127,6 +142,15 @@ const UserProfile = ({ userId }: UserProfileProps) => {
           onChange={(e) => setUsername(e.target.value)}
         />
         <button onClick={handleChangeUsername}>Change Username</button>
+      </div>
+
+      {/* Enable/disable 2FA Button */}
+      <div>
+        <h4>2FA Status</h4>
+        <p>{isTwoFactorEnabled ? '2FA is Enabled' : '2FA is Disabled'}</p>
+        <button onClick={handleToggleTwoFactor}>
+          {isTwoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+        </button>
       </div>
     </div>
   );

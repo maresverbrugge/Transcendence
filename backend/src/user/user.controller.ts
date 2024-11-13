@@ -33,4 +33,11 @@ export class UserController {
     @Body('username') newUsername: string,) {
       return this.userService.updateUsername(userId, newUsername);
   }
+
+  @Patch(':id/2fa')
+  async toggleTwoFactorAuth(
+    @Param('id', ParseIntPipe) userID: number,
+    @Body() { enable }: { enable: boolean } ) {
+      return this.userService.toggle2FA(userID, enable);
+  }
 }
