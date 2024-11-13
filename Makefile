@@ -8,7 +8,7 @@
 #*       jvan-hal             fkoolhov         fhuisman       mverbrug       */
 #*                                                                           */
 #*          Codam Coding College        part of 42 network                   */
-#*                            August - Ocotober 2024                         */
+#*                            August - December 2024                         */
 #* ************************************************************************* */
 
 #========================================#

@@ -10,7 +10,7 @@ interface UserData {
   avatarURL: string;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
+const UserProfile = ({ userId }: UserProfileProps) => {
   console.log("User ID:", userId);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [username, setUsername] = useState<string>('');

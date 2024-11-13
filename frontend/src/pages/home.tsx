@@ -2,7 +2,7 @@ import React from 'react';
 
 // Home page that is shown when the user goes to localhost:3000
 
-const Home: React.FC = () => {
+const Home = () => {
 	return (
 		<div>
 			<h1>Home</h1>

@@ -7,7 +7,7 @@ interface Params extends Record<string, string | undefined> {
   ID: string;
 }
 
-const UserAccount: React.FC = () => {
+const UserAccount = () => {
   const { ID } = useParams<Params>();
   const [currentID, setCurrentID] = useState<number | null>(null);
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const MainPage: React.FC = () => {
+const MainPage = () => {
     const navigate = useNavigate();
 
     return (
