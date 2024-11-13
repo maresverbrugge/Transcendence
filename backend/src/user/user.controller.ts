@@ -8,11 +8,6 @@ import { User } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/account/:id')
-  async getUserByUserId(@Param('id') id: string): Promise<User | null> {
-    return this.userService.getUserByUserId(Number(id));
-  }
-
   @Get(':id')
   async getUserProfileByUserId(@Param('id') id: string): Promise<User | null> {
     return this.userService.getUserProfileByUserId(Number(id));

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL
-import UserProfile from '../components/UserProfile';
+import UserProfile from '../components/UserProfile.tsx';
 
 // Interface for the URL parameters
 interface Params extends Record<string, string | undefined> {
