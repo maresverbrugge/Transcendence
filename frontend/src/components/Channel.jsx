@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Channel.css';
 import AlertMessage from './AlertMessage';
-import Confirm from './Confirm';
 import ChannelMemberList from './ChannelMemberList'; // Import the new ChannelMemberList component
 
-const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
+const Channel = ({ channel, socket, token }) => {
     const [messages, setMessages] = useState([]);
-    const [members, setMembers] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [showMutedAlert, setShowMutedAlert] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [confirmAction, setConfirmAction] = useState(null);
-    const [selectedMemberID, setSelectedMemberID] = useState(null);
 
     useEffect(() => {
-        socket.emit('joinChannel', channel.id);
-        setMembers(channel.members);
 
         socket.on('newMessage', (message) => {
             if (message?.channelID === channel.channelID)
@@ -26,20 +19,14 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
             setShowMutedAlert(true);
         });
 
+        socket.emit('joinRoom', {channelID: channel.id, token }); //token later uit storage halen
+
         return () => {
             socket.off('newMessage');
             socket.off('youAreMuted');
-            socket.emit('leaveChannel', channel.id, token);
+            socket.emit('leaveRoom', {channelID: channel.id, token });
         };
     }, [channel]);
-
-    const confirmMessageMap = {
-        demote: "Are you sure you want to demote this admin?",
-        makeAdmin: "Are you sure you want to make this user an admin?",
-        mute: "Are you sure you want to mute this user?",
-        kick: "Are you sure you want to kick this user?",
-        ban: "Are you sure you want to ban this user?",
-    };
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
@@ -50,19 +37,6 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
 
     const handleCloseMutedAlert = () => setShowMutedAlert(false);
 
-    const handleActionClick = (action, memberID) => {
-        setConfirmAction(action);
-        setSelectedMemberID(memberID);
-        setShowConfirm(true);
-    };
-
-    const handleAction = () => {
-        socket.emit(confirmAction, { targetUserID: selectedMemberID, token, channelID: channel.id });
-        setShowConfirm(false);
-    };
-
-    const handleConfirmCancel = () => setShowConfirm(false);
-
     return (
         <div className="channel-container">
             {showMutedAlert && (<AlertMessage message="You are muted in this channel." onClose={handleCloseMutedAlert} />)}
@@ -70,21 +44,11 @@ const Channel = ({ channel, socket, token, currentUserChannelMember }) => {
             <div className="channel-header">
                 <h2>Channel: {channel.name}</h2>
                 <ChannelMemberList
-                    initialMembers={members}
-                    currentUserChannelMember={currentUserChannelMember}
-                    handleActionClick={handleActionClick}
+                    channel={channel}
+                    token={token}
                     socket={socket}
                 />
             </div>
-
-            {showConfirm && (
-                <Confirm
-                    message={confirmMessageMap[confirmAction]}
-                    onOK={handleAction}
-                    onCancel={handleConfirmCancel}
-                />
-            )}
-
             <div className="channel-messages">
                 <ul>
                     {messages.map((message) => (

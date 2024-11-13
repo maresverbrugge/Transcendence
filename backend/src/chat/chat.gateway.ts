@@ -1,4 +1,4 @@
-import {WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {WebSocketServer, SubscribeMessage, MessageBody, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket, Namespace } from 'socket.io';
 import { UserService } from './user/user.service';
 import { ChannelService } from './channel/channel.service'
@@ -42,14 +42,15 @@ export class ChatGateway
     this.channelService.newChannel(this.server, data)
   }
 
-  @SubscribeMessage('joinChannel')
-  async handleJoinChannel(client: Socket, channelID: number, token:string) {
-    this.channelService.joinChannel(this.server, channelID, client.id, token)
+  @SubscribeMessage('joinRoom')
+  async handleJoinRoom(client: Socket, data: { channelID: number, token:string }) {
+    console.log('in de gateway: ', data.token)
+    this.channelService.joinRoom(this.server, data.channelID, client.id, data.token)
   }
 
-  @SubscribeMessage('leaveChannel')
-  async handleLeaveChannel(client: Socket, channelID: number, token: string) {
-    this.channelService.leaveChannelRemoveChannelMember(this.server, channelID, client.id, token)
+  @SubscribeMessage('leaveRoom')
+  async handleLeaveRoom(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.leaveRoomRemoveChannelMember(this.server, data.channelID, client.id, data.token)
   }
 
   @SubscribeMessage('sendMessage')
@@ -57,30 +58,12 @@ export class ChatGateway
     this.messageService.sendMessage(this.server, client, data)
   }
 
-  @SubscribeMessage('makeAdmin')
-  async handleMakeAdmin(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
-    this.channelMemberService.makeAdmin(this.server, data.targetUserID, data.token, data.channelID)
-  }
-
-  @SubscribeMessage('demote')
-  async handleDemote(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
-    this.channelMemberService.demote(this.server, data.targetUserID, data.token, data.channelID)
-  }
-
-  @SubscribeMessage('mute')
-  async handleMute(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
-    this.channelMemberService.mute(this.server, data.targetUserID, data.token, data.channelID)
-  }
-
-  @SubscribeMessage('kick')
-  async handleKick(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
-    this.channelMemberService.kick(this.server, data.targetUserID, data.token, data.channelID)
-  }
-
-  @SubscribeMessage('ban')
-  async handleBan(client: Socket, data: {targetUserID: number, token: string, channelID : number}) {
-    this.channelMemberService.ban(this.server, data.targetUserID, data.token, data.channelID)
-  }
+  @SubscribeMessage('channelAction')
+async handleChannelAction(
+  @MessageBody() data: { action: string; channelMemberID: number; token: string; channelID: number }) {
+  const { action, channelMemberID, token, channelID } = data;
+  await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
+}
 
   afterInit(server: Namespace) {
     console.log('Chat Gateway Initialized');

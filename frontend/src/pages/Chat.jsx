@@ -19,7 +19,7 @@ const Chat = () => {
         //temporary replacing token for websocketID for testing
         socketIo.on('token', (websocketID) => {
             setTempToken(websocketID);
-            console.log('replaced token with websocketID')
+            console.log('replaced token with websocketID: ', websocketID)
         })
 
         // Set socket instance in state

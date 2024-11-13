@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { Namespace } from 'socket.io';
@@ -11,6 +11,8 @@ interface ChannelMemberResponse {
     isBanned: boolean;
     isMuted: boolean;
     isOwner: boolean;
+    banUntil: Date;
+    muteUntil: Date;
     user: { websocketId: string }
 }
 
@@ -24,7 +26,24 @@ export class ChannelMemberService {
         private readonly channelService: ChannelService,
       ) {}
 
-    async getChannelMemberByUserID(userID: number, channelID: number) : Promise<ChannelMemberResponse | null> {
+    async getChannelMember(channelMemberID: number) :  Promise<ChannelMemberResponse | null> {
+        return this.prisma.channelMember.findUnique({
+            where: { id: channelMemberID },
+            select: {
+                id : true,
+                isAdmin : true,
+                isBanned : true,
+                isMuted : true,
+                isOwner : true,
+                banUntil : true,
+                muteUntil : true,
+                user: { select: { websocketId : true, username: true } }
+            },
+        })
+    }
+
+    async getChannelMemberBySocketID(token : string, channelID: number) : Promise<ChannelMemberResponse | null> { //later veranderen naar token
+        const userID = await this.userService.getUserIDBySocketID(token) //change to Token later
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {
                 userId : userID,
@@ -36,7 +55,9 @@ export class ChannelMemberService {
                 isBanned : true,
                 isMuted : true,
                 isOwner : true,
-                user: { select: { websocketId : true } }
+                banUntil : true,
+                muteUntil : true,
+                user: { select: { websocketId : true, username: true } }
             },
         })
         if (!channelMember)
@@ -44,9 +65,27 @@ export class ChannelMemberService {
         return channelMember
     }
 
-    async getChannelMemberBySocketID(token : string, channelID: number) : Promise<ChannelMemberResponse | null> { //later veranderen naar token
-        const userID = await this.userService.getUserIDBySocketID(token) //change to Token later
-        return this.getChannelMemberByUserID(userID, channelID)
+    async createChannelMember(token: string, channelID: number) : Promise<ChannelMemberResponse | null> {
+        const userID = await this.userService.getUserIDBySocketID(token) //change to Token later (+ error check?)
+        const channelMember = await this.prisma.channelMember.create({
+            data: {
+                userId : userID,
+                channelId : channelID
+            },
+            select: {
+                id : true,
+                isAdmin : true,
+                isBanned : true,
+                isMuted : true,
+                isOwner : true,
+                banUntil : true,
+                muteUntil : true,
+                user: { select: { websocketId : true, username: true } }
+            },
+        })
+        if (!channelMember)
+            throw new InternalServerErrorException('Error creating channelMember')
+        return channelMember
     }
 
     async removeChannelMember(channelMemberID: number): Promise<ChannelMember> {
@@ -68,63 +107,86 @@ export class ChannelMemberService {
         const channelMember = await this.getChannelMemberBySocketID(token, channelID) //later veranderen naar token
         return channelMember.isOwner
     }
+    
+    async updateChannelMember(memberID: number, updateData: any) : Promise<ChannelMemberResponse> {
+        return await this.prisma.channelMember.update({
+            where: { id: memberID },
+            data: updateData,
+            select: {
+                id : true,
+                isAdmin : true,
+                isBanned : true,
+                isMuted : true,
+                isOwner : true,
+                banUntil : true,
+                muteUntil : true,
+                user: { select: { websocketId : true, username: true } }
+            },
+        });
+    }
+    
+    async updateChannelMemberEmit(server: Namespace, channelID: number, memberID: number, updateData: any) {
+        const updatedChannelMember = await this.updateChannelMember(memberID, updateData)
+        server.to(String(channelID)).emit('channelMember', updatedChannelMember);
+    }
+    
+    async checkBanOrKick(channelMember: ChannelMemberResponse) {
+        if (!channelMember.isBanned)
+            return
+        if (!channelMember.banUntil)
+            throw new ForbiddenException('You are banned from this channel')
+        else {
+            const timeLeft = channelMember.banUntil.getTime() - new Date().getTime();
+            
+            if (timeLeft > 0) {
+                const secondsLeft = Math.floor(timeLeft / 1000);
+                throw new ForbiddenException(`You are kicked from this channel. Try again in ${secondsLeft} seconds.`)
+            } else
+                await this.updateChannelMember(channelMember.id, {isBanned: false, banUntil: null})
+        }
+    }
 
-    async checkPermissions(token: string, channelID: number, requiredRole: 'owner' | 'admin') {
+    async checkPermissions(token: string, channelID: number, targetIsAdmin: boolean, requiredRole: 'owner' | 'admin', action: string) {
         const isAllowed = requiredRole === 'owner'
             ? await this.isOwner(token, channelID)
             : await this.isAdmin(token, channelID);
         if (!isAllowed)
             throw new ForbiddenException(`You don't have ${requiredRole} permissions`);
+        if (action === 'ban' || action === 'kick' || action === 'mute') {
+            if (targetIsAdmin)
+                throw new ForbiddenException(`You can't ${action} another admin`);
+        }
+    }
+
+    actionGetUpdateData(action: string) {
+        switch (action) {
+            case 'ban':
+                return { isBanned: true };
+            case 'mute': {
+                const muteUntil = new Date(Date.now() + 60 * 1000);
+                return { isMuted: true, muteUntil };
+            }
+            case 'kick': {
+                const banUntil = new Date(Date.now() + 120 * 1000);
+                return { isBanned: true, banUntil };
+            }
+            case 'makeAdmin':
+                return { isAdmin: true };
+            case 'demote':
+                return { isAdmin: false };
+            default:
+                throw new Error(`Unknown action: ${action}`);
+        }
     }
     
-    async updateChannelMember(server: Namespace, channelID: number, memberID: number, updateData: any) {
-        const updatedChannelMember = await this.prisma.channelMember.update({
-            where: { id: memberID },
-            data: updateData,
-            include: {
-                user: { select: { id: true, username: true } },
-            },
-        });
-        server.to(String(channelID)).emit('updateChannelMember', updatedChannelMember);
-    }
-    
-    async makeAdmin(server: Namespace, targetUserID: number, token: string, channelID: number) {
-        await this.checkPermissions(token, channelID, 'admin');
-        const targetChannelMember = await this.getChannelMemberByUserID(targetUserID, channelID);
-        await this.updateChannelMember(server, channelID, targetChannelMember.id, { isAdmin: true });
-    }
-    
-    async demote(server: Namespace, targetUserID: number, token: string, channelID: number) {
-        await this.checkPermissions(token, channelID, 'owner');
-        const targetChannelMember = await this.getChannelMemberByUserID(targetUserID, channelID);
-        await this.updateChannelMember(server, channelID, targetChannelMember.id, { isAdmin: false });
-    }
-    
-    async ban(server: Namespace, targetUserID: number, token: string, channelID: number) {
-        await this.checkPermissions(token, channelID, 'admin');
-        const targetChannelMember = await this.getChannelMemberByUserID(targetUserID, channelID);
-        if (targetChannelMember.isAdmin)
-            throw new ForbiddenException("You can't ban another admin");
-        await this.updateChannelMember(server, channelID, targetChannelMember.id, { isBanned: true });
-        this.channelService.leaveChannel(server, channelID, targetChannelMember.user.websocketId);
-    }
-    
-    async mute(server: Namespace, targetUserID: number, token: string, channelID: number) {
-        await this.checkPermissions(token, channelID, 'admin');
-        const targetChannelMember = await this.getChannelMemberByUserID(targetUserID, channelID);
-        if (targetChannelMember.isAdmin)
-            throw new ForbiddenException("You can't mute another admin");
-        const muteUntil = new Date(Date.now() + 60 * 1000);
-        await this.updateChannelMember(server, channelID, targetChannelMember.id, { isMuted: true, muteUntil });
-    }
-    
-    async kick(server: Namespace, targetUserID: number, token: string, channelID: number) {
-        await this.checkPermissions(token, channelID, 'admin');
-        const targetChannelMember = await this.getChannelMemberByUserID(targetUserID, channelID);
-        if (targetChannelMember.isAdmin)
-            throw new ForbiddenException("You can't kick another admin");
-        const banUntil = new Date(Date.now() + 120 * 1000);
-        await this.updateChannelMember(server, channelID, targetChannelMember.id, { isBanned: true, banUntil });
-        this.channelService.leaveChannel(server, channelID, targetChannelMember.user.websocketId);
+
+    async action(server: Namespace, channelMemberID: number, token: string, channelID: number, action: string) {
+        const targetChannelMember = await this.getChannelMember(channelMemberID);
+        await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
+        const updateData = this.actionGetUpdateData(action)
+        await this.updateChannelMemberEmit(server, channelID, channelMemberID, updateData);
+        if (action === 'ban' || action === 'kick')
+            this.channelService.leaveRoom(server, channelID, targetChannelMember.user.websocketId);
+
     }
 }

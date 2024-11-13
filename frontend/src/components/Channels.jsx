@@ -9,7 +9,6 @@ const Channels = ({ socket, token }) => {
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [unreadCounts, setUnreadCounts] = useState({}); // Track unread messages per channel
     const [showBannedAlert, setShowBannedAlert] = useState(false);
-    const [currentUserChannelMember, setcurrentUserChannelMember] = useState(null);
 
 
     useEffect(() => {
@@ -44,20 +43,20 @@ const Channels = ({ socket, token }) => {
         };
     }, [selectedChannel]);
 
+    // const fetchCurrentUser = async (channelID, token) => {
+    //     try {
+    //         const response = await axios.get(`http://localhost:3001/chat/channel/member/${channelID}/${token}`);
+    //         setcurrentUserChannelMember(response.data);
+    //     }
+    //     catch {
+    //         setcurrentUserChannelMember(null)
+    //     }
+    // }
+
     const handleSelectChannel = async (channel) => {
         if (channel?.id === selectedChannel?.id)
             return
-        console.log(channel)
-        console.log(selectedChannel)
-        const fetchcurrentUserChannelMember = async () => {
-            try {
-                const response = await axios.get(`http://localhost:3001/chat/channel/member/${channel.id}/${token}`);
-                setcurrentUserChannelMember(response.data);
-            } catch (error) {
-                console.error('Error fetching current user ChannelMember:', error);
-            }
-        };
-        fetchcurrentUserChannelMember();
+        // fetchCurrentUser(channel.id, token);
         try {
             const response = await axios.get(`http://localhost:3001/chat/channel/${channel.id}/${token}`);
             setSelectedChannel({
@@ -103,7 +102,10 @@ const Channels = ({ socket, token }) => {
             {/* Display selected Channel */}
             <div className="channel-details">
                 {selectedChannel ? (
-                    <Channel channel={selectedChannel} socket={socket} token={token} currentUserChannelMember={currentUserChannelMember} />
+                    <Channel 
+                        channel={selectedChannel}
+                        socket={socket}
+                        token={token}/>
                 ) : (
                     <p>Select a channel to view its messages and members.</p>
                 )}

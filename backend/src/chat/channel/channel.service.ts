@@ -19,26 +19,26 @@ export class ChannelService {
         private readonly channelMemberService: ChannelMemberService
     ) {}
 
-    async joinChannel(server: Namespace, channelID: number, websocketID: string, token: string) {
+    async joinRoom(server: Namespace, channelID: number, websocketID: string, token: string) {
+        void token //hier nog een controle maken dmv token?
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket)
             throw new NotFoundException(`Socket with id ${websocketID} not found.`);
         socket.join(String(channelID))
-        console.log(`${websocketID} joined channel ${channelID}`) //remove later
+        console.log(`${websocketID} joined room ${channelID}`) //remove later
     }
 
-    async leaveChannel(server: Namespace, channelID: number, websocketID: string) {
+    async leaveRoom(server: Namespace, channelID: number, websocketID: string) {
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket)
             throw new NotFoundException(`Socket with id ${websocketID} not found.`);
         socket.leave(String(channelID));
-        console.log(`${websocketID} left channel ${channelID}`) //remove later
+        console.log(`${websocketID} left room ${channelID}`) //remove later
     }
     
-    async leaveChannelRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
-        console.log('token: ', token)
+    async leaveRoomRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
         const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
-        this.leaveChannel(server, channelID, websocketID);
+        this.leaveRoom(server, channelID, websocketID);
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {userId: userID, channelId: channelID},
             select: {id: true, isBanned: true},
@@ -80,88 +80,97 @@ export class ChannelService {
         return newChannel;
     }
 
-    async getChannelByChannelID(channelID: number): Promise <ChannelWithMembers | null> {
+    async getChannelAddMember(channelID: number, token: string): Promise <ChannelWithMembers | null> {
+        try {
+            const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token
+            await this.channelMemberService.checkBanOrKick(channelMember)
+        } catch (error) {
+            if (error?.response?.statusCode == 404) {
+                this.channelMemberService.createChannelMember(token ,channelID)
+            }
+            else
+                throw error
+        }
         const channel = await this.prisma.channel.findUnique({
             where: { id: channelID },
             include: {
-              members: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      username: true,
-                    },
-                  },
-                },
-              },
+              members: { include: { user: { select: { id: true, username: true } } }, },
               messages: true,
             },
           });
     
-          if (!channel)
+        if (!channel)
             throw new NotFoundException('Channel not found');
-    
-          return channel;
+            
+        return channel;
     }
 
-    async addMemberToChannel(channelID: number, token: string): Promise<ChannelWithMembers | null> {
+    async addMemberToChannel(channelID: number, token: string): Promise<any | null> {
         const userId = await this.userService.getUserIDBySocketID(token);
     
         try {
-            const channel = await this.prisma.channel.update({
-                where: { id: channelID },
+            const newChannelMember = await this.prisma.channelMember.create({
                 data: {
-                    members: {
-                        create: {
-                            userId: userId,
-                        },
-                    },
+                    userId: userId,
+                    channelId: channelID,
                 },
                 include: {
-                    members: {
-                        include: {
-                            user: true,
-                        },
-                    },
-                },
+                    user: { select: { id: true, username: true } },
+                    channel: { select: { id: true, } },
+                }
             });
     
-            return channel;
+            return newChannelMember;
         } catch (error) {
             throw new InternalServerErrorException('An error occurred while adding the member to the channel.');
         }
     }
     
-    async getChannelAddUser(channelID: number, token: string): Promise <Channel | null> {
-        const user = await this.userService.getUserBySocketID(token); //later veranderen naar token
     
-        const channel = await this.getChannelByChannelID(channelID)
+    // async getChannelAddUser(channelID: number, token: string): Promise <Channel | null> {
+    //     const user = await this.userService.getUserBySocketID(token); //later veranderen naar token
+    
+    //     const channel = await this.getChannelByChannelID(channelID)
 
-        const channelMember = channel.members.find(member => member.userId === user.id);
+    //     const channelMember = channel.members.find(member => member.userId === user.id);
 
-        if (!channelMember) {
-            this.addMemberToChannel(channelID, token);
-        } else if (channelMember.isBanned) {
-            if (!channelMember.banUntil) {
-                throw new ForbiddenException('You are banned from this channel');
-            } else {
-                const currentTime = new Date();
-                const remainingTimeInSeconds = Math.ceil((channelMember.banUntil.getTime() - currentTime.getTime()) / 1000);
-                throw new ForbiddenException(`You are kicked from this channel. Try again in ${remainingTimeInSeconds} seconds.`);
-            }
-        }
-        return channel;
-    }
+    //     if (!channelMember) {
+    //         this.addMemberToChannel(channelID, token);
+    //     } else if (channelMember.isBanned) {
+    //         if (!channelMember.banUntil) {
+    //             throw new ForbiddenException('You are banned from this channel');
+    //         } else {
+    //             const currentTime = new Date();
+    //             const remainingTimeInSeconds = Math.ceil((channelMember.banUntil.getTime() - currentTime.getTime()) / 1000);
+    //             throw new ForbiddenException(`You are kicked from this channel. Try again in ${remainingTimeInSeconds} seconds.`);
+    //         }
+    //     }
+    //     return channel;
+    // }
 
-    async getChannelMember(channelID: number, token: string): Promise <ChannelMember | null> {
+    // async getChannelMember(channelID: number, token: string): Promise <ChannelMember | null> {
+    //     const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
+    
+
+    //     const channelMember = this.prisma.channelMember.findFirst({
+    //         where: {
+    //             channelId: channelID,
+    //             userId: userID,
+    //         },throw new NotFoundException('ChannelMember not found')
+
+    
+    async getChannelMember(channelID: number, token: string): Promise <any | null> {
         const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
     
-
-        const channelMember = this.prisma.channelMember.findFirst({
+        const channelMember = await this.prisma.channelMember.findFirst({
             where: {
                 channelId: channelID,
                 userId: userID,
             },
+            include: {
+                user: { select: { id: true, username: true } },
+                channel: { select: { id: true, } },
+            }
         })
 
         if (!channelMember)

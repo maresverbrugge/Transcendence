@@ -25,7 +25,7 @@ export class ChannelController {
 
     @Get(':channelID/:token')
     async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
-      return this.channelService.getChannelAddUser(channelID, token)
+      return this.channelService.getChannelAddMember(channelID, token)
     }
 
     @Get('/member/:channelID/:token')

@@ -96,6 +96,8 @@ export class UserService {
             id: true,
           },
         });
+        if (!user)
+          throw new NotFoundException('User not found')
         return user?.id || null; // Return the user ID if found, otherwise return null
       }
 
