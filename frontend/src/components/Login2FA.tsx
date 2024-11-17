@@ -3,7 +3,7 @@ import axios from 'axios';
 
 
 const Login2FA = () => {
-	const [twoFactorAuthenticationEnabled, setTwoFactorAuthenticationEnabled] = useState(true);
+	const [twoFactorAuthenticationEnabled, setTwoFactorAuthenticationEnabled] = useState(false);
 	const [qrcodeUrl, setQrcodeUrl] = useState(null);
 	const [oneTimePassword, setOneTimePassword] = useState('');
 	const [passwordVerified, setPasswordVerified] = useState(false);
