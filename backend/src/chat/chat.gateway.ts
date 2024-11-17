@@ -1,6 +1,6 @@
 import {WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket, Namespace } from 'socket.io';
-import { UserService } from './user/user.service';
+import { UserService } from '../user/user.service';
 import { ChannelService } from './channel/channel.service'
 import { MessageService } from './message/message.service'
 
@@ -13,10 +13,10 @@ import { MessageService } from './message/message.service'
   },
 })
 
-export class ChatGateway 
+export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  
+
   @WebSocketServer() server: Namespace;
 
   constructor(
@@ -24,7 +24,7 @@ export class ChatGateway
     private readonly userService: UserService,
     private readonly messageService: MessageService,
   ) {}
-  
+
   // @SubscribeMessage('channelInvite')
   //   handleChannelInvite(client: Socket, memberID: number ) {
   //     this.channelService.sendChannelInvite(client, this.server, memberID)

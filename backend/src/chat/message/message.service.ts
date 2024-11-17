@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../../user/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { User, Message } from '@prisma/client'
 
@@ -14,15 +14,15 @@ export class MessageService {
       private prisma: PrismaService,
       private readonly userService: UserService,
       private readonly channelService: ChannelService
-    ) {}  
+    ) {}
 
     async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
-        
+
       const sender: User = await this.userService.getUserByUserId(senderID)
       if (!sender) {
         throw new Error('User not found');
       }
-    
+
       return this.prisma.message.create({
         data: {
           content: content,

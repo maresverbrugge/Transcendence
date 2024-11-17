@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../../user/user.service';
 import { Channel, User } from '@prisma/client'
 
 @Injectable()
@@ -17,7 +17,7 @@ export class ChannelService {
         console.log('join channel userID:', userID)
         const user = await this.userService.getUserByUserId(userID);
         console.log('join channel user:', user)
-        //if !(user) ... misschien deze error throwen in getUserByUserID 
+        //if !(user) ... misschien deze error throwen in getUserByUserID
         const socket: Socket = server.sockets.get(user.websocketId);
         //if (!socket) ?
         socket.join(String(channelID))
@@ -45,7 +45,7 @@ export class ChannelService {
         await this.joinChannel(server, newChannel.id, ownerID);
 
         // Create an array of promises
-        const memberJoinPromises = data.memberIDs.map(memberID => 
+        const memberJoinPromises = data.memberIDs.map(memberID =>
             this.joinChannel(server, newChannel.id, memberID)
         );
 
@@ -55,7 +55,7 @@ export class ChannelService {
         server.to(String(newChannel.id)).emit('newChannel', newChannel);
         return newChannel;
     }
-    
+
     async getChannelByChannelId(channelId: number): Promise <Channel | null> {
         return this.prisma.channel.findUnique({
             where: { id: channelId }
@@ -80,11 +80,11 @@ export class ChannelService {
         const member = await this.userService.getUserByUserId(memberId)
         const ownerSocket: Socket = server.sockets.get(owner.websocketId);
         const memberSocket: Socket = server.sockets.get(member.websocketId);
-    
+
         if (!owner || !member || !ownerSocket || !memberSocket) {
             throw new Error('One or both users not found or not connected');
         }
-    
+
         const newChannel = await this.prisma.channel.create({
             data: {
                 name:  channelName,

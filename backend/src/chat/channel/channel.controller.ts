@@ -11,9 +11,8 @@ export class ChannelController {
     async getChannels() {
       try {
         const channels = await this.prisma.channel.findMany( {} );
-        if (!channels) {
-            throw new NotFoundException('No channels found');
-          }
+        if (!channels)
+          throw new NotFoundException('No channels found');
         return channels;
       } catch (error) {
         throw new InternalServerErrorException('An error occurred while fetching channels');
@@ -33,9 +32,8 @@ export class ChannelController {
           messages: true
         },
       })
-      if (!channel) {
+      if (!channel)
         throw new NotFoundException('User not found');
-      }
       return (channel)
     }
 }

@@ -20,14 +20,14 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^10.4.6",
+    "@nestjs/common": "^10.4.7",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.4.6",
     "@nestjs/mapped-types": "^2.0.5",
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/platform-socket.io": "^10.4.4",
     "@nestjs/websockets": "^10.4.4",
-    "@prisma/client": "^5.21.1",
+    "@prisma/client": "^5.22.0",
     "postgrejs": "^2.21.1",
     "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.0",
@@ -64,7 +64,8 @@
     "moduleFileExtensions": [
       "js",
       "json",
-      "ts"
+      "ts",
+      "tsx"
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
