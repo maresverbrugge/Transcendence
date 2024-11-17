@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
-import LoginPage from './pages/login.tsx';
-import LoginRedirect from './components/LoginRedirect.tsx';
+import LoginPage from './components/login/login.tsx';
+import LoginRedirect from './components/login/redirect.tsx';
 import UserAccount from './pages/userAccount.tsx';
 import Chat from './pages/Chat'
 import GameApp from './pages/game';
-import Login2FA from './components/Login2FA.tsx';
+import Login2FA from './components/login/two-factor.tsx';
 
 const App = () => {
 	return (
