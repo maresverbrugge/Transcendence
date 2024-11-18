@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Friends.css';
-import NewChannel from './NewChannel';
 
 
 // const sendChannelInvite = (socket, memberId) => {
@@ -35,7 +34,7 @@ const Friend = ({ friend, socket }) => {
         setStatus(getStatusClass(friend.status))
 
         return () => {
-            socket.off('userStatus')
+            socket.off('userStatusChange')
         }
 
     }, [])
@@ -43,14 +42,12 @@ const Friend = ({ friend, socket }) => {
     return (
         <li className={status}>
             {friend.username}
-            {/* <button onClick={() => sendChannelInvite(socket, feriend.id)}>Invite</button> */}
         </li>
     );
 };
 
-const Friends = ({ socket, token }) => {
+const Friends = ({friends, setFriends, socket, token }) => {
     
-    const [friendlist, setFriendlist] = useState([])
     
     useEffect(() => {
         
@@ -58,7 +55,7 @@ const Friends = ({ socket, token }) => {
             try {
                 const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
                 if (response.data)
-                    setFriendlist(response.data);
+                    setFriends(response.data);
             } catch (error) {
                 if (error.response && error.response.status === 404)
                   console.error("User not found");
@@ -69,29 +66,14 @@ const Friends = ({ socket, token }) => {
     
         fetchFriends();
 
-
-        // socket.on('userOnline', (userID) => setFriendlist((prevFriendlist) => prevFriendlist.concat(user)))
-        // socket.on('userOffline', (userID) => setFriendlist((prevFriendlist) => prevFriendlist.filter((prevUser) => prevUser.username !== user.username)))
-        // socket.on('channelInvite', (data) => {
-        //     if (confirm(`${data.ownerUsername} has sent you a channel invitation`))
-        //         socket.emit('acceptChannelInvite', data)
-        //     else
-        //         // sent inviteDecline en dan pop up op andere frontend?
-        // });        
-        return () => {
-            // socket.off('userOnline');
-            // socket.off('userOffline');
-            // socket.off('channelInvite');
-        }
-
     }, []);
 
     
     return (
-        <div className="friendlist-container">
+        <div className="friends-container">
             <h1>Friends</h1>
-            <ul className="friendlist">
-                {friendlist.map((friend) => (
+            <ul className="friends">
+                {friends.map((friend) => (
                     <Friend
                         key={friend.id}
                         friend={friend}
@@ -99,7 +81,6 @@ const Friends = ({ socket, token }) => {
                     />
                 ))}
             </ul>
-            <NewChannel friendList={friendlist} socket={socket} ownerToken={token} />
         </div>
     );   
 };

@@ -1,5 +1,5 @@
 /* Userlist.css */
-.userlist-container {
+.friends-container {
     border: 2px solid black;
     padding: 10px;
     background-color: #f9f9f9;
@@ -7,12 +7,12 @@
     height: 100%;
 }
 
-.userlist ul {
+.friends ul {
     list-style: none;
     padding: 0;
 }
 
-.userlist li {
+.friends li {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;

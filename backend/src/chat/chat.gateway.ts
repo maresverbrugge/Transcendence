@@ -38,19 +38,18 @@ export class ChatGateway
   //   }
 
   @SubscribeMessage('newChannel')
-  async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
+  async handleNewChannel(@MessageBody() data: {name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
     this.channelService.newChannel(this.server, data)
   }
 
-  @SubscribeMessage('joinRoom')
-  async handleJoinRoom(client: Socket, data: { channelID: number, token:string }) {
-    console.log('in de gateway: ', data.token)
-    this.channelService.joinRoom(this.server, data.channelID, client.id, data.token)
+  @SubscribeMessage('joinChannel')
+  async handleJoinChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.joinChannel(this.server, data.channelID, client.id, data.token)
   }
 
-  @SubscribeMessage('leaveRoom')
-  async handleLeaveRoom(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.leaveRoomRemoveChannelMember(this.server, data.channelID, client.id, data.token)
+  @SubscribeMessage('leaveChannel')
+  async handleLeaveChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.leaveChannelRemoveChannelMember(this.server, data.channelID, client.id, data.token)
   }
 
   @SubscribeMessage('sendMessage')
@@ -59,8 +58,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('channelAction')
-async handleChannelAction(
-  @MessageBody() data: { action: string; channelMemberID: number; token: string; channelID: number }) {
+  async handleChannelAction(@MessageBody() data: { action: string; channelMemberID: number; token: string; channelID: number }) {
   const { action, channelMemberID, token, channelID } = data;
   await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
 }

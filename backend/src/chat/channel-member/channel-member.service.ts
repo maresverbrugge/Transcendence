@@ -6,13 +6,13 @@ import { ChannelService } from '../channel/channel.service';
 import { ChannelMember } from '@prisma/client';
 
 interface ChannelMemberResponse {
-    id: number;
-    isAdmin: boolean;
-    isBanned: boolean;
-    isMuted: boolean;
-    isOwner: boolean;
-    banUntil: Date;
-    muteUntil: Date;
+    id: number,
+    isAdmin: boolean,
+    isBanned: boolean,
+    isMuted: boolean,
+    isOwner: boolean,
+    banUntil: Date,
+    muteUntil: Date,
     user: { websocketId: string }
 }
 
@@ -181,12 +181,15 @@ export class ChannelMemberService {
     
 
     async action(server: Namespace, channelMemberID: number, token: string, channelID: number, action: string) {
-        const targetChannelMember = await this.getChannelMember(channelMemberID);
-        await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
-        const updateData = this.actionGetUpdateData(action)
-        await this.updateChannelMemberEmit(server, channelID, channelMemberID, updateData);
-        if (action === 'ban' || action === 'kick')
-            this.channelService.leaveRoom(server, channelID, targetChannelMember.user.websocketId);
-
+        try {
+            const targetChannelMember = await this.getChannelMember(channelMemberID);
+            await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
+            const updateData = this.actionGetUpdateData(action)
+            await this.updateChannelMemberEmit(server, channelID, channelMemberID, updateData);
+            if (action === 'ban' || action === 'kick')
+                this.channelService.leaveChannel(server, channelID, targetChannelMember.user.websocketId);
+        } catch (error) {
+            server.to(String(channelID)).emit('error', error);
+        }
     }
 }

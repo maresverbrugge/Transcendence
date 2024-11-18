@@ -1,54 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import Confirm from './Confirm';
+import Confirm from '../../Confirm';
 
 
-const ChannelMemberList = ({channel, token, socket }) => {
-    const [members, setMembers] = useState(null);
+const ChannelMemberList = ({channel, setChannel, token, socket }) => {
+    const [members, setMembers] = useState(channel.members);
     const [showConfirm, setShowConfirm] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
     const [selectedMemberID, setSelectedMemberID] = useState(null);
-    const [currentMember, setCurrentMember] = useState(null);
-
+    const [memberID, setMemberID] = useState(null)
     useEffect(() => {
-
-        setMembers(channel.members);
-
-        const fetchCurrentMember = async (channelID, token) => {
+        const fetchCurrentMemberID = async (channelID, token) => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/channel/member/${channelID}/${token}`);
-                setCurrentMember(response.data)
+                const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channelID}/${token}`);
+                setMemberID(response.data);
             } catch (error) {
-                console.error('Error fetching current channelMember:', error);
-                setCurrentMember(null)
+                console.error('Error fetching current channelMemberID:', error);
             }
         };
+    
+        fetchCurrentMemberID(channel.id, token);
 
-        fetchCurrentMember(channel.id, token)
-
-        socket.on('channelMember', (incomingMember) => {
+        const handleIncomingMember = (incomingMember) => {
             setMembers((prevMembers) => {
-                if (currentMember && incomingMember.id === currentMember.id) {
-                    setCurrentMember(incomingMember);
-                }
                 const memberExists = prevMembers.some(member => member.id === incomingMember.id);
-                if (memberExists)
+                if (memberExists) {
                     return prevMembers.map((member) =>
                         member.id === incomingMember.id ? incomingMember : member
                     );
-                else
-                    return [...prevMembers, incomingMember];
+                }
+                return [...prevMembers, incomingMember];
             });
+        };
+    
+        socket.on('channelMember', (incomingMember) => {
+            console.log(incomingMember, currentMember)
+            handleIncomingMember(incomingMember)
         });
-
+    
         return () => {
             socket.off('channelMember');
         };
-
-    },[] );
-
-    if (!members)
-        return
+    }, []);
+    
+    const currentMember = members.find(member => member.id === memberID);
+    if (currentMember?.isBanned)
+        setChannel(null)
 
     // Sort members based on their roles
     const sortedMembers = members.sort((a, b) => {
@@ -99,7 +96,9 @@ const ChannelMemberList = ({channel, token, socket }) => {
             )}
             <ul>
                 {sortedMembers.map((member) => {
-                    const isCurrentUser = currentMember && member.userId === currentMember.userId;
+                    if (member.isBanned)
+                        return null;
+                    const isCurrentMember = currentMember && member.id === currentMember.id;
                     const roleLabel = member.isOwner
                         ? "Owner"
                         : member.isAdmin
@@ -107,7 +106,7 @@ const ChannelMemberList = ({channel, token, socket }) => {
                         : "";
                     return (
                         <li key={member.id}>
-                            {isCurrentUser
+                            {isCurrentMember
                                 ? `You${roleLabel ? ` (${roleLabel})` : ""}`
                                 : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ""}`}
 

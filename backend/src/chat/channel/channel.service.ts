@@ -19,32 +19,42 @@ export class ChannelService {
         private readonly channelMemberService: ChannelMemberService
     ) {}
 
-    async joinRoom(server: Namespace, channelID: number, websocketID: string, token: string) {
-        void token //hier nog een controle maken dmv token?
+    async joinChannel(server: Namespace, channelID: number, websocketID: string, token: string) {
+        try {
+            const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID); //change to token
+            server.to(String(channelID)).emit('channelMember', channelMember)
+        }
+        catch (error) {
+            server.to(String(channelID)).emit('error', error);
+        }
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket)
-            throw new NotFoundException(`Socket with id ${websocketID} not found.`);
+            server.to(String(channelID)).emit('error', new NotFoundException(`Socket with id ${websocketID} not found.`));
         socket.join(String(channelID))
-        console.log(`${websocketID} joined room ${channelID}`) //remove later
+        console.log(`${websocketID} joined channel ${channelID}`) //remove later
     }
 
-    async leaveRoom(server: Namespace, channelID: number, websocketID: string) {
+    async leaveChannel(server: Namespace, channelID: number, websocketID: string) {
         const socket: Socket = server.sockets.get(websocketID);
         if (!socket)
             throw new NotFoundException(`Socket with id ${websocketID} not found.`);
         socket.leave(String(channelID));
-        console.log(`${websocketID} left room ${channelID}`) //remove later
+        console.log(`${websocketID} left channel ${channelID}`) //remove later
     }
     
-    async leaveRoomRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
-        const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
-        this.leaveRoom(server, channelID, websocketID);
-        const channelMember = await this.prisma.channelMember.findFirst({
-            where: {userId: userID, channelId: channelID},
-            select: {id: true, isBanned: true},
-        })
-        if (!channelMember.isBanned)
-            this.channelMemberService.removeChannelMember(channelMember.id)
+    async leaveChannelRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
+        try {
+            const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
+            this.leaveChannel(server, channelID, websocketID);
+            const channelMember = await this.prisma.channelMember.findFirst({
+                where: {userId: userID, channelId: channelID},
+                select: {id: true, isBanned: true},
+            })
+            if (!channelMember.isBanned)
+                this.channelMemberService.removeChannelMember(channelMember.id)
+        } catch (error) {
+            server.to(String(channelID)).emit('error', error);
+        }
     }
 
     async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
@@ -52,6 +62,7 @@ export class ChannelService {
         const newChannel = await this.prisma.channel.create({
             data: {
                 name: data.name,
+                isPrivate: data.isPrivate,
                 password: data.password || null, // Optional password
                 ownerId: ownerID,
                 members: {
@@ -86,7 +97,7 @@ export class ChannelService {
             await this.channelMemberService.checkBanOrKick(channelMember)
         } catch (error) {
             if (error?.response?.statusCode == 404) {
-                this.channelMemberService.createChannelMember(token ,channelID)
+                await this.channelMemberService.createChannelMember(token ,channelID)
             }
             else
                 throw error
@@ -159,7 +170,7 @@ export class ChannelService {
     //         },throw new NotFoundException('ChannelMember not found')
 
     
-    async getChannelMember(channelID: number, token: string): Promise <any | null> {
+    async getChannelMemberID(channelID: number, token: string): Promise <number | null> {
         const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
     
         const channelMember = await this.prisma.channelMember.findFirst({
@@ -167,16 +178,13 @@ export class ChannelService {
                 channelId: channelID,
                 userId: userID,
             },
-            include: {
-                user: { select: { id: true, username: true } },
-                channel: { select: { id: true, } },
-            }
+            select: {id: true}
         })
 
         if (!channelMember)
             throw new NotFoundException('ChannelMember not found')
 
-        return channelMember;
+        return channelMember.id;
     }
 
     async isMuted(channelID: number, token: string): Promise<boolean> {

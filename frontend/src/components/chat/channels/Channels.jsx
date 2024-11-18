@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Channels.css'; // Import the CSS file
-import AlertMessage from './AlertMessage';
-import Channel from './Channel';
+import AlertMessage from '../../AlertMessage';
+import NewChannel from './NewChannel';
 
-const Channels = ({ socket, token }) => {
+const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token }) => {
     const [channels, setChannels] = useState([]);
-    const [selectedChannel, setSelectedChannel] = useState(null);
     const [unreadCounts, setUnreadCounts] = useState({}); // Track unread messages per channel
-    const [showBannedAlert, setShowBannedAlert] = useState(false);
+    const [showBannedAlert, setShowBannedAlert] = useState(null);
 
 
     useEffect(() => {
@@ -70,45 +69,53 @@ const Channels = ({ socket, token }) => {
                 [channel.id]: 0,
             }));
         } catch (error) {
+            console.log('error:', error)
             if (error.response && error.response.status === 403)
-                setShowBannedAlert(true);
+                setShowBannedAlert(error.response.data.message);
             else
                 console.error('Error fetching channel:', error);
             setSelectedChannel(null)
         }
     };
-    
 
-    const handleCloseBannedAlert = () => setShowBannedAlert(false);
+    const handleCloseBannedAlert = () => setShowBannedAlert(null);
 
     return (
         <div className="channels-container">
-            {showBannedAlert && (<AlertMessage message="You are banned from this channel." onClose={handleCloseBannedAlert} />)}
+            {showBannedAlert && (<AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />)}
             {/* List of Channels */}
             <div className="channels-list">
                 <h2>Available Channels</h2>
+                <h3>Public</h3>
                 <ul>
-                    {channels.map((channel) => (
-                        <li key={channel.id}>
-                            <button onClick={() => handleSelectChannel(channel)}>
-                                {channel.name || `Channel ${channel.id}`}
-                                {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
-                            </button>
-                        </li>
-                    ))}
+                    {channels
+                        .filter(channel => !channel.isPrivate) // Only include non-private channels
+                        .map((channel) => (
+                            <li key={channel.id}>
+                                <button onClick={() => handleSelectChannel(channel)}>
+                                    {channel.name || `Channel ${channel.id}`}
+                                    {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
+                                </button>
+                            </li>
+                        ))}
                 </ul>
+                <h3>Private</h3>
+                <ul>
+                    {channels
+                        .filter(channel => channel.isPrivate) // Only include non-private channels
+                        .map((channel) => (
+                            <li key={channel.id}>
+                                <button onClick={() => handleSelectChannel(channel)}>
+                                    {channel.name || `Channel ${channel.id}`}
+                                    {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
+                                </button>
+                            </li>
+                        ))}
+                </ul>
+            <NewChannel friends={friends} socket={socket} ownerToken={token} />
             </div>
+            <div className="direct-messages">
 
-            {/* Display selected Channel */}
-            <div className="channel-details">
-                {selectedChannel ? (
-                    <Channel 
-                        channel={selectedChannel}
-                        socket={socket}
-                        token={token}/>
-                ) : (
-                    <p>Select a channel to view its messages and members.</p>
-                )}
             </div>
         </div>
     );

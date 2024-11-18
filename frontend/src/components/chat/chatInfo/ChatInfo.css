@@ -1,0 +1,13 @@
+/* ChatInfo.css */
+
+.chat-info {
+    position: fixed; /* Fix to the right side of the screen */
+    top: 0;
+    right: 0;
+    width: 20%; /* Occupies 20% of the screen width */
+    height: 100vh; /* Full available height */
+    border-left: 2px solid black; /* Adds a border to separate it from the content */
+    background-color: #f0f0f0; /* Light gray background for contrast */
+    padding: 10px; /* Space around the content */
+    overflow-y: auto; /* Scrollable if content exceeds the height */
+}

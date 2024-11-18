@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import './Channel.css';
-import AlertMessage from './AlertMessage';
-import ChannelMemberList from './ChannelMemberList'; // Import the new ChannelMemberList component
 
-const Channel = ({ channel, socket, token }) => {
+const Messenger = ({ channel, socket, token }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
-    const [showMutedAlert, setShowMutedAlert] = useState(false);
 
     useEffect(() => {
 
@@ -19,12 +15,10 @@ const Channel = ({ channel, socket, token }) => {
             setShowMutedAlert(true);
         });
 
-        socket.emit('joinRoom', {channelID: channel.id, token }); //token later uit storage halen
 
         return () => {
             socket.off('newMessage');
             socket.off('youAreMuted');
-            socket.emit('leaveRoom', {channelID: channel.id, token });
         };
     }, [channel]);
 
@@ -35,21 +29,12 @@ const Channel = ({ channel, socket, token }) => {
         }
     };
 
-    const handleCloseMutedAlert = () => setShowMutedAlert(false);
+    if (!channel)
+        return "select a channel to start chatting!"
 
     return (
-        <div className="channel-container">
-            {showMutedAlert && (<AlertMessage message="You are muted in this channel." onClose={handleCloseMutedAlert} />)}
-
-            <div className="channel-header">
-                <h2>Channel: {channel.name}</h2>
-                <ChannelMemberList
-                    channel={channel}
-                    token={token}
-                    socket={socket}
-                />
-            </div>
-            <div className="channel-messages">
+        <div className="messenger">
+            <div className="messenger-messages">
                 <ul>
                     {messages.map((message) => (
                         <li key={message.id}>
@@ -59,8 +44,7 @@ const Channel = ({ channel, socket, token }) => {
                     ))}
                 </ul>
             </div>
-
-            <div className="channel-input">
+            <div className="messenger-input">
                 <input
                     type="text"
                     value={newMessage}
@@ -73,4 +57,4 @@ const Channel = ({ channel, socket, token }) => {
     );
 };
 
-export default Channel;
+export default Messenger;
