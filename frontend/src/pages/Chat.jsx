@@ -1,5 +1,5 @@
-import Channels from '../components/Channels';
-import Friends from '../components/Friends';
+import Channels from '../components/Chat/Channels';
+import Friends from '../components/Chat/Friends';
 import { io } from 'socket.io-client';
 import { useEffect, useState } from 'react';
 

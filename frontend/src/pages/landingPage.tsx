@@ -9,11 +9,12 @@ const MainPage = () => {
             <h1>Welcome to the Main Page</h1>
             <button onClick={() => navigate('/game')}>Go to Game</button>
             <button onClick={() => navigate('/chat')}>Go to Chat</button>
-            <button onClick={() => navigate('/user/1')}>User Account</button>
+            <button onClick={() => navigate('/profile/1')}>User Profile</button>
+            <button onClick={() => navigate('/account/2')}>User Account</button>
         </div>
     );
 };
 
-//! let op, User Account: user ID is hier gehard-code naar #1
+//! let op, User Account en User Profile: user ID is hier gehard-code!!!
 
 export default MainPage;

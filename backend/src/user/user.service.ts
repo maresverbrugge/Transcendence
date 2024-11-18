@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, PlayerStatus } from '@prisma/client'
@@ -9,9 +9,6 @@ interface UserProfile extends User {
 
 @Injectable()
 export class UserService {
-
-  private readonly logger = new Logger(UserService.name); // ! for testing
-
   constructor(private prisma: PrismaService) {}
 
     //temporary function
