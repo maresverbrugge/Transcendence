@@ -14,4 +14,11 @@ export class LoginController {
     const token = await this.loginService.getToken(code);
     return token;
   }
+
+  @Post('verify-token')
+  async verify(@Body() body: { token: string }) {
+    const { token } = body;
+    const verified = await this.loginService.verifyToken(token);
+    return verified;
+  }
 }

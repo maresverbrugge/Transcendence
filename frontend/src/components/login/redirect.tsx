@@ -32,7 +32,7 @@ const LoginRedirect = () => {
       .then(response => {
         const data = response.data;
         console.log('data.access_token', data.access_token)
-        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('authenticationToken', data.access_token);
         window.location.href = '/main';
       })
       .catch(err => {

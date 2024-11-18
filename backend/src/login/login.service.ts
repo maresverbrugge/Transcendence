@@ -23,8 +23,30 @@ export class LoginService {
       // Return the token to the controller
       return response.data;
     } catch (error) {
-      console.error('Error during token exchange:', error.response ? error.response.data : error.message);
+      var message = error.response ? error.response.data : error.message;
+      console.error('Error during token exchange:', message);
       throw new InternalServerErrorException('Error during token exchange');
     }
+  }
+
+  async verifyToken(token: string): Promise<boolean> {
+    try {
+      const response = await axios.get('https://api.intra.42.fr/oauth/token/info', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.data["expires_in_seconds"] <= 0) {
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+    catch(error) {
+      var message = error.response ? error.response.data : error.message;
+      console.error('Error while verifying token:', message);
+      return false;
+    };
   }
 }
