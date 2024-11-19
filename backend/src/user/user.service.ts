@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, PlayerStatus } from '@prisma/client'
+import { User, UserStatus } from '@prisma/client'
 
 interface UserProfile extends User {
   avatarURL: string;
@@ -9,39 +9,36 @@ interface UserProfile extends User {
 
 @Injectable()
 export class UserService {
-
-  private readonly logger = new Logger(UserService.name); // ! for testing
-
   constructor(private prisma: PrismaService) {}
 
     //temporary function
     async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
-      // Step 1: Find user with an empty websocketId
+      // Step 1: Find user with an empty websocketID
       const emptyWebSocketUser = await this.prisma.user.findFirst({
-        where: { websocketId: null },
+        where: { websocketID: null },
       });
 
       if (emptyWebSocketUser) {
-        // Assign socketID if user with empty websocketId is found
+        // Assign socketID if user with empty websocketID is found
         return await this.prisma.user.update({
-          where: { id: emptyWebSocketUser.id },
-          data: { websocketId: socketID,
+          where: { ID: emptyWebSocketUser.ID },
+          data: { websocketID: socketID,
                   token: token },
         });
       }
 
-      // Step 2: Check if any user has an inactive websocketId
+      // Step 2: Check if any user has an inactive websocketID
       const users = await this.prisma.user.findMany(); // Fetch all users
       for (const user of users) {
 
         try {
-          if (user.websocketId) {
-            const socket = server.sockets.get(user.websocketId);
+          if (user.websocketID) {
+            const socket = server.sockets.get(user.websocketID);
             if (!socket) {
-              // Replace websocketId if an inactive socket is found
+              // Replace websocketID if an inactive socket is found
               return await this.prisma.user.update({
-                where: { id: user.id },
-                data: { websocketId: socketID,
+                where: { ID: user.ID },
+                data: { websocketID: socketID,
                   token: token },
               });
             }
@@ -52,18 +49,18 @@ export class UserService {
         }
       }
 
-      // Step 3: If no users have an empty or inactive websocketId, create a new user
+      // Step 3: If no users have an empty or inactive websocketID, create a new user
       return await this.prisma.user.create({
-        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: PlayerStatus.ONLINE, websocketId: socketID, token: token },
+        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: UserStatus.ONLINE, websocketID: socketID, token: token },
       });
     }
 
-    async removeWebsocketIDFromUser(websocketID: string) {
-      const user = await this.getUserBySocketId(websocketID);
+    async removewebsocketIDFromUser(websocketID: string) {
+      const user = await this.getUserBySocketID(websocketID);
       if (user) {
         return await this.prisma.user.update({
-          where: { id: user.id },
-          data: { websocketId: null },
+          where: { ID: user.ID },
+          data: { websocketID: null },
         });
       }
     }
@@ -73,16 +70,17 @@ export class UserService {
         client.emit('users', users);
       }
 
-    async getUserByUserId(userId: number): Promise<User | null> {
+    async getUserByUserID(userID: number): Promise<User | null> {
       return this.prisma.user.findUnique({
-        where: { id: userId },
+        where: { ID: userID },
       });
     }
 
-    async getUserProfileByUserId(userId: number): Promise<UserProfile | null> {
+    async getUserProfileByUserID(userID: number): Promise<UserProfile | null> {
       const user = await this.prisma.user.findUnique({
-        where: { id: userId },
+        where: { ID: userID },
       });
+      // console.log("user = ", user);
 
       if (!user) return null;
 
@@ -99,22 +97,22 @@ export class UserService {
       };
     }
 
-    async createUser(socketId: string): Promise<User> {
+    async createUser(socketID: string): Promise<User> {
         return this.prisma.user.create({
             data: {
-                username: socketId,
-                intraUsername: socketId,
-                websocketId: socketId,
+                username: socketID,
+                intraUsername: socketID,
+                websocketID: socketID,
                 Enabled2FA: true,
-                status: PlayerStatus.ONLINE,
+                status: UserStatus.ONLINE,
                 },
         });
     }
 
-    async updateUsername(userId: number, newUsername: string) {
+    async updateUsername(userID: number, newUsername: string) {
       try {
         const updatedUser = await this.prisma.user.update({
-          where: { id: userId },
+          where: { ID: userID },
           data: { username: newUsername },
         });
         return updatedUser;
@@ -125,45 +123,45 @@ export class UserService {
 
     async updateAvatar(userID: number, avatar: Buffer) {
       return await this.prisma.user.update({
-          where: { id: userID },
+          where: { ID: userID },
           data: { avatar },
       });
     }
 
     async toggle2FA(userID: number, enable: boolean) {
       return await this.prisma.user.update({
-          where: { id: userID },
+          where: { ID: userID },
           data: { Enabled2FA: enable },
       });
     }
 
-    async getUserIdBySocketId(socketId: string): Promise<number | null> {
+    async getUserIDBySocketID(socketID: string): Promise<number | null> {
         const user = await this.prisma.user.findUnique({
           where: {
-            websocketId: socketId,
+            websocketID: socketID,
           },
           select: {
-            id: true,
+            ID: true,
           },
         });
-        return user?.id || null; // Return the user ID if found, otherwise return null
+        return user?.ID || null; // Return the user ID if found, otherwise return null
       }
 
-      async getUserBySocketId(socketId: string): Promise<User | null> {
+      async getUserBySocketID(socketID: string): Promise<User | null> {
         return this.prisma.user.findUnique({
           where: {
-            websocketId: socketId,
+            websocketID: socketID,
           }
         });
       }
 
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
-        const userId = await this.getUserIdBySocketId(socketID);
+        const userID = await this.getUserIDBySocketID(socketID);
 
-        if (userId) {
+        if (userID) {
           return this.prisma.user.delete({
             where: {
-              id: userId, // Deleting user by ID
+              ID: userID, // Deleting user by ID
             },
           });
         }

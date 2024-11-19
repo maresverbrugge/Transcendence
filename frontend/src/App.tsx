@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
-import LoginPage from './components/login/Login.tsx';
-import LoginRedirect from './components/login/Redirect.tsx';
-import ProtectedRoute from './components/login/ProtectedRoute.tsx';
-import UserAccount from './pages/userAccount.tsx';
-import Chat from './pages/Chat'
+import LoginPage from './components/Login/Login.tsx';
+import LoginRedirect from './components/Login/login/Redirect.tsx';
+import ProtectedRoute from './components/Login/ProtectedRoute.tsx';
+import UserAccount from './pages/UserAccount.tsx';
+import UserProfile from './pages/UserProfile.tsx';
+// import Chat from './pages/Chat';
 import GameApp from './pages/game';
-import Login2FA from './components/login/TwoFactor.tsx';
+import Login2FA from './components/Login/TwoFactor.tsx';
 
 const App = () => {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,16 +40,11 @@ const App = () => {
 				<Route path="/" element={<LoginPage/>} />
 				<Route path="/login/redirect" element={<LoginRedirect/>} />
 				<Route path="/main" element={<MainPage/>} />
-				<Route path="/user/:ID" element={<UserAccount/>} />
-				<Route path="/chat" element={<Chat/>} />
-				<Route
-					path="/game"
-					element={
-						<ProtectedRoute isAuthenticated={isAuthenticated} element={GameApp}>
-						</ProtectedRoute>
-					}
-				/>
-				<Route path="/login/2fa" element={<Login2FA/>} />
+				<Route path="/account/:ID" element={<UserAccount/>} />
+				<Route path="/profile/:ID" element={<UserProfile/>} />
+				{/* <Route path="/chat" element={<Chat/>} /> */}
+				{/* <Route path="/game" element={<GameApp/>} /> */}
+				{/* <Route path="/login/2fa" element={<Login2FA/>} /> */}
 			</Routes>
 		</Router>
     );}
