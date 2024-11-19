@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-interface UsernameProps {
-  userID: string,
-  currentUsername: string;
-}
-
-function Username({ userID, currentUsername }: UsernameProps) {
+function Username({ userID, currentUsername }) {
   const [username, setUsername] = useState<string>(currentUsername);
   
   const handleChangeUsername = async () => {

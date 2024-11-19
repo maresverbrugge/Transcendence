@@ -29,13 +29,13 @@ enum MatchStatus {
 }
 
 model User {
-  id                Int           @id @default(autoincrement())
+  ID                Int           @id @default(autoincrement())
   username          String        @unique
   intraUsername     String
   avatar            Bytes?
   Enabled2FA        Boolean
   token             String?
-  websocketId       String?       @unique// The ID of the websocket, nullable
+  websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
   
   friends           User[]        @relation("Friends")
@@ -50,7 +50,7 @@ model User {
 }
 
 model Match {
-  matchId           Int           @id @default(autoincrement())
+  matchID           Int           @id @default(autoincrement())
   status            MatchStatus   @default(PENDING) // PENDING | ACCEPTED | DECLINED
   scorePlayer1      Int           @default(0)
   scorePlayer2      Int           @default(0)
@@ -61,7 +61,7 @@ model Match {
 }
 
 model Statistics {
-  id                Int           @id @default(autoincrement())
+  ID                Int           @id @default(autoincrement())
   matchesPlayed     Int           @default(0)
   wins              Int           @default(0)
   losses            Int           @default(0)
@@ -70,53 +70,53 @@ model Statistics {
   //level             Int           @default(0)
   //achievements      Achievements?
 
-  userId            Int           @unique
-  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userID            Int           @unique
+  user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
 }
 
 model Channel {
-  id                Int           @id @default(autoincrement())
+  ID                Int           @id @default(autoincrement())
   name              String
   isPrivate         Boolean       @default(false)
   password          String?       // Optional password field
   
-  ownerId           Int
-  owner             User          @relation(fields: [ownerId], references: [id], onDelete: Cascade) // when user is deleted, channel should not be deleted but a new admin should be assigned
+  ownerID           Int
+  owner             User          @relation(fields: [ownerID], references: [ID], onDelete: Cascade) // when user is deleted, channel should not be deleted but a new admin should be assigned
   messages          Message[]
   members           ChannelMember[]
 }
 
 model Message {
-  id                Int           @id @default(autoincrement())
+  ID                Int           @id @default(autoincrement())
   content           String
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   senderName        String
   
-  senderId          Int
-  sender            User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  channelId         Int
-  channel           Channel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderID          Int
+  sender            User          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
+  channelID         Int
+  channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
 
 model ChannelMember {
-  id                Int           @id @default(autoincrement())
-  websocketId       String?       // The ID of the websocket, nullable
+  ID                Int           @id @default(autoincrement())
+  websocketID       String?       // The ID of the websocket, nullable
   isAdmin           Boolean       @default(false)
   isMuted           Boolean       @default(false)
   isBanned          Boolean       @default(false)
 
-  userId            Int
-  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  channelId         Int
-  channel           Channel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userID            Int
+  user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
+  channelID         Int
+  channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
 
 model BlockedUser {
-  id                Int           @id @default(autoincrement())
+  ID                Int           @id @default(autoincrement())
 
-  blockerId         Int
-  blocker           User          @relation("blockedUsers", fields: [blockerId], references: [id], onDelete: Cascade)
-  blockedId         Int
-  blocked           User          @relation("blockedByUsers", fields: [blockedId], references: [id], onDelete: Cascade)
+  blockerID         Int
+  blocker           User          @relation("blockedUsers", fields: [blockerID], references: [ID], onDelete: Cascade)
+  blockedID         Int
+  blocked           User          @relation("blockedByUsers", fields: [blockedID], references: [ID], onDelete: Cascade)
 }

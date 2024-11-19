@@ -7,7 +7,6 @@ interface NameAvatarStatusProps {
 }
 
 function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps) {
-    // Map the backend statuses to user-friendly formats
   const getStatusLabel = (status: string): string => {
     switch (status) {
       case "ONLINE":
@@ -19,10 +18,10 @@ function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps
       case "IN_CHAT":
         return "in chat";
       default:
-        return "unknown"; // Fallback for unexpected statuses
+        return "unknown";
     }
   };
-    
+
   return (
     <div className="name-avatar-status">
       {/* Display Avatar */}

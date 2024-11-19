@@ -1,1 +1,1 @@
-GET http://localhost:3001/profile/${userId}
+GET http://localhost:3001/profile/${userID}
