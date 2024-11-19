@@ -15,11 +15,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum PlayerStatus {
+enum UserStatus {
   ONLINE
   OFFLINE
   IN_GAME
-  AFK
+  IN_CHAT
 }
 
 enum MatchStatus {
@@ -36,7 +36,7 @@ model User {
   Enabled2FA        Boolean
   token             String?
   websocketId       String?       @unique// The ID of the websocket, nullable
-  status            PlayerStatus  // ONLINE | OFFLINE | IN_GAME | AFK
+  status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
   
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")

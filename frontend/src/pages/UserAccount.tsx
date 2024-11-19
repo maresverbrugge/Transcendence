@@ -19,7 +19,7 @@ interface UserData {
 function UserAccount() {
   const { ID } = useParams<{ ID: string}>();
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [username, setUsername] = useState<string>('');
+  // const [username, setUsername] = useState<string>('');
   // const [avatarURL, setAvatarURL] = useState<string>('');
   // const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState<boolean>(false);
   // const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -32,7 +32,7 @@ function UserAccount() {
         const response = await axios.get(`http://localhost:3001/user/${ID}`);
         console.log("User data fetched:", response.data);
         setUserData(response.data);
-        setUsername(response.data.username);
+        // setUsername(response.data.username);
         // setAvatarURL(response.data.avatarURL);
         // setIsTwoFactorEnabled(response.data.twoFactorEnabled);
         setLoading(false);

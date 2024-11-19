@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, PlayerStatus } from '@prisma/client'
+import { User, UserStatus } from '@prisma/client'
 
 interface UserProfile extends User {
   avatarURL: string;
@@ -51,7 +51,7 @@ export class UserService {
 
       // Step 3: If no users have an empty or inactive websocketId, create a new user
       return await this.prisma.user.create({
-        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: PlayerStatus.ONLINE, websocketId: socketID, token: token },
+        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: UserStatus.ONLINE, websocketId: socketID, token: token },
       });
     }
 
@@ -80,6 +80,7 @@ export class UserService {
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
       });
+      console.log("HALLOOTJES user = ", user);
 
       if (!user) return null;
 
@@ -103,7 +104,7 @@ export class UserService {
                 intraUsername: socketId,
                 websocketId: socketId,
                 Enabled2FA: true,
-                status: PlayerStatus.ONLINE,
+                status: UserStatus.ONLINE,
                 },
         });
     }
