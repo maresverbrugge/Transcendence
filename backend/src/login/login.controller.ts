@@ -21,4 +21,11 @@ export class LoginController {
     const verified = await this.loginService.verifyToken(token);
     return verified;
   }
+
+  @Post('intra-name')
+  async getIntraLogin(@Body() body: { token: string }) {
+    const { token } = body;
+    const login = await this.loginService.getIntraName(token);
+    return login;
+  }
 }

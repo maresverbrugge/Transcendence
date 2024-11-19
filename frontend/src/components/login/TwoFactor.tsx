@@ -21,7 +21,7 @@ const Login2FA = () => {
 	}
 
 	const skip2FA = () => {
-		window.location.href = '/game';
+		window.location.href = '/main';
 	}
 
 	const enable2FA = () => {

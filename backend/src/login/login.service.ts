@@ -36,7 +36,10 @@ export class LoginService {
           Authorization: `Bearer ${token}`,
         },
       })
-      if (response.data["expires_in_seconds"] <= 0) {
+      if (!response.data || !response.data["expires_in_seconds"]) {
+        return false
+      }
+      else if (response.data["expires_in_seconds"] <= 0) {
         return false;
       }
       else {
@@ -49,4 +52,21 @@ export class LoginService {
       return false;
     };
   }
+
+  async getIntraName(token: string): Promise<string> {
+    try {
+      const response = await axios.get('https://api.intra.42.fr/v2/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response.data.login;
+    }
+    catch(error) {
+      var message = error.response ? error.response.data : error.message;
+      console.error('Error while getting intra name:', message);
+      return null;
+    };
+  }
 }
+
