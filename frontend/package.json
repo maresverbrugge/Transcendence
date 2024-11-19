@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "1.0.0",
   "description": "Transcendence application frontend using React",
-  "main": "src/index.js",
+  "main": "src/index.tsx",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

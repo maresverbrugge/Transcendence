@@ -1,9 +1,5 @@
-// Controller for the login module
-
 import { Controller, Post, Body } from '@nestjs/common';
 import { LoginService } from './login.service';
-
-const original_state = "unguessable_state_string_wow"
 
 @Controller('login')
 export class LoginController {
@@ -12,10 +8,11 @@ export class LoginController {
   @Post('callback')
   async callback(@Body() body: { code: string; state: string }) {
     const { code, state } = body;
-    if (state !== original_state) {
-      throw new Error('Invalid state'); // Is this necessary?
+    if (state !== process.env.REACT_APP_LOGIN_STATE) {
+      throw new Error('Invalid state');
     }
     const tokenData = await this.loginService.getToken(code);
+    // Return the token data to the frontend
     return tokenData;
   }
 }
