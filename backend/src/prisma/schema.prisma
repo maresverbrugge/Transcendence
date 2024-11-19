@@ -78,6 +78,7 @@ model Channel {
   id                Int           @id @default(autoincrement())
   name              String
   isPrivate         Boolean       @default(false)
+  isDM              Boolean       @default(false)
   password          String?       // Optional password field
   
   ownerId           Int

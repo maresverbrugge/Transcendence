@@ -8,7 +8,7 @@ import Messenger from '../components/chat/messenger/Messenger';
 const Chat = () => {
     const [socket, setSocket] = useState(null);
     const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
-    const [error, setError] = useState(null)
+    const [alert, setAlert] = useState(null)
     const [channel, setChannel] = useState(null)
     const [friends, setFriends] = useState([])
     
@@ -27,7 +27,8 @@ const Chat = () => {
         })
 
         socketIo.on('error', (error) => {
-            setError(error)
+            console.error(error)
+            setAlert(error.response.message)
         })
 
         // Set socket instance in state
@@ -37,15 +38,12 @@ const Chat = () => {
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
-
-    if (error)
-        console.error(error)
     
     if (!socket || !tempToken) return
     return (
         <div>
-            {error && (<AlertMessage message={error.response.message} onClose={()=> {setError(null)}} />)}
-            <Channels  slectedChannel={channel} setSelectedChannel={setChannel} friends={friends} socket={socket} token={tempToken}/>
+            {alert && (<AlertMessage message={alert} onClose={()=> {setAlert(null)}} />)}
+            <Channels  slectedChannel={channel} setSelectedChannel={setChannel} friends={friends} socket={socket} token={tempToken} setAlert={setAlert} />
             <Messenger channel={channel} socket={socket} token={tempToken}/>
             <ChatInfo channel={channel} setChannel={setChannel} friends={friends} setFriends={setFriends} socket={socket} token={tempToken}/>
         </div>

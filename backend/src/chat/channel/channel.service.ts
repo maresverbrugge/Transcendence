@@ -2,11 +2,15 @@ import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorE
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { Channel, ChannelMember } from '@prisma/client'
+import { Channel, ChannelMember, User, Message } from '@prisma/client'
 import { ChannelMemberService } from '../channel-member/channel-member.service';
+import { channel } from 'diagnostics_channel';
 
 type ChannelWithMembers = Channel & {
-    members: ChannelMember[];
+    members: (ChannelMember & {
+        user: Pick<User, 'id' | 'username'>;
+    })[];
+    messages: Message[]; // Replace `any[]` with the appropriate type for messages if known
 };
 
 @Injectable()
@@ -57,38 +61,114 @@ export class ChannelService {
         }
     }
 
-    async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
-        const ownerID = await this.userService.getUserIDBySocketID(data.ownerToken) // later veranderen naar token
+    emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembers) {
+        channel.members.map(async (member) => {
+            const personalizedChannel = { ...channel }; // Create a copy of the channel object
+    
+            if (channel.isDM) {
+                // Get the name dynamically based on the other member
+                personalizedChannel.name = this.getDMName(member.user.username, channel);
+                console.log('namechange', personalizedChannel.name, member);
+            }
+    
+            const websocket = await this.userService.getWebSocketByUserID(server, member.userId);
+            websocket.emit('newChannel', personalizedChannel); // Emit the personalized channel
+        });
+    }
+
+    async DMExists(ownerID: number, memberIDs: number[]): Promise<boolean> {
+        const DMs = await this.prisma.channel.findMany({
+            where: {
+                isDM: true,
+            },
+            select: {
+                members: { select: { userId: true } },
+            },
+        });
+        const DM = DMs.find((dm) => {
+            const memberIdsInDM = dm.members.map((member) => member.userId);
+            return memberIdsInDM.includes(ownerID) && memberIdsInDM.includes(memberIDs[0]);
+        });
+        return !!DM; // Return true if a matching DM exists, otherwise false
+    }
+    
+
+    async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }) {
+        const ownerID = await this.userService.getUserIDBySocketID(data.token)
+        if (data.isDM && await this.DMExists(ownerID, data.memberIDs))
+            throw new ForbiddenException('DM already exists')
         const newChannel = await this.prisma.channel.create({
             data: {
                 name: data.name,
                 isPrivate: data.isPrivate,
-                password: data.password || null, // Optional password
+                isDM: data.isDM,
+                password: data.password || null,
                 ownerId: ownerID,
                 members: {
                     create: [
                         { userId: ownerID, isOwner: true, isAdmin: true }, // Create as owner and admin
                         ...data.memberIDs.map((memberID) => ({
                             userId: memberID,
-                            isAdmin: false
-                        })) // Create each additional member as non-admin
+                        })) // Create each additional member without admin or owner rights (default is without)
                     ]
                 }
             },
+            include: {
+                members: { include: { user: { select: { id: true, username: true } } }, },
+                messages: true,
+            }
         })
 
-        // await this.joinChannel(server, newChannel.id, ownerID);
-
-        // Create an array of promises
-        // const memberJoinPromises = data.memberIDs.map(memberID => 
-        //     this.joinChannel(server, newChannel.id, memberID)
-        // );
-
-        // // Wait for all joinChannel calls to complete
-        // await Promise.all(memberJoinPromises);
-
-        server.emit('newChannel', newChannel);
+        if (newChannel.isPrivate)
+            this.emitNewPrivateChannel(server, newChannel)
+        else
+            server.emit('newChannel', newChannel);
         return newChannel;
+    }
+
+    getDMName(username: string, channel: ChannelWithMembers): string {
+        const channelMember = channel.members.find(member => member.user.username !== username);
+        return channelMember ? channelMember.user.username : '';
+    }
+
+    async getPublicChannels() : Promise<ChannelWithMembers[]> {
+        return this.prisma.channel.findMany( {
+            where: { isPrivate: false },
+            include: {
+              members: { include: { user: { select: { id: true, username: true } } }, },
+              messages: true,
+            },
+          });
+    }
+
+    async getPrivateChannels(token : string): Promise<ChannelWithMembers[]> {
+        const user = await this.prisma.user.findUnique({
+            where: {websocketId: token},
+            select: {
+                username: true,
+                channelMembers: {
+                    include: {channel: {
+                        include: {
+                            messages: true,
+                            members: {include: {
+                                user: {select: {
+                                    id: true, 
+                                    username: true 
+        }}}}}}}}}})
+        return user.channelMembers
+            .filter((channelMember) => channelMember.channel.isPrivate)
+            .map((channelMember) => {
+                if (channelMember.channel.isDM) {
+                    channelMember.channel.name = this.getDMName(user.username, channelMember.channel);
+                }
+                return channelMember.channel;
+            });
+    }
+
+    async getChannelsOfUser(token: string): Promise<ChannelWithMembers[]> {
+        const publicChannels = await this.getPublicChannels();
+        const privateChannels = await this.getPrivateChannels(token);
+        return [...publicChannels, ...privateChannels];
     }
 
     async getChannelAddMember(channelID: number, token: string): Promise <ChannelWithMembers | null> {

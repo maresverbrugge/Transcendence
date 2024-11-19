@@ -1,8 +1,7 @@
-/* Userlist.css */
+/* Friends.css */
 .friends-container {
-    border: 2px solid black;
+    /* border: 2px solid black; */
     padding: 10px;
-    background-color: #f9f9f9;
     overflow-y: auto;
     height: 100%;
 }

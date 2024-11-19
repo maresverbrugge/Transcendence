@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { io } from 'socket.io-client';
 // import GameApp from './pages/game';
 import LoginPage from './pages/login';
 import LoginRedirect from './components/LoginRedirect';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './NewChannel.css'
 
-const NewChannel = ({ friends, socket, ownerToken }) => {
+const NewChannel = ({ friends, socket, token }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [channelName, setChannelName] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);  // Default to public
@@ -21,8 +21,9 @@ const NewChannel = ({ friends, socket, ownerToken }) => {
         const newChannelData = {
             name: channelName,
             isPrivate,
+            isDM: false,
             password: isPrivate && passwordEnabled ? password : null,  // Set password only for private channels if enabled
-            ownerToken,
+            token,
             memberIDs: isPrivate ? selectedMemberIDs : [],  // Only include members if private
         };
         socket.emit('newChannel', newChannelData);

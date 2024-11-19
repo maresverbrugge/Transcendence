@@ -3,8 +3,9 @@ import axios from 'axios';
 import './Channels.css'; // Import the CSS file
 import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
+import NewDM from './NewDM';
 
-const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token }) => {
+const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token, setAlert }) => {
     const [channels, setChannels] = useState([]);
     const [unreadCounts, setUnreadCounts] = useState({}); // Track unread messages per channel
     const [showBannedAlert, setShowBannedAlert] = useState(null);
@@ -13,7 +14,7 @@ const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token }
     useEffect(() => {
         const fetchChannels = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/channel`);
+                const response = await axios.get(`http://localhost:3001/chat/channel/${token}`);
                 setChannels(response.data);
             } catch (error) {
                 console.error('Error fetching channels:', error);
@@ -53,8 +54,12 @@ const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token }
     // }
 
     const handleSelectChannel = async (channel) => {
-        if (channel?.id === selectedChannel?.id)
+        console.log(channel.name, selectedChannel?.name)
+        if (channel?.id === selectedChannel?.id) {
+            console.log('jaj')
+            setSelectedChannel(null)
             return
+        }
         // fetchCurrentUser(channel.id, token);
         try {
             const response = await axios.get(`http://localhost:3001/chat/channel/${channel.id}/${token}`);
@@ -82,43 +87,74 @@ const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token }
 
     return (
         <div className="channels-container">
-            {showBannedAlert && (<AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />)}
+            {showBannedAlert && (
+                <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />
+            )}
+    
             {/* List of Channels */}
             <div className="channels-list">
                 <h2>Available Channels</h2>
-                <h3>Public</h3>
-                <ul>
-                    {channels
-                        .filter(channel => !channel.isPrivate) // Only include non-private channels
-                        .map((channel) => (
-                            <li key={channel.id}>
-                                <button onClick={() => handleSelectChannel(channel)}>
-                                    {channel.name || `Channel ${channel.id}`}
-                                    {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
-                                </button>
-                            </li>
-                        ))}
-                </ul>
-                <h3>Private</h3>
-                <ul>
-                    {channels
-                        .filter(channel => channel.isPrivate) // Only include non-private channels
-                        .map((channel) => (
-                            <li key={channel.id}>
-                                <button onClick={() => handleSelectChannel(channel)}>
-                                    {channel.name || `Channel ${channel.id}`}
-                                    {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
-                                </button>
-                            </li>
-                        ))}
-                </ul>
-            <NewChannel friends={friends} socket={socket} ownerToken={token} />
+    
+                {/* Public Channels */}
+                {channels.some(channel => !channel.isPrivate) && (
+                    <>
+                        <h3>Public</h3>
+                        <ul>
+                            {channels
+                                .filter(channel => !channel.isPrivate) // Only include non-private channels
+                                .map(channel => (
+                                    <li key={channel.id}>
+                                        <button onClick={() => handleSelectChannel(channel)}>
+                                            {channel.name || `Channel ${channel.id}`}
+                                            {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
+                                        </button>
+                                    </li>
+                                ))}
+                        </ul>
+                    </>
+                )}
+    
+                {/* Private Channels */}
+                {channels.some(channel => channel.isPrivate && !channel.isDM) && (
+                    <>
+                        <h3>Private</h3>
+                        <ul>
+                            {channels
+                                .filter(channel => channel.isPrivate && !channel.isDM) // Only include private, non-DM channels
+                                .map(channel => (
+                                    <li key={channel.id}>
+                                        <button onClick={() => handleSelectChannel(channel)}>
+                                            {channel.name || `Channel ${channel.id}`}
+                                            {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
+                                        </button>
+                                    </li>
+                                ))}
+                        </ul>
+                    </>
+                )}
+    
+                <NewChannel friends={friends} socket={socket} token={token} />
             </div>
+    
+            {/* Direct Messages */}
             <div className="direct-messages">
-
+                <h2>Direct Messages</h2>
+                <ul>
+                    {channels
+                        .filter(channel => channel.isDM)
+                        .map(channel => (
+                            <li key={channel.id}>
+                                <button onClick={() => handleSelectChannel(channel)}>
+                                    {channel.name || `Channel ${channel.id}`}
+                                    {unreadCounts[channel.id] > 0 && ` (${unreadCounts[channel.id]} unread messages)`}
+                                </button>
+                            </li>
+                        ))}
+                </ul>
+                <NewDM friends={friends} socket={socket} token={token} setAlert={setAlert} />
             </div>
         </div>
-    );
+    );    
 };
 
 export default Channels

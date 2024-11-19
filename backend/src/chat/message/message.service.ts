@@ -38,12 +38,12 @@ export class MessageService {
       });
     }
 
-    async sendMessage(server: Namespace, client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
-      if (await this.channelService.isMuted(data.channelID, data.ownerToken)) {
+    async sendMessage(server: Namespace, client: Socket, data: { channelID: number, token: string, content: string }) {
+      if (await this.channelService.isMuted(data.channelID, data.token)) {
         client.emit('youAreMuted')
         return;
       }
-      const sender = await this.userService.getUserBySocketID(data.ownerToken)
+      const sender = await this.userService.getUserBySocketID(data.token)
       const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
       server.to(String(data.channelID)).emit('newMessage', newMessage)
       server.emit('newMessageOnChannel', data.channelID)

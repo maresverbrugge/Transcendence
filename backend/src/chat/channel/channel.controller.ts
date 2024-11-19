@@ -11,16 +11,9 @@ export class ChannelController {
       private readonly channelService: ChannelService
     ) {}
 
-    @Get()
-    async getChannels() {
-      try {
-        const channels = await this.prisma.channel.findMany( {} );
-        if (!channels)
-            throw new NotFoundException('No channels found');
-        return channels;
-      } catch (error) {
-        throw new InternalServerErrorException('An error occurred while fetching channels');
-      }
+    @Get('/:token')
+    async getChannels(@Param('token') token: string) {
+      return this.channelService.getChannelsOfUser(token)
     }
 
     @Get(':channelID/:token')

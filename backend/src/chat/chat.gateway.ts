@@ -38,8 +38,13 @@ export class ChatGateway
   //   }
 
   @SubscribeMessage('newChannel')
-  async handleNewChannel(@MessageBody() data: {name: string, isPrivate: boolean, password?: string, ownerToken: string, memberIDs: number[] }) {
-    this.channelService.newChannel(this.server, data)
+  async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }) {
+    try {
+      await this.channelService.newChannel(this.server, data)
+    } catch (error) {
+      console.log('cought emitting error: ', error)
+      client.emit('error', error)
+    }
   }
 
   @SubscribeMessage('joinChannel')
@@ -53,7 +58,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('sendMessage')
-  async handleSendMessage(client: Socket, data: { channelID: number, ownerToken: string, content: string }) {
+  async handleSendMessage(client: Socket, data: { channelID: number, token: string, content: string }) {
     this.messageService.sendMessage(this.server, client, data)
   }
 

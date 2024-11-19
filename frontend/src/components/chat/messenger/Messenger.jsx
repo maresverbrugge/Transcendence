@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './Messenger.css';
 
 const Messenger = ({ channel, socket, token }) => {
     const [messages, setMessages] = useState([]);
@@ -24,37 +25,43 @@ const Messenger = ({ channel, socket, token }) => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            socket.emit('sendMessage', { channelID: channel.id, ownerToken: token, content: newMessage });
+            socket.emit('sendMessage', { channelID: channel.id, token: token, content: newMessage });
             setNewMessage('');
         }
     };
 
-    if (!channel)
-        return "select a channel to start chatting!"
-
     return (
-        <div className="messenger">
-            <div className="messenger-messages">
-                <ul>
-                    {messages.map((message) => (
-                        <li key={message.id}>
-                            <strong>{message.senderName}: </strong>
-                            {message.content}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="messenger-input">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                />
-                <button onClick={handleSendMessage}>Send</button>
-            </div>
+        <div className="messenger-container">
+            {!channel ? (
+                <div className="select-channel-message">
+                    Select a channel to start chatting!
+                </div>
+            ) : (
+                <>
+                    <div className="message-list">
+                        <ul>
+                            {messages.map((message) => (
+                                <li key={message.id}>
+                                    <strong>{message.senderName}: </strong>
+                                    {message.content}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="messenger-input">
+                        <input
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder="Type your message..."
+                        />
+                        <button onClick={handleSendMessage}>Send</button>
+                    </div>
+                </>
+            )}
         </div>
     );
+    
 };
 
 export default Messenger;

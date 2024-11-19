@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './Channel.css';
 import AlertMessage from '../../AlertMessage';
 import ChannelMemberList from './ChannelMemberList'; // Import the new ChannelMemberList component
 
