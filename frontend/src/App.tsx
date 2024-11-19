@@ -3,7 +3,7 @@ import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
 import LoginPage from './components/Login/Login.tsx';
-import LoginRedirect from './components/Login/login/Redirect.tsx';
+import LoginRedirect from './components/Login/Redirect.tsx';
 import ProtectedRoute from './components/Login/ProtectedRoute.tsx';
 import UserAccount from './pages/UserAccount.tsx';
 import UserProfile from './pages/UserProfile.tsx';
@@ -43,8 +43,8 @@ const App = () => {
 				<Route path="/account/:ID" element={<UserAccount/>} />
 				<Route path="/profile/:ID" element={<UserProfile/>} />
 				{/* <Route path="/chat" element={<Chat/>} /> */}
-				{/* <Route path="/game" element={<GameApp/>} /> */}
-				{/* <Route path="/login/2fa" element={<Login2FA/>} /> */}
+				<Route path="/game" element={<GameApp/>} />
+				<Route path="/login/2fa" element={<Login2FA/>} />
 			</Routes>
 		</Router>
     );}
