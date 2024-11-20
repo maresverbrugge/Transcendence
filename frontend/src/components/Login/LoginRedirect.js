@@ -33,7 +33,7 @@ const LoginRedirect = () => {
         const data = response.data;
         console.log('data.access_token', data.access_token)
         localStorage.setItem('token', data.access_token);
-        window.location.href = '/chat';
+        window.location.href = '/main';
       })
       .catch(err => {
         console.error('Error while logging in:', err);
