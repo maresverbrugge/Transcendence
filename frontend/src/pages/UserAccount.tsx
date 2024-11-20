@@ -19,6 +19,7 @@ function UserAccount() {
   const { ID } = useParams<{ ID: string}>();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [section, setSection] = useState<string>("");
 
   useEffect(() => {
     // Fetch user data based on ID
@@ -44,22 +45,99 @@ function UserAccount() {
     return <p>User not found</p>;
   }
 
-  return (
-    <div className="user-account">
-      <h1>Your Account</h1>
-      <Username userID={ID} currentUsername={userData.username}/>
-      <br/><Avatar userID={ID} username={userData.username} currentAvatarURL={userData.avatarURL}/>
-      <Toggle2FA userID={ID}/>
-      <br/>
-      <LogOut />
+  const renderContent = () => {
+    switch (section) {
+      case "Statistics":
+        return <p>Statistics Content</p>;
+      case "Match History":
+        return <p>Match History Content</p>;
+      case "Leaderboard":
+        return <p>Leaderboard Content</p>;
+      case "Achievements":
+        return <p>Achievements Content</p>;
+      default:
+        return <p>Select a section to display data here.</p>;
+    }
+  };
 
-      {/* <Achievements userID=ID />
-      <LeaderBoard userID={currentID} />
-      <Statistics userID={currentID} />
-      <MatchHistory userID={currentID} /> */}
-       
+  return (
+    <div className="container mt-5">
+      <div className="row">
+        {/* Left Column */}
+        <div className="col-md-3">
+          <div className="card shadow mb-4">
+            <div className="card-body text-center">
+              <Avatar userID={ID} username={userData.username} currentAvatarURL={userData.avatarURL} />
+            </div>
+          </div>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <Username userID={ID} currentUsername={userData.username} />
+            </div>
+          </div>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <Toggle2FA userID={ID} />
+            </div>
+          </div>
+          <button className="btn btn-danger w-100">Log Out</button>
+        </div>
+
+        {/* Middle Column */}
+        <div className="col-md-6">
+          <div className="card shadow">
+            <div className="card-body">
+              <h3 className="text-center">User Information</h3>
+              <div className="dropdown text-center mt-3">
+                <button
+                  className="btn btn-primary dropdown-toggle"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  Choose Section
+                </button>
+                <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Statistics")}>Statistics</a></li>
+                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Match History")}>Match History</a></li>
+                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Leaderboard")}>Leaderboard</a></li>
+                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Achievements")}>Achievements</a></li>
+                </ul>
+              </div>
+              <div id="dynamic-content" className="mt-4">
+                {renderContent()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="col-md-3">
+          <div className="card shadow">
+            <div className="card-body">
+              <h4 className="text-center">Friends</h4>
+              <ul className="list-group">
+                {/* Mock friend list */}
+                <li className="list-group-item d-flex justify-content-between align-items-center">
+                  Alice
+                  <span className="badge bg-success">Online</span>
+                </li>
+                <li className="list-group-item d-flex justify-content-between align-items-center">
+                  Bob
+                  <span className="badge bg-secondary">Offline</span>
+                </li>
+                <li className="list-group-item d-flex justify-content-between align-items-center">
+                  Charlie
+                  <span className="badge bg-success">Online</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default UserAccount;

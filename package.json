@@ -6,6 +6,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "axios": "^1.7.7",
+    "bootstrap": "^5.3.3",
     "postgrejs": "^2.21.1",
     "react-router-dom": "^6.26.2",
     "typescript": "^5.6.3"
