@@ -30,6 +30,7 @@ function Username({ userID, currentUsername }) {
         onChange={(e) => setUsername(e.target.value)}
         placeholder="Enter new username"
       />
+      <br/><br/>
       <button onClick={handleChangeUsername}> Change Username</button>
     </div>
   );

@@ -4,7 +4,7 @@ import axios from 'axios';
 import Username from '../components/User/Account/Username.tsx';
 import Avatar from '../components/User/Account/Avatar.tsx';
 import Toggle2FA from '../components/User/Account/Toggle2FA.tsx';
-// import LogOut from '../components/User/Account/LogOut.tsx';
+import LogOut from '../components/User/Account/LogOut.tsx';
 // import Achievements from '../components/User/Shared/Achievements.tsx';
 // import LeaderBoard from '../components/User/Shared/LeaderBoard.tsx';
 // import MatchHistory from '../components/User/Shared/MatchHistory.tsx';
@@ -48,12 +48,12 @@ function UserAccount() {
     <div className="user-account">
       <h1>Your Account</h1>
       <Username userID={ID} currentUsername={userData.username}/>
-      <Avatar userID={ID} username={userData.username} currentAvatarURL={userData.avatarURL}/>
+      <br/><Avatar userID={ID} username={userData.username} currentAvatarURL={userData.avatarURL}/>
       <Toggle2FA userID={ID}/>
+      <br/>
+      <LogOut />
 
-      {/* <LogOut />
-
-      <Achievements userID=ID />
+      {/* <Achievements userID=ID />
       <LeaderBoard userID={currentID} />
       <Statistics userID={currentID} />
       <MatchHistory userID={currentID} /> */}
