@@ -5,7 +5,7 @@ import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
 
-const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token, setAlert }) => {
+const Channels = ({ selectedChannel, setSelectedChannel, friends, socket, token, setAlert }) => {
     const [channels, setChannels] = useState([]);
     const [unreadCounts, setUnreadCounts] = useState({}); // Track unread messages per channel
     const [showBannedAlert, setShowBannedAlert] = useState(null);
@@ -54,9 +54,7 @@ const Channels = ({selectedChannel, setSelectedChannel, friends, socket, token, 
     // }
 
     const handleSelectChannel = async (channel) => {
-        console.log(channel.name, selectedChannel?.name)
         if (channel?.id === selectedChannel?.id) {
-            console.log('jaj')
             setSelectedChannel(null)
             return
         }

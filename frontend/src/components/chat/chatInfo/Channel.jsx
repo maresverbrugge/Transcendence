@@ -7,15 +7,20 @@ const Channel = ({ channel, setChannel, socket, token }) => {
 
     useEffect(() => {
 
-        socket.emit('joinChannel', {channelID: channel.id, token }); //token later uit storage halen
+        socket.emit('selectChannel', {channelID: channel.id, token }); //token later uit storage halen
 
         return () => {
-            socket.emit('leaveChannel', {channelID: channel.id, token });
+            socket.emit('deselectChannel', {channelID: channel.id, token });
         };
     }, [channel]);
 
 
     const handleCloseMutedAlert = () => setShowMutedAlert(false);
+
+    const removeChannel = () => {
+        socket.emit('removeChannel', {channelID: channel.id, token})
+        setChannel(null)
+    }
 
     return (
         <div className="channel-container">
@@ -30,6 +35,7 @@ const Channel = ({ channel, setChannel, socket, token }) => {
                     socket={socket}
                 />
             </div>
+            {channel.isPrivate && (<button onClick={removeChannel}>Leave Channel</button>)}
         </div>
     );
 };

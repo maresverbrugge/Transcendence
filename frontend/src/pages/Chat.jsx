@@ -43,7 +43,7 @@ const Chat = () => {
     return (
         <div>
             {alert && (<AlertMessage message={alert} onClose={()=> {setAlert(null)}} />)}
-            <Channels  slectedChannel={channel} setSelectedChannel={setChannel} friends={friends} socket={socket} token={tempToken} setAlert={setAlert} />
+            <Channels  selectedChannel={channel} setSelectedChannel={setChannel} friends={friends} socket={socket} token={tempToken} setAlert={setAlert} />
             <Messenger channel={channel} socket={socket} token={tempToken}/>
             <ChatInfo channel={channel} setChannel={setChannel} friends={friends} setFriends={setFriends} socket={socket} token={tempToken}/>
         </div>

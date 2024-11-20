@@ -88,7 +88,7 @@ export class ChannelMemberService {
         return channelMember
     }
 
-    async removeChannelMember(channelMemberID: number): Promise<ChannelMember> {
+    async deleteChannelMember(channelMemberID: number): Promise<ChannelMember> {
         try {
             return await this.prisma.channelMember.delete({
                 where: { id: channelMemberID },
@@ -187,7 +187,11 @@ export class ChannelMemberService {
             const updateData = this.actionGetUpdateData(action)
             await this.updateChannelMemberEmit(server, channelID, channelMemberID, updateData);
             if (action === 'ban' || action === 'kick')
-                this.channelService.leaveChannel(server, channelID, targetChannelMember.user.websocketId);
+            {
+                const socket = server.sockets.get(targetChannelMember.user.websocketId);
+                if (socket)
+                    socket.leave(String(channelID));
+            }
         } catch (error) {
             server.to(String(channelID)).emit('error', error);
         }

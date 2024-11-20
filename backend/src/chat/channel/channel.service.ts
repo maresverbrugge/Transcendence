@@ -23,42 +23,62 @@ export class ChannelService {
         private readonly channelMemberService: ChannelMemberService
     ) {}
 
-    async joinChannel(server: Namespace, channelID: number, websocketID: string, token: string) {
+    async getChannelByID(channelID: number) : Promise<ChannelWithMembers | null> {
+        const channel = await this.prisma.channel.findUnique({
+            where: { id: channelID },
+            include: {
+              members: { include: { user: { select: { id: true, username: true } } }, },
+              messages: true,
+            },
+          });
+    
+        if (!channel)
+            throw new NotFoundException('Channel not found');
+        return channel;
+    }
+
+    async selectChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
             const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID); //change to token
             server.to(String(channelID)).emit('channelMember', channelMember)
+            socket.join(String(channelID));
+            console.log(`${socket.id} joined channel ${channelID}`) //remove later
         }
         catch (error) {
-            server.to(String(channelID)).emit('error', error);
+            socket.emit('error', error);
         }
-        const socket: Socket = server.sockets.get(websocketID);
-        if (!socket)
-            server.to(String(channelID)).emit('error', new NotFoundException(`Socket with id ${websocketID} not found.`));
-        socket.join(String(channelID))
-        console.log(`${websocketID} joined channel ${channelID}`) //remove later
     }
 
-    async leaveChannel(server: Namespace, channelID: number, websocketID: string) {
-        const socket: Socket = server.sockets.get(websocketID);
-        if (!socket)
-            throw new NotFoundException(`Socket with id ${websocketID} not found.`);
-        socket.leave(String(channelID));
-        console.log(`${websocketID} left channel ${channelID}`) //remove later
-    }
     
-    async leaveChannelRemoveChannelMember(server: Namespace, channelID: number, websocketID: string, token: string) {
+    async deselectChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
-            const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
-            this.leaveChannel(server, channelID, websocketID);
+            const channel = await this.getChannelByID(channelID)
+            if (!channel.isPrivate)
+                return this.removeChannelMember(server, channelID, socket, token)
+        } catch (error) {
+            socket.emit('error', error);
+        }
+        socket.leave(String(channelID));
+        console.log(`${socket.id} left channel ${channelID}`) //remove later
+    }
+
+    async removeChannelMember(server: Namespace, channelID: number, socket: Socket, token: string) {
+        try {
+            const userID = await this.userService.getUserIDBySocketID(token)
             const channelMember = await this.prisma.channelMember.findFirst({
                 where: {userId: userID, channelId: channelID},
                 select: {id: true, isBanned: true},
             })
+            if (!channelMember)
+                throw new NotFoundException('ChannelMember not found')
             if (!channelMember.isBanned)
-                this.channelMemberService.removeChannelMember(channelMember.id)
+                this.channelMemberService.deleteChannelMember(channelMember.id)
         } catch (error) {
-            server.to(String(channelID)).emit('error', error);
+            socket.emit('error', error);
         }
+        socket.leave(String(channelID));
+        // ERGENS NOG NAAR SERVER EMITTEN DAT CHANNELMEMBER WEG IS!
+        console.log(`${socket.id} left channel ${channelID}`) //remove later
     }
 
     emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembers) {
@@ -182,16 +202,7 @@ export class ChannelService {
             else
                 throw error
         }
-        const channel = await this.prisma.channel.findUnique({
-            where: { id: channelID },
-            include: {
-              members: { include: { user: { select: { id: true, username: true } } }, },
-              messages: true,
-            },
-          });
-    
-        if (!channel)
-            throw new NotFoundException('Channel not found');
+        const channel = this.getChannelByID(channelID);
             
         return channel;
     }

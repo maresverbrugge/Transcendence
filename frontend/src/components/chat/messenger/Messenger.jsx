@@ -7,6 +7,9 @@ const Messenger = ({ channel, socket, token }) => {
 
     useEffect(() => {
 
+        if (channel)
+            setMessages(channel.messages)
+
         socket.on('newMessage', (message) => {
             if (message?.channelID === channel.channelID)
                 setMessages((prevMessages) => [...prevMessages, message]);
@@ -22,6 +25,12 @@ const Messenger = ({ channel, socket, token }) => {
             socket.off('youAreMuted');
         };
     }, [channel]);
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            handleSendMessage();
+        }
+    };
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
@@ -40,7 +49,7 @@ const Messenger = ({ channel, socket, token }) => {
                 <>
                     <div className="message-list">
                         <ul>
-                            {messages.map((message) => (
+                            {messages?.map((message) => (
                                 <li key={message.id}>
                                     <strong>{message.senderName}: </strong>
                                     {message.content}
@@ -53,6 +62,7 @@ const Messenger = ({ channel, socket, token }) => {
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             placeholder="Type your message..."
                         />
                         <button onClick={handleSendMessage}>Send</button>

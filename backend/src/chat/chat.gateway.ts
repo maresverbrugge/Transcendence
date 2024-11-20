@@ -47,14 +47,19 @@ export class ChatGateway
     }
   }
 
-  @SubscribeMessage('joinChannel')
-  async handleJoinChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.joinChannel(this.server, data.channelID, client.id, data.token)
+  @SubscribeMessage('selectChannel')
+  async handleSelectChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.selectChannel(this.server, data.channelID, client, data.token)
   }
 
-  @SubscribeMessage('leaveChannel')
+  @SubscribeMessage('deselectChannel')
+  async handleDeselectChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.deselectChannel(this.server, data.channelID, client, data.token)
+  }
+
+  @SubscribeMessage('removeChannel')
   async handleLeaveChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.leaveChannelRemoveChannelMember(this.server, data.channelID, client.id, data.token)
+    this.channelService.removeChannelMember(this.server, data.channelID, client.id, data.token)
   }
 
   @SubscribeMessage('sendMessage')
@@ -89,5 +94,4 @@ export class ChatGateway
     if (user)
       this.server.emit('userStatusChange', user.id, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
   }
-
 }
