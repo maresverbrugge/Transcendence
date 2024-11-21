@@ -1,13 +1,19 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import isAuthenticatedHook from './AuthenticationCheck.tsx';
 
-const ProtectedRoute = ({ isAuthenticated, element }) => {
-  if (!isAuthenticated) {
-    // Redirect to login page if not authenticated
-    return <Navigate to="/" />;
+const ProtectedRoute = ({ element }) => {
+  const isAuthenticated = isAuthenticatedHook();
+
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; // Show loading screen while checking authentication
   }
-  // Render the component if authenticated
-  return element;
+  else if (!isAuthenticated) {
+    return <Navigate to="/" />; // Redirect to login page if not authenticated
+  }
+  else {
+    return element; // Render the component if authenticated
+  }
 };
 
 export default ProtectedRoute;

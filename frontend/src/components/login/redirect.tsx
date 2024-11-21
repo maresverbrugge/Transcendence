@@ -31,21 +31,18 @@ const LoginRedirect = () => {
       })
       .then(response => {
         const data = response.data;
-        console.log('data.access_token', data.access_token)
+        console.log('data.access_token:', data.access_token)
         localStorage.setItem('authenticationToken', data.access_token);
         window.location.href = '/main';
       })
       .catch(err => {
-        console.error('Error while logging in:', err);
-        if (err.response) {
-          console.log("response: ", err.response);
-        }
+        const error_message = err.response ? err.response.data : err.message;
+        console.error('Error while logging in:', error_message);
         setErrorOccurred(true);
       });
     }
   }, []);
 
-  // Render the component based on the login state
   if (accessDenied) {
     return <div>Access denied</div>;
   }

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
 import LoginPage from './components/Login/Login.tsx';
@@ -12,41 +11,19 @@ import GameApp from './pages/game';
 import Login2FA from './components/Login/TwoFactor.tsx';
 
 const App = () => {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-	useEffect(() => {
-		const token = localStorage.getItem('authenticationToken'); 
-		if (!token) {
-			setIsAuthenticated(false);
-		}
-		else {
-			axios.post('http://localhost:3001/login/verify-token', {
-				token: token,
-			})
-			.then(response => {
-				var verified = response.data;
-				console.log('Token verified:', verified);
-				setIsAuthenticated(verified);
-			})
-			.catch(err => {
-				console.error('Error while verifying token:', err);
-				setIsAuthenticated(false);
-			});
-		}
-	}, []);
 	return (
 		<Router>
-			<Routes>
-				<Route path="/" element={<LoginPage/>} />
-				<Route path="/login/redirect" element={<LoginRedirect/>} />
-				<Route path="/main" element={<MainPage/>} />
-				<Route path="/account/:ID" element={<UserAccount/>} />
-				<Route path="/profile/:ID" element={<UserProfile/>} />
-				{/* <Route path="/chat" element={<Chat/>} /> */}
-				<Route path="/game" element={<GameApp/>} />
-				<Route path="/login/2fa" element={<Login2FA/>} />
-			</Routes>
+		  <Routes>
+			<Route path="/" element={<LoginPage />} />
+			<Route path="/login/redirect" element={<LoginRedirect />} />
+			<Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
+			<Route path="/account/:ID" element={<ProtectedRoute element={<UserAccount />} />} />
+			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
+			<Route path="/game" element={<ProtectedRoute element={<GameApp />} />} />
+			<Route path="/login/2fa" element={<ProtectedRoute element={<Login2FA />} />} />
+		  </Routes>
 		</Router>
-    );}
+	  );
+}
 
 export default App;
