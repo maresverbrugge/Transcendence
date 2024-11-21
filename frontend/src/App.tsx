@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
-import LoginPage from './components/Login/Login.tsx';
-import LoginRedirect from './components/Login/Redirect.tsx';
-import ProtectedRoute from './components/Login/ProtectedRoute.tsx';
+import LoginPage from './components/Authentication/LoginPage.tsx';
+import LoginRedirect from './components/Authentication/LoginRedirect.tsx';
+import ProtectedRoute from './components/Authentication/ProtectedRoute.tsx';
 import UserAccount from './pages/UserAccount.tsx';
 import UserProfile from './pages/UserProfile.tsx';
 // import Chat from './pages/Chat';
 import GameApp from './pages/game';
-import Login2FA from './components/Login/TwoFactor.tsx';
+import Login2FA from './components/Authentication/TwoFactor.tsx';
 
 const App = () => {
 	return (

@@ -22,13 +22,19 @@ export class TwoFactorService {
 		}
 	}
 
-	async verifyOneTimePassword(oneTimePassword: string): Promise<any> {
+	async verifyOneTimePassword(oneTimePassword: string): Promise<boolean> {
 		console.log("oneTimePassword: ", oneTimePassword); // For debugging
-		const verified = speakeasy.totp.verify({
-			secret: SECRET,
-			encoding: 'ascii',
-			token: oneTimePassword,
-		});
-		return verified
+		try {
+			const verified = speakeasy.totp.verify({
+				secret: SECRET,
+				encoding: 'ascii',
+				token: oneTimePassword,
+			});
+			return verified
+		}
+		catch (error) {
+			console.error("Error in 2FA service:", error);
+			return false
+		}
 	}
 }
