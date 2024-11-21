@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import isAuthenticatedHook from './AuthenticationCheck.tsx';
+import isAuthenticatedHook from './hooks/AuthenticationCheck.tsx';
 
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = isAuthenticatedHook();

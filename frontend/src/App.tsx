@@ -4,6 +4,7 @@ import MainPage from './pages/landingPage.tsx';
 import LoginPage from './components/Authentication/LoginPage.tsx';
 import LoginRedirect from './components/Authentication/LoginRedirect.tsx';
 import ProtectedRoute from './components/Authentication/ProtectedRoute.tsx';
+import getIntraNameHook from './components/Authentication/hooks/IntraName.tsx';
 import UserAccount from './pages/UserAccount.tsx';
 import UserProfile from './pages/UserProfile.tsx';
 // import Chat from './pages/Chat';
@@ -11,6 +12,11 @@ import GameApp from './pages/game';
 import Login2FA from './components/Authentication/TwoFactor.tsx';
 
 const App = () => {
+
+	// Adding this as an example
+	const intraName = getIntraNameHook();
+	console.log('Intra name:', intraName);
+
 	return (
 		<Router>
 		  <Routes>
