@@ -119,13 +119,13 @@ export class UserService {
 
     async createUser(socketID: string): Promise<User> {
         return this.prisma.user.create({
-            data: {
-                username: socketID,
-                intraUsername: socketID,
-                websocketID: socketID,
-                Enabled2FA: true,
-                status: UserStatus.ONLINE,
-                },
+          data: {
+              username: socketID,
+              intraUsername: socketID,
+              websocketID: socketID,
+              Enabled2FA: true,
+              status: UserStatus.ONLINE,
+              },
         });
     }
 
