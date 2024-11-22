@@ -8,9 +8,9 @@ import { User } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get(':ID')
-  async getUserProfileByUserID(@Param('ID') ID: string): Promise<User | null> {
-    return this.userService.getUserProfileByUserID(Number(ID));
+  @Get(':token')
+  async getUserProfileByUserID(@Param('token') token: string): Promise<User | null> {
+    return this.userService.getUserProfileByUserID(token);
   }
   
   @Post()
@@ -18,26 +18,26 @@ export class UserController {
     return this.userService.createUser(body.username);
   }
 
-  @Post(':ID/avatar')
+  @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(
-    @Param('ID', ParseIntPipe) userID: number,
+    @Param('token') token: string,
     @UploadedFile() file: Multer.File) {
       const fileBuffer = file.buffer;
-      return this.userService.updateAvatar(userID, fileBuffer);
+      return this.userService.updateAvatar(token, fileBuffer);
   }
   
-  @Patch(':ID')
+  @Patch(':token')
   async changeUsername(
-    @Param('ID', ParseIntPipe) userID: number,
+    @Param('token') token: string,
     @Body('username') newUsername: string,) {
-      return this.userService.updateUsername(userID, newUsername);
+      return this.userService.updateUsername(token, newUsername);
   }
 
-  @Patch(':ID/2fa')
+  @Patch(':token/2fa')
   async toggleTwoFactorAuth(
-    @Param('ID', ParseIntPipe) userID: number,
+    @Param('token') token: string,
     @Body() { enable }: { enable: boolean } ) {
-      return this.userService.toggle2FA(userID, enable);
+      return this.userService.toggle2FA(token, enable);
   }
 }

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function Toggle2FA({ userID }) {
+function Toggle2FA() {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState<boolean>(false);
 
   const handleToggleTwoFactor = async () => {
     try {
-      const response = await axios.patch(`http://localhost:3001/user/${userID}/2fa`, {
+      const token = localStorage.getItem('authenticationToken');
+      const response = await axios.patch(`http://localhost:3001/user/${token}/2fa`, {
         enable: !isTwoFactorEnabled,
       });
       setIsTwoFactorEnabled(response.data.Enabled2FA); // Update 2FA status

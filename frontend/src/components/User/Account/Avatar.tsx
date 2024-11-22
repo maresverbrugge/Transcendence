@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 
-function Avatar({ userID, username, currentAvatarURL }) {
+function Avatar({ username, currentAvatarURL }) {
   const [avatarURL, setAvatarURL] = useState<string>(currentAvatarURL);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -18,13 +18,14 @@ function Avatar({ userID, username, currentAvatarURL }) {
       formData.append('avatar', selectedFile);
 
       try {
-        await axios.post(`http://localhost:3001/user/${userID}/avatar`, formData, {
+        const token = localStorage.getItem('authenticationToken');
+        await axios.post(`http://localhost:3001/user/${token}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
           });
         alert('Avatar uploaded successfully!');
 
         // After uploading, fetch the updated user data (including the new avatar URL)
-        const response = await axios.get(`http://localhost:3001/user/${userID}`);
+        const response = await axios.get(`http://localhost:3001/user/${token}`);
         setAvatarURL(response.data.avatarURL); // Update avatar URL
       } catch (error) {
         console.error("Error uploading avatar:", error);

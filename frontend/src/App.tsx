@@ -17,7 +17,7 @@ const App = () => {
 			<Route path="/" element={<LoginPage />} />
 			<Route path="/login/redirect" element={<LoginRedirect />} />
 			<Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
-			<Route path="/account/:ID" element={<ProtectedRoute element={<UserAccount />} />} />
+			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			{/* <Route path="/chat" element={<ProtectedRoute element={<Chat />} />} /> */}
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}

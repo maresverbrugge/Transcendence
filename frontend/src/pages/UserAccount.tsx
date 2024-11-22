@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL
 import axios from 'axios';
 import Username from '../components/User/Account/Username.tsx';
 import Avatar from '../components/User/Account/Avatar.tsx';
@@ -16,16 +15,16 @@ interface UserData {
 }
 
 function UserAccount() {
-  const { ID } = useParams<{ ID: string}>();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [section, setSection] = useState<string>("");
 
   useEffect(() => {
-    // Fetch user data based on ID
+    // Fetch user data based on token
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/user/${ID}`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(`http://localhost:3001/user/${token}`);
         console.log("User data fetched:", response.data);
         setUserData(response.data);
         setLoading(false);
@@ -35,7 +34,7 @@ function UserAccount() {
       }
     };
     fetchUserData();
-  }, [ID]);
+  }, []);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -67,17 +66,17 @@ function UserAccount() {
         <div className="col-md-3">
           <div className="card shadow mb-4">
             <div className="card-body text-center">
-              <Avatar userID={ID} username={userData.username} currentAvatarURL={userData.avatarURL} />
+              <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <Username userID={ID} currentUsername={userData.username} />
+              <Username currentUsername={userData.username} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <Toggle2FA userID={ID} />
+              <Toggle2FA  />
             </div>
           </div>
           <button className="btn btn-danger w-100">Log Out</button>

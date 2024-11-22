@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function Username({ userID, currentUsername }) {
+function Username({ currentUsername }) {
   const [username, setUsername] = useState<string>(currentUsername);
   
   const handleChangeUsername = async () => {
@@ -10,7 +10,8 @@ function Username({ userID, currentUsername }) {
       return;
     }
     try {
-      const response = await axios.patch(`http://localhost:3001/user/${userID}`, {
+      const token = localStorage.getItem('authenticationToken');
+      const response = await axios.patch(`http://localhost:3001/user/${token}`, {
         username: username.trim(),
       });
       alert("Username updated successfully!");
