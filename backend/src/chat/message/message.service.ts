@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
@@ -39,13 +39,16 @@ export class MessageService {
     }
 
     async sendMessage(server: Namespace, client: Socket, data: { channelID: number, token: string, content: string }) {
-      if (await this.channelService.isMuted(data.channelID, data.token)) {
-        client.emit('youAreMuted')
-        return;
+      try {
+        if (await this.channelService.isMuted(data.channelID, data.token)) {
+          throw new ForbiddenException('You are muted.')
+        }
+        const sender = await this.userService.getUserBySocketID(data.token)
+        const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
+        server.to(String(data.channelID)).emit('newMessage', newMessage)
+        server.emit('newMessageOnChannel', data.channelID)
+      } catch (error) {
+        client.emit('error', error)
       }
-      const sender = await this.userService.getUserBySocketID(data.token)
-      const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
-      server.to(String(data.channelID)).emit('newMessage', newMessage)
-      server.emit('newMessageOnChannel', data.channelID)
     }
 }

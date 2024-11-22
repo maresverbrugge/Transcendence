@@ -7,6 +7,17 @@ const Messenger = ({ channel, socket, token }) => {
 
     useEffect(() => {
 
+        const getActionMessageMap = (username) => {
+            return {
+                demote: `${username} is no longer an Admin.`,
+                makeAdmin: `${username} is now an Admin.`,
+                mute: `${username} is now muted for 60 seconds.`,
+                kick: `${username} has been kicked from the channel.`,
+                ban: `${username} is now banned from the channel.`,
+                join: `${username} has joined the channel.`,
+            }
+        };
+
         if (channel)
             setMessages(channel.messages)
 
@@ -15,14 +26,15 @@ const Messenger = ({ channel, socket, token }) => {
                 setMessages((prevMessages) => [...prevMessages, message]);
         });
 
-        socket.on('youAreMuted', () => {
-            setShowMutedAlert(true);
-        });
-
+        socket.on('action', (data) => {
+            const actionMessageMap = getActionMessageMap(data.username);
+            setMessages((prevMessages) => [...prevMessages, {content: actionMessageMap[data.action]}])
+        })
 
         return () => {
             socket.off('newMessage');
             socket.off('youAreMuted');
+            socket.off('action');
         };
     }, [channel]);
 
@@ -51,8 +63,14 @@ const Messenger = ({ channel, socket, token }) => {
                         <ul>
                             {messages?.map((message) => (
                                 <li key={message.id}>
-                                    <strong>{message.senderName}: </strong>
-                                    {message.content}
+                                    {message.senderName ? (
+                                        <>
+                                            <strong>{message.senderName}: </strong>
+                                            {message.content}
+                                        </>
+                                    ) : (
+                                        <em>{message.content}</em>
+                                    )}
                                 </li>
                             ))}
                         </ul>

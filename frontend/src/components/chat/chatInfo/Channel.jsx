@@ -3,7 +3,6 @@ import AlertMessage from '../../AlertMessage';
 import ChannelMemberList from './ChannelMemberList'; // Import the new ChannelMemberList component
 
 const Channel = ({ channel, setChannel, socket, token }) => {
-    const [showMutedAlert, setShowMutedAlert] = useState(false);
 
     useEffect(() => {
 
@@ -15,7 +14,6 @@ const Channel = ({ channel, setChannel, socket, token }) => {
     }, [channel]);
 
 
-    const handleCloseMutedAlert = () => setShowMutedAlert(false);
 
     const removeChannel = () => {
         socket.emit('removeChannel', {channelID: channel.id, token})
@@ -24,8 +22,6 @@ const Channel = ({ channel, setChannel, socket, token }) => {
 
     return (
         <div className="channel-container">
-            {showMutedAlert && (<AlertMessage message="You are muted in this channel." onClose={handleCloseMutedAlert} />)}
-
             <div className="channel-header">
                 <h2>Channel: {channel.name}</h2>
                 <ChannelMemberList

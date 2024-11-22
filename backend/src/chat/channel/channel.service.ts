@@ -4,13 +4,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client'
 import { ChannelMemberService } from '../channel-member/channel-member.service';
-import { channel } from 'diagnostics_channel';
+
+type ChannelWithMembersAndMessages = Channel & {
+    members: (ChannelMember & {
+        user: Pick<User, 'id' | 'username'>;
+    })[];
+    messages: Message[];
+};
 
 type ChannelWithMembers = Channel & {
     members: (ChannelMember & {
         user: Pick<User, 'id' | 'username'>;
     })[];
-    messages: Message[]; // Replace `any[]` with the appropriate type for messages if known
 };
 
 @Injectable()
@@ -23,7 +28,7 @@ export class ChannelService {
         private readonly channelMemberService: ChannelMemberService
     ) {}
 
-    async getChannelByID(channelID: number) : Promise<ChannelWithMembers | null> {
+    async getChannelByID(channelID: number) : Promise<ChannelWithMembersAndMessages | null> {
         const channel = await this.prisma.channel.findUnique({
             where: { id: channelID },
             include: {
@@ -41,6 +46,7 @@ export class ChannelService {
         try {
             const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID); //change to token
             server.to(String(channelID)).emit('channelMember', channelMember)
+            server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'join'})
             socket.join(String(channelID));
             console.log(`${socket.id} joined channel ${channelID}`) //remove later
         }
@@ -55,11 +61,11 @@ export class ChannelService {
             const channel = await this.getChannelByID(channelID)
             if (!channel.isPrivate)
                 return this.removeChannelMember(server, channelID, socket, token)
+            socket.leave(String(channelID));
+            console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
             socket.emit('error', error);
         }
-        socket.leave(String(channelID));
-        console.log(`${socket.id} left channel ${channelID}`) //remove later
     }
 
     async removeChannelMember(server: Namespace, channelID: number, socket: Socket, token: string) {
@@ -73,12 +79,12 @@ export class ChannelService {
                 throw new NotFoundException('ChannelMember not found')
             if (!channelMember.isBanned)
                 this.channelMemberService.deleteChannelMember(channelMember.id)
+            socket.leave(String(channelID));
+            server.to(String(channelID)).emit('removeChannelMember', channelMember.id);
+            console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
             socket.emit('error', error);
         }
-        socket.leave(String(channelID));
-        // ERGENS NOG NAAR SERVER EMITTEN DAT CHANNELMEMBER WEG IS!
-        console.log(`${socket.id} left channel ${channelID}`) //remove later
     }
 
     emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembers) {
@@ -134,8 +140,7 @@ export class ChannelService {
                 }
             },
             include: {
-                members: { include: { user: { select: { id: true, username: true } } }, },
-                messages: true,
+                members: { include: { user: { select: { id: true, username: true } } }, }
             }
         })
 
@@ -151,17 +156,17 @@ export class ChannelService {
         return channelMember ? channelMember.user.username : '';
     }
 
-    async getPublicChannels() : Promise<ChannelWithMembers[]> {
+    async getPublicChannels() : Promise<Channel[]> {
         return this.prisma.channel.findMany( {
             where: { isPrivate: false },
-            include: {
-              members: { include: { user: { select: { id: true, username: true } } }, },
-              messages: true,
-            },
+            // include: {
+            //   members: { include: { user: { select: { id: true, username: true } } }, },
+            //   messages: true,
+            // },
           });
     }
 
-    async getPrivateChannels(token : string): Promise<ChannelWithMembers[]> {
+    async getPrivateChannels(token : string): Promise<Channel[]> {
         const user = await this.prisma.user.findUnique({
             where: {websocketId: token},
             select: {
@@ -169,12 +174,12 @@ export class ChannelService {
                 channelMembers: {
                     include: {channel: {
                         include: {
-                            messages: true,
                             members: {include: {
                                 user: {select: {
                                     id: true, 
                                     username: true 
-        }}}}}}}}}})
+            }}}}}}}}}
+        })
         return user.channelMembers
             .filter((channelMember) => channelMember.channel.isPrivate)
             .map((channelMember) => {
@@ -185,7 +190,7 @@ export class ChannelService {
             });
     }
 
-    async getChannelsOfUser(token: string): Promise<ChannelWithMembers[]> {
+    async getChannelsOfUser(token: string): Promise<Channel[]> {
         const publicChannels = await this.getPublicChannels();
         const privateChannels = await this.getPrivateChannels(token);
         return [...publicChannels, ...privateChannels];
@@ -207,26 +212,26 @@ export class ChannelService {
         return channel;
     }
 
-    async addMemberToChannel(channelID: number, token: string): Promise<any | null> {
-        const userId = await this.userService.getUserIDBySocketID(token);
+    // async addMemberToChannel(channelID: number, token: string): Promise<any | null> {
+    //     const userId = await this.userService.getUserIDBySocketID(token);
     
-        try {
-            const newChannelMember = await this.prisma.channelMember.create({
-                data: {
-                    userId: userId,
-                    channelId: channelID,
-                },
-                include: {
-                    user: { select: { id: true, username: true } },
-                    channel: { select: { id: true, } },
-                }
-            });
+    //     try {
+    //         const newChannelMember = await this.prisma.channelMember.create({
+    //             data: {
+    //                 userId: userId,
+    //                 channelId: channelID,
+    //             },
+    //             include: {
+    //                 user: { select: { id: true, username: true } },
+    //                 channel: { select: { id: true, } },
+    //             }
+    //         });
     
-            return newChannelMember;
-        } catch (error) {
-            throw new InternalServerErrorException('An error occurred while adding the member to the channel.');
-        }
-    }
+    //         return newChannelMember;
+    //     } catch (error) {
+    //         throw new InternalServerErrorException('An error occurred while adding the member to the channel.');
+    //     }
+    // }
     
     
     // async getChannelAddUser(channelID: number, token: string): Promise <Channel | null> {
@@ -278,7 +283,7 @@ export class ChannelService {
         return channelMember.id;
     }
 
-    async isMuted(channelID: number, token: string): Promise<boolean> {
+    async checkIsMuted(channelID: number, token: string) {
         const userID = await this.userService.getUserIDBySocketID(token); // later change to token
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {
@@ -293,20 +298,20 @@ export class ChannelService {
         });
     
         if (!channelMember)
-            throw new NotFoundException('User is not a member of this channel');
+            throw new NotFoundException('You are not a member of this channel.');
     
-        if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil > new Date())
-            return true;
+        if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil > new Date()) {
+            const timeLeft = channelMember.muteUntil.getTime() - new Date().getTime();
+            const secondsLeft = Math.floor(timeLeft / 1000);
+            throw new ForbiddenException(`You are muted for ${secondsLeft} more seconds.`);
+        }
     
         if (channelMember.isMuted && channelMember.muteUntil && channelMember.muteUntil <= new Date()) {
             await this.prisma.channelMember.update({
                 where: { id: channelMember.id },
                 data: { isMuted: false, muteUntil: null },
             });
-            return false;
         }
-    
-        return false;
     }
     
 

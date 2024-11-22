@@ -58,14 +58,9 @@ const Channels = ({ selectedChannel, setSelectedChannel, friends, socket, token,
             setSelectedChannel(null)
             return
         }
-        // fetchCurrentUser(channel.id, token);
         try {
             const response = await axios.get(`http://localhost:3001/chat/channel/${channel.id}/${token}`);
-            setSelectedChannel({
-                ...channel,
-                messages: response.data.messages,
-                members: response.data.members,
-            });
+            setSelectedChannel(response.data);
             // Reset unread count for the selected channel
             setUnreadCounts((prevCounts) => ({
                 ...prevCounts,

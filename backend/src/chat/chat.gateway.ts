@@ -58,7 +58,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('removeChannel')
-  async handleLeaveChannel(client: Socket, data: { channelID: number, token:string }) {
+  async handleRemoveChannel(client: Socket, data: { channelID: number, token:string }) {
     this.channelService.removeChannelMember(this.server, data.channelID, client, data.token)
   }
 

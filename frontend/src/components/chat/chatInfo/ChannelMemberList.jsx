@@ -9,6 +9,7 @@ const ChannelMemberList = ({channel, setChannel, token, socket }) => {
     const [confirmAction, setConfirmAction] = useState(null);
     const [selectedMemberID, setSelectedMemberID] = useState(null);
     const [memberID, setMemberID] = useState(null)
+
     useEffect(() => {
         const fetchCurrentMemberID = async (channelID, token) => {
             try {
@@ -32,11 +33,20 @@ const ChannelMemberList = ({channel, setChannel, token, socket }) => {
                 return [...prevMembers, incomingMember];
             });
         };
+
+        const handleRemoveChannelMember = (channelMemberID) => {
+            setMembers((prevMembers) => {
+                return prevMembers.filter((member) => member.id !== channelMemberID);
+            });
+        };
     
         socket.on('channelMember', (incomingMember) => {
-            console.log(incomingMember, currentMember)
             handleIncomingMember(incomingMember)
         });
+
+        socket.on('removeChannelMember', (channelMemberID) => {
+            handleRemoveChannelMember(channelMemberID)
+        })
     
         return () => {
             socket.off('channelMember');

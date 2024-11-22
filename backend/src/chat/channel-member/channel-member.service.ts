@@ -13,7 +13,7 @@ interface ChannelMemberResponse {
     isOwner: boolean,
     banUntil: Date,
     muteUntil: Date,
-    user: { websocketId: string }
+    user: { websocketId: string, username: string }
 }
 
 @Injectable()
@@ -192,6 +192,7 @@ export class ChannelMemberService {
                 if (socket)
                     socket.leave(String(channelID));
             }
+            server.to(String(channelID)).emit('action', {action, username: targetChannelMember.user.username})
         } catch (error) {
             server.to(String(channelID)).emit('error', error);
         }
