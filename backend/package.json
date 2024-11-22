@@ -29,9 +29,11 @@
     "@nestjs/websockets": "^10.4.4",
     "@prisma/client": "^5.22.0",
     "postgrejs": "^2.21.1",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "socket.io": "^4.8.0"
+    "socket.io": "^4.8.0",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -39,7 +41,7 @@
     "@nestjs/testing": "^10.4.4",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
-    "@types/node": "^20.16.13",
+    "@types/node": "^20.17.6",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
