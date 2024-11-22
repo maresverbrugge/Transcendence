@@ -40,14 +40,15 @@ model User {
   
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
-  matchHistory      Match[]
+  matchHistory      Match[]       @relation("played")
+  watchHistory      Match[]       @relation("watched")
   statistics        Statistics?
   channelsOwned     Channel[]
   channelMembers    ChannelMember[]
   blockedUsers      BlockedUser[] @relation("blockedUsers")
   blockedByUsers    BlockedUser[] @relation("blockedByUsers")
   messages          Message[]
-  matchID           Int
+  matchID           Int?
 }
 
 model Match {

@@ -55,7 +55,7 @@ export class UserService {
       });
     }
 
-    async removewebsocketIDFromUser(websocketID: string) {
+    async removeWebsocketIDFromUser(websocketID: string) {
       const user = await this.getUserBySocketID(websocketID);
       if (user) {
         return await this.prisma.user.update({

@@ -46,24 +46,24 @@ const Game = () => {
         fetchGames();
 		
 		socketIo.on('newGame', (data) => {
-			setGames((prevGames) => prevGames.concat(data.gameId));
-			if (confirm(`game ${data.gameId} is looking for another player, join?`)) {
-				setSelectedGame(data.gameId);
-				socketIo.emit('acceptGame', data.gameId);
+			setGames((prevGames) => prevGames.concat(data.game));
+			if (confirm(`game ${data.game.matchID} is looking for another player, join?`)) {
+				setSelectedGame(data.game.matchID);
+				socketIo.emit('acceptGame', data.game.matchID);
 			} else {
 				// sent inviteDecline en dan pop up op andere frontend?
 			}
 		});
 
         return () => {
-			socket.off('newGame');
+			socketIo.off('newGame');
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
 
-	const handleSelectGame = (gameId) => {
-		socket.emit('acceptGame', gameId);
-		setSelectedGame(gameId);
+	const handleSelectGame = (gameID) => {
+		socket.emit('acceptGame', gameID);
+		setSelectedGame(gameID);
 	}
 
 	const createNewGame = (socket) => {
@@ -83,24 +83,24 @@ const Game = () => {
 						<h2>Available games</h2>
 						<ul>
 							{games.map((game) => (
-								<li key={game.matchId}>
-									<button onClick={() => handleSelectGame(game.matchId)}>
-										{`game ${game.matchId}`} {/* Display game id */}
+								<li key={game.matchID}>
+									<button onClick={() => handleSelectGame(game.matchID)}>
+										{`game ${game.matchID}`} {/* Display game id */}
 									</button>
 								</li>
 							))}
 						</ul>
+						<button onClick={() => createNewGame(socket)}>
+							{`create a new game`}
+						</button>
 					</div>
 				)}
-				<button onClick={() => createNewGame(socket)}>
-					{`create a new game`}
-				</button>
 			</div>
 
 			{/* Display selected game */}
 			<div className="game-details">
 				{selectedGame ? (
-					<GameLogic gameId={selectedGame} socket={socket}/>
+					<GameLogic gameID={selectedGame} socket={socket}/>
 				) : (
 					<p>Select or create a game to play.</p>
 				)}

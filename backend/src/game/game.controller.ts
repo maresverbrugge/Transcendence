@@ -13,7 +13,7 @@ export class GameController {
 				status: "PENDING",
 			},
 			select: {
-				matchId: true,
+				matchID: true,
 			},
         });
         if (!matches) {
