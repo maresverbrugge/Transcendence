@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { LoginModule } from './login/login.module';
+import { LoginModule } from './authentication/authentication.module';
 import { UserModule } from './user/user.module';
 // import { ChatGateway } from './chat/chat.gateway';
 // import { ChannelService } from './chat/channel/channel.service';
