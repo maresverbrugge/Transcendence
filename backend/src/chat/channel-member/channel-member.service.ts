@@ -3,18 +3,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { Namespace } from 'socket.io';
 import { ChannelService } from '../channel/channel.service';
-import { ChannelMember } from '@prisma/client';
+import { ChannelMember, User } from '@prisma/client';
 
-interface ChannelMemberResponse {
-    id: number,
-    isAdmin: boolean,
-    isBanned: boolean,
-    isMuted: boolean,
-    isOwner: boolean,
-    banUntil: Date,
-    muteUntil: Date,
-    user: { websocketId: string, username: string }
-}
+type ChannelMemberResponse = ChannelMember & {
+    user: Pick<User, 'id' | 'username' | 'websocketId'>;
+};
+
 
 @Injectable()
 export class ChannelMemberService {
@@ -31,13 +25,16 @@ export class ChannelMemberService {
             where: { id: channelMemberID },
             select: {
                 id : true,
+                websocketId : true,
                 isAdmin : true,
                 isBanned : true,
                 isMuted : true,
                 isOwner : true,
                 banUntil : true,
                 muteUntil : true,
-                user: { select: { websocketId : true, username: true } }
+                userId : true,
+                channelId : true,
+                user: { select: {id: true, websocketId : true, username: true } }
             },
         })
     }
@@ -51,13 +48,16 @@ export class ChannelMemberService {
             },
             select: {
                 id : true,
+                websocketId: true,
                 isAdmin : true,
                 isBanned : true,
                 isMuted : true,
                 isOwner : true,
                 banUntil : true,
                 muteUntil : true,
-                user: { select: { websocketId : true, username: true } }
+                userId : true,
+                channelId : true,
+                user: { select: {id: true, websocketId : true, username: true } }
             },
         })
         if (!channelMember)
@@ -74,13 +74,16 @@ export class ChannelMemberService {
             },
             select: {
                 id : true,
+                websocketId: true,
                 isAdmin : true,
                 isBanned : true,
                 isMuted : true,
                 isOwner : true,
                 banUntil : true,
                 muteUntil : true,
-                user: { select: { websocketId : true, username: true } }
+                userId: true,
+                channelId: true,
+                user: { select: {id: true, websocketId : true, username: true } }
             },
         })
         if (!channelMember)
@@ -114,13 +117,16 @@ export class ChannelMemberService {
             data: updateData,
             select: {
                 id : true,
+                websocketId: true,
                 isAdmin : true,
                 isBanned : true,
                 isMuted : true,
                 isOwner : true,
                 banUntil : true,
                 muteUntil : true,
-                user: { select: { websocketId : true, username: true } }
+                channelId: true,
+                userId: true,
+                user: { select: {id: true, websocketId : true, username: true } }
             },
         });
     }

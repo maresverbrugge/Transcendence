@@ -40,13 +40,11 @@ export class MessageService {
 
     async sendMessage(server: Namespace, client: Socket, data: { channelID: number, token: string, content: string }) {
       try {
-        if (await this.channelService.isMuted(data.channelID, data.token)) {
-          throw new ForbiddenException('You are muted.')
-        }
+        await this.channelService.checkIsMuted(data.channelID, data.token)
         const sender = await this.userService.getUserBySocketID(data.token)
         const newMessage: Message = await this.createMessage(data.channelID, sender.id, data.content)
         server.to(String(data.channelID)).emit('newMessage', newMessage)
-        server.emit('newMessageOnChannel', data.channelID)
+        // server.emit('newMessageOnChannel', data.channelID)
       } catch (error) {
         client.emit('error', error)
       }

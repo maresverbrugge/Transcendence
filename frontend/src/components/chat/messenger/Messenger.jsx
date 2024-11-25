@@ -15,6 +15,7 @@ const Messenger = ({ channel, socket, token }) => {
                 kick: `${username} has been kicked from the channel.`,
                 ban: `${username} is now banned from the channel.`,
                 join: `${username} has joined the channel.`,
+                leave: `${username} has left the channel.`,
             }
         };
 
@@ -22,7 +23,7 @@ const Messenger = ({ channel, socket, token }) => {
             setMessages(channel.messages)
 
         socket.on('newMessage', (message) => {
-            if (message?.channelID === channel.channelID)
+            if (message?.channelID === channel?.channelID)
                 setMessages((prevMessages) => [...prevMessages, message]);
         });
 

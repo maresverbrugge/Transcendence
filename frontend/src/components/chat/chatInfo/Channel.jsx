@@ -6,17 +6,19 @@ const Channel = ({ channel, setChannel, socket, token }) => {
 
     useEffect(() => {
 
-        socket.emit('selectChannel', {channelID: channel.id, token }); //token later uit storage halen
+        if (!channel.isPrivate)
+            socket.emit('joinChannel', {channelID: channel.id, token }); //token later uit storage halen
 
         return () => {
-            socket.emit('deselectChannel', {channelID: channel.id, token });
+            if (!channel.isPrivate)
+                socket.emit('leaveChannel', {channelID: channel.id, token });
         };
     }, [channel]);
 
 
 
-    const removeChannel = () => {
-        socket.emit('removeChannel', {channelID: channel.id, token})
+    const leaveChannel = () => {
+        socket.emit('leaveChannel', {channelID: channel.id, token})
         setChannel(null)
     }
 
@@ -31,7 +33,7 @@ const Channel = ({ channel, setChannel, socket, token }) => {
                     socket={socket}
                 />
             </div>
-            {channel.isPrivate && (<button onClick={removeChannel}>Leave Channel</button>)}
+            {channel.isPrivate && (<button onClick={leaveChannel}>Leave Channel</button>)}
         </div>
     );
 };

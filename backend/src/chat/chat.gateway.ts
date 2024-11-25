@@ -42,24 +42,18 @@ export class ChatGateway
     try {
       await this.channelService.newChannel(this.server, data)
     } catch (error) {
-      console.log('cought emitting error: ', error)
       client.emit('error', error)
     }
   }
 
-  @SubscribeMessage('selectChannel')
-  async handleSelectChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.selectChannel(this.server, data.channelID, client, data.token)
+  @SubscribeMessage('joinChannel')
+  async handleJoinChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.joinChannel(this.server, data.channelID, client, data.token)
   }
 
-  @SubscribeMessage('deselectChannel')
-  async handleDeselectChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.deselectChannel(this.server, data.channelID, client, data.token)
-  }
-
-  @SubscribeMessage('removeChannel')
-  async handleRemoveChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.removeChannelMember(this.server, data.channelID, client, data.token)
+  @SubscribeMessage('leaveChannel')
+  async handleLeaveChannel(client: Socket, data: { channelID: number, token:string }) {
+    this.channelService.removeChannelMemberFromChannel(this.server, data.channelID, client, data.token)
   }
 
   @SubscribeMessage('sendMessage')

@@ -28,12 +28,12 @@ const Channels = ({ selectedChannel, setSelectedChannel, friends, socket, token,
             setChannels((prevChannels) => prevChannels.concat(channel));
         });
 
-        socket.on('newMessageOnChannel', (channelID) => {
+        socket.on('newMessage', (message) => {
             // Update unread count if the message is for an unselected channel
-            if (channelID !== selectedChannel?.id)
+            if (message.channelId !== selectedChannel?.id)
                 setUnreadCounts((prevCounts) => ({
                     ...prevCounts,
-                    [channelID]: (prevCounts[channelID] || 0) + 1,
+                    [message.channelId]: (prevCounts[message.channelId] || 0) + 1,
                 }));
         });
 

@@ -18,6 +18,10 @@ type ChannelWithMembers = Channel & {
     })[];
 };
 
+type ChannelMemberResponse = ChannelMember & {
+    user: Pick<User, 'id' | 'username'>;
+}
+
 @Injectable()
 export class ChannelService {
 
@@ -42,44 +46,46 @@ export class ChannelService {
         return channel;
     }
 
-    async selectChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
-        try {
-            const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID); //change to token
-            server.to(String(channelID)).emit('channelMember', channelMember)
-            server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'join'})
-            socket.join(String(channelID));
-            console.log(`${socket.id} joined channel ${channelID}`) //remove later
-        }
-        catch (error) {
-            socket.emit('error', error);
-        }
+    addChannelMemberToChannel(server: Namespace, channelID: number, socket: Socket, channelMember: ChannelMemberResponse) {
+        server.to(String(channelID)).emit('channelMember', channelMember)
+        server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'join'})
+        socket.join(String(channelID));
+        console.log(`${socket.id} joined channel ${channelID}`) //remove later
+    }
+
+    async joinChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
+        const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
+        this.addChannelMemberToChannel(server, channelID, socket, channelMember)
     }
 
     
-    async deselectChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
-        try {
-            const channel = await this.getChannelByID(channelID)
-            if (!channel.isPrivate)
-                return this.removeChannelMember(server, channelID, socket, token)
-            socket.leave(String(channelID));
-            console.log(`${socket.id} left channel ${channelID}`) //remove later
-        } catch (error) {
-            socket.emit('error', error);
-        }
-    }
+    // async deselectChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
+    //     try {
+    //         const channel = await this.getChannelByID(channelID)
+    //         if (!channel.isPrivate)
+    //             return this.removeChannelMember(server, channelID, socket, token)
+    //         socket.leave(String(channelID));
+    //         server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'leave'})
+    //         console.log(`${socket.id} left channel ${channelID}`) //remove later
+    //     } catch (error) {
+    //         socket.emit('error', error);
+    //     }
+    // }
 
-    async removeChannelMember(server: Namespace, channelID: number, socket: Socket, token: string) {
+    async removeChannelMemberFromChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
             const userID = await this.userService.getUserIDBySocketID(token)
             const channelMember = await this.prisma.channelMember.findFirst({
                 where: {userId: userID, channelId: channelID},
-                select: {id: true, isBanned: true},
+                select: {id: true, isBanned: true, user: {select: {username: true}}}
             })
             if (!channelMember)
                 throw new NotFoundException('ChannelMember not found')
             if (!channelMember.isBanned)
                 this.channelMemberService.deleteChannelMember(channelMember.id)
             socket.leave(String(channelID));
+            console.log('action leave', {username: channelMember.user.username, action: 'leave'})
+            server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'leave'})
             server.to(String(channelID)).emit('removeChannelMember', channelMember.id);
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
@@ -97,8 +103,10 @@ export class ChannelService {
                 console.log('namechange', personalizedChannel.name, member);
             }
     
-            const websocket = await this.userService.getWebSocketByUserID(server, member.userId);
-            websocket.emit('newChannel', personalizedChannel); // Emit the personalized channel
+            const socket = await this.userService.getWebSocketByUserID(server, member.userId);
+            this.addChannelMemberToChannel(server, channel.id, socket, member)
+            console.log('check', member.id, socket.id)
+            socket.emit('newChannel', personalizedChannel); // Emit the personalized channel
         });
     }
 
