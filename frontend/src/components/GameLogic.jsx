@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import './Channels.css'; // Import the CSS file
 
 var g_socket;
+var g_gameID;
 var end = 0;
 var paddleLeft;
 var paddleRight;
@@ -10,13 +10,14 @@ var scoreLeft = 0;
 var scoreRight = 0;
 
 class Ball {
-	constructor(x, y, diameter, context) {
+	constructor(x, y, diameter, context, gameID) {
 		this.x = x;
 		this.y = y;
 		this.diameter = diameter;
 		this.speedX = 0;
 		this.speedY = 0;
 		this.context = context;
+		this.gameID = gameID;
 	}
 	left() {
 		return this.x-this.diameter/2;
@@ -35,23 +36,23 @@ class Ball {
 		this.y += this.speedY;
 		if (this.right() > width) {
 			scoreLeft += 1;
-			// this.ws.send('left scored');
+			g_socket.emit('left scored', this.gameID);
 			this.x = width/2;
 			this.y = height/2;
 		}
 		if (this.left() < 0) {
 			scoreRight += 1;
-			// this.ws.send('right scored');
+			g_socket.emit('right scored', this.gameID);
 			this.x = width/2;
 			this.y = height/2;
 		}
 		if (this.bottom() > height) {
 			this.speedY = -this.speedY;
-			// this.ws.send('ball speedY reversed');
+			g_socket.emit('ball speedY reversed');
 		}
 		if (this.top() < 0) {
 			this.speedY = -this.speedY;
-			// this.ws.send('ball speedY reversed');
+			g_socket.emit('ball speedY reversed');
 		}
 	}
 	display() {
@@ -96,12 +97,12 @@ class Paddle{
 };
 
 window.onkeydown = function(press){
-	if (end === 0 && press.keyCode === 38){
-		g_socket.emit("up");
+	if (end === 0 && press.key === "upArrow"){
+		g_socket.emit("up", g_gameID, g_socket.ID);
 		paddleRight.y -= 3;
 	}
-	if (end === 0 && press.keyCode === 40){
-		g_socket.emit("down");
+	if (end === 0 && press.key === "downArrow"){
+		g_socket.emit("down", g_gameID, g_socket.ID);
 		paddleRight.y += 3;
 	}
 }
@@ -110,13 +111,12 @@ function map_range(value, low1, high1, low2, high2) {
 	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 
-const GameLogic = ({ game, socket }) => {
+const GameLogic = ({ gameID, socket }) => {
     const canvas = React.useRef();
 	var width = 500;
 	var height = 500;
 	var ball;
 	const draw = (ctx, socket) => {
-		// socket.emit('frame');
 		ctx.clearRect(0, 0, width, height);
 		ball.move(width, height);
 		ball.display();
@@ -143,7 +143,9 @@ const GameLogic = ({ game, socket }) => {
 	}
 	
     useEffect(() => {
+		socket.emit("start");
 		g_socket = socket;
+		g_gameID = gameID;
 		const context = canvas.current.getContext('2d');
 		let frameCount = 0;
 		let frameId;
@@ -151,9 +153,23 @@ const GameLogic = ({ game, socket }) => {
 		context.font = "80 px Arial";
 		context.textAlign = "center";
 		context.lineWidth = 1;
-		ball = new Ball(width/2, height/2, 50, context);
+		ball = new Ball(width/2, height/2, 50, context, gameID);
 		ball.speedX = 5;
-		ball.speedY = Math.floor(Math.random() * 6 - 3); //get from server
+		socket.on('ballSpeedY', (speed) => {
+            ball.speedY = parseInt(speed);
+        })
+		socket.on('right up', () => {
+            console.log("right player up");
+        })
+		socket.on('left up', () => {
+            console.log("left player up");
+        })
+		socket.on('right down', () => {
+            console.log("right player down");
+        })
+		socket.on('left down', () => {
+            console.log("left player down");
+        })
 		paddleLeft = new Paddle(15, height/2, 30, 200, context);
 		paddleRight = new Paddle(width-15, height/2, 30, 200, context);
 

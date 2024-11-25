@@ -62,7 +62,7 @@ const Game = () => {
     }, [])
 
 	const handleSelectGame = (gameID) => {
-		socket.emit('acceptGame', gameID);
+		socket.emit('acceptGame', gameID, socket.id);
 		setSelectedGame(gameID);
 	}
 

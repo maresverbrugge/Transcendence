@@ -42,24 +42,22 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	// }
 
 	@SubscribeMessage('createNewGame')
-	async handleNewGame(client: any, clientId: string) {
-		// const member: User = await this.userService.getUserBySocketId(clientId)
-		// const member1: User = await this.userService.getUserByUserId(memberId1)
-		// const memberSocket1: Socket = this.server.sockets.sockets.get(member1.websocketId);
-		// const member2: User = await this.userService.getUserByUserId(memberId2)
-		// const memberSocket2: Socket = this.server.sockets.sockets.get(member2.websocketId);
+	async handleNewGame(client: any, socketID: string) {
+		const member: User = await this.userService.getUserBySocketId(socketID);
 		const newGame : Match = await this.prisma.match.create({
 			data: {
 				status: "PENDING",
 			}
 		});
 		this.server.emit('newGame', {
-			game: newGame
+			gameID: newGame,
+			players: [member]
         });
 	}
 
 	@SubscribeMessage('acceptGame')
-	async handleNewGameAccept(client: any, gameID: string) {
+	async handleNewGameAccept(client: any, gameID: string, socketID: string) {
+		const member: User = await this.userService.getUserBySocketId(socketID);
 		const updatedMatch: Match = await this.prisma.match.update({
 			where: {
 				matchID: parseInt(gameID),
@@ -67,15 +65,76 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 			data: {
 				status: "ACCEPTED",
 				updatedAt: new Date(),
+				players: {
+					push: member
+				}
 			},
 		})
 	}
 
+	@SubscribeMessage('start')
+	handleGameStart() {
+		this.server.emit('ballSpeedY', Math.floor(Math.random() * 6 - 3));
+	}
+
 	@SubscribeMessage('up')
-	handleUpKey() {
-		// this.paddleRightY -= 3;
-		// this.server.emit('paddleY', this.paddleRightY);
-		// console.log('the up arrow has been pressed');
+	handleUpKey(client: any, gameID: string, socketID: string) {
+		const playerID: number = await this.userService.getUserIDBySocketId(socketID);
+		const game = this.prisma.match.findUnique({
+			where: { matchID: parseInt(gameID) },
+		  });
+		if (game.players[0].ID === parseInt(playerID))
+		{
+			this.server.emit('right up');
+		}
+		else
+		{
+			this.server.emit('left up');
+		}
+	}
+
+	@SubscribeMessage('down')
+	handleDownKey(client: any, gameID: string, socketID: string) {
+		const playerID: number = await this.userService.getUserIDBySocketId(socketID);
+		const game = this.prisma.match.findUnique({
+			where: { matchID: parseInt(gameID) },
+		  });
+		if (game.players[0].ID === parseInt(playerID))
+		{
+			this.server.emit('right down');
+		}
+		else
+		{
+			this.server.emit('left down');
+		}
+	}
+
+	@SubscribeMessage('left scored')
+	async handleScoreLeft(client: any, gameID: string) {
+		const updatedMatch: Match = await this.prisma.match.update({
+			where: {
+				matchID: parseInt(gameID),
+			},
+			data: {
+				scorePlayer1: {
+					increment: 1
+				}
+			},
+		})
+	}
+
+	@SubscribeMessage('right scored')
+	async handleScoreRight(client: any, gameID: string) {
+		const updatedMatch: Match = await this.prisma.match.update({
+			where: {
+				matchID: parseInt(gameID),
+			},
+			data: {
+				scorePlayer2: {
+					increment: 1
+				}
+			},
+		})
 	}
 
 	afterInit(server: Namespace) {
