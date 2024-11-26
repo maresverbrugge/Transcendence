@@ -49,7 +49,7 @@ export class LoginService {
     catch(error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while verifying token:', message);
-      return false;
+      throw new InternalServerErrorException('Error while verifying token');
     };
   }
 
@@ -65,7 +65,7 @@ export class LoginService {
     catch(error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while getting intra name:', message);
-      return null;
+      throw new InternalServerErrorException('Error while getting intra name');
     };
   }
 }
