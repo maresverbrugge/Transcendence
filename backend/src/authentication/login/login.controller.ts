@@ -12,6 +12,8 @@ export class LoginController {
       throw new BadRequestException('Invalid state');
     }
     const token = await this.loginService.getToken(code);
+    const user = await this.loginService.getIntraName(token.access_token);
+    this.loginService.addUserToDatabase(user);
     return token;
   }
 
