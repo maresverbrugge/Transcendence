@@ -25,7 +25,7 @@ const LoginRedirect = () => {
     }
     else {
       // Send the code and state to the backend to get the access token
-      axios.post('http://localhost:3001/login/callback', {
+      axios.post('http://localhost:3001/login/get-token', {
         code: code,
         state: state,
       })

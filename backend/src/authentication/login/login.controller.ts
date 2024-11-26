@@ -5,8 +5,8 @@ import { LoginService } from './login.service';
 export class LoginController {
   constructor(private readonly loginService: LoginService) {}
 
-  @Post('callback')
-  async callback(@Body() body: { code: string; state: string }) {
+  @Post('get-token')
+  async getToken(@Body() body: { code: string; state: string }) {
     const { code, state } = body;
     if (state !== process.env.REACT_APP_LOGIN_STATE) {
       throw new BadRequestException('Invalid state');

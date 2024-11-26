@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { LoginController } from './login.controller';
-import { LoginService } from './login.service';
-import { TwoFactorController } from './two-factor.controller';
-import { TwoFactorService } from './two-factor.service';
+import { LoginController } from './login/login.controller';
+import { LoginService } from './login/login.service';
+import { TwoFactorController } from './two-factor/two-factor.controller';
+import { TwoFactorService } from './two-factor/two-factor.service';
 
 @Module({
   controllers: [LoginController, TwoFactorController],
