@@ -94,11 +94,11 @@ const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
                             <div>
                                 <h4>Add Members:</h4>
                                 {friends.map((friend) => (
-                                    <label key={friend.id}>
+                                    <label key={friend.ID}>
                                         <input
                                             type="checkbox"
-                                            checked={selectedMemberIDs.includes(friend.id)}
-                                            onChange={() => toggleMember(friend.id)}
+                                            checked={selectedMemberIDs.includes(friend.ID)}
+                                            onChange={() => toggleMember(friend.ID)}
                                         />
                                         {friend.username}
                                     </label>

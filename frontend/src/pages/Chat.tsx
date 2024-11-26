@@ -4,14 +4,15 @@ import Channels from '../components/Chat/Channels/Channels.tsx';
 import AlertMessage from '../components/AlertMessage.tsx';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo.tsx';
 import Messenger from '../components/Chat/Messenger/Messenger.tsx';
-import { ChannelData, Friend } from '../components/Chat/interfaces.tsx';
+import { ChannelData, MemberData } from '../components/Chat/interfaces.tsx';
+import './Chat.css'
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [tempToken, setTempToken] = useState<string | null>(null); // Temporary token replacement
   const [alert, setAlert] = useState<string | null>(null);
-  const [channel, setChannel] = useState<Channel | null>(null);
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [channel, setChannel] = useState<ChannelData | null>(null);
+  const [friends, setFriends] = useState<MemberData[]>([]);
 
   useEffect(() => {
   
@@ -35,7 +36,7 @@ const Chat = () => {
 
     socketIo.on('error', (error: any) => {
       console.error(error);
-      setAlert({ message: error.response?.message || 'An error occurred' });
+      setAlert(error.response?.message || 'An error occurred');
     });
 
     // Set socket instance in state
@@ -52,7 +53,7 @@ const Chat = () => {
     <div>
       {alert && (
         <AlertMessage
-          message={alert.message}
+          message={alert}
           onClose={() => setAlert(null)}
         />
       )}

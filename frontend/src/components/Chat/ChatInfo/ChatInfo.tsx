@@ -5,7 +5,7 @@ import { ChannelData, MemberData } from '../interfaces.tsx'
 import Channel from './Channel.tsx';
 
 interface ChannelInfoProps {
-    channel: ChannelData | null;
+    channel: ChannelData;
     setChannel: (channel: ChannelData | null) => void;
     token: string;
     socket: any; // Adjust this type if using a specific Socket.IO client library type

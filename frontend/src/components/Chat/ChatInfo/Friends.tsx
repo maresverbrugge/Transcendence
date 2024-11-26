@@ -36,7 +36,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
     };
 
     socket.on('userStatusChange', (userID: string, userStatus: string) => {
-      if (friend.id === userID) setStatus(getStatusClass(userStatus));
+      if (friend.ID === userID) setStatus(getStatusClass(userStatus));
     });
 
     setStatus(getStatusClass(friend.status));
@@ -44,7 +44,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
     return () => {
       socket.off('userStatusChange');
     };
-  }, [friend.id, friend.status, socket]);
+  }, [friend.ID, friend.status, socket]);
 
   return <li className={status}>{friend.username}</li>;
 };
@@ -70,7 +70,7 @@ const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
       <h1>Friends</h1>
       <ul className="friends">
         {friends.map((friend) => (
-          <Friend key={friend.id} friend={friend} socket={socket} />
+          <Friend key={friend.ID} friend={friend} socket={socket} />
         ))}
       </ul>
     </div>

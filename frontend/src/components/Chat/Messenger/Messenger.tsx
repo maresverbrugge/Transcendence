@@ -1,28 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { SocketIOClient } from 'socket.io-client';
 import './Messenger.css';
+import { ChannelData, MessageData } from '../interfaces';
 
-interface Message {
-    id: string;
-    senderName?: string;
-    content: string;
-    channelID: string;
-}
-
-interface Channel {
-    id: string;
-    channelID: string;
-    messages: Message[];
-}
 
 interface MessengerProps {
-    channel: Channel | null;
-    socket: SocketIOClient.Socket;
+    channel: ChannelData | null;
+    socket: any;
     token: string;
 }
 
 const Messenger = ({ channel, socket, token }: MessengerProps) => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<MessageData[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
 
     useEffect(() => {
@@ -42,15 +30,15 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
             setMessages(channel.messages);
         }
 
-        socket.on('newMessage', (message: Message) => {
-            if (message?.channelID === channel?.channelID) {
+        socket.on('newMessage', (message: MessageData) => {
+            if (message?.channelID === channel?.ID) {
                 setMessages((prevMessages) => [...prevMessages, message]);
             }
         });
 
         socket.on('action', (data: { username: string, action: keyof ReturnType<typeof getActionMessageMap> }) => {
             const actionMessageMap = getActionMessageMap(data.username);
-            setMessages((prevMessages) => [...prevMessages, { content: actionMessageMap[data.action], id: `${data.username}-${data.action}`, channelID: channel?.channelID || '' }]);
+            setMessages((prevMessages) => [...prevMessages, { content: actionMessageMap[data.action], ID: `${data.username}-${data.action}`, channelID: channel?.ID || '' }]);
         });
 
         return () => {
@@ -67,7 +55,7 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            socket.emit('sendMessage', { channelID: channel?.id, token, content: newMessage });
+            socket.emit('sendMessage', { channelID: channel?.ID, token, content: newMessage });
             setNewMessage('');
         }
     };
@@ -83,7 +71,7 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
                     <div className="message-list">
                         <ul>
                             {messages?.map((message) => (
-                                <li key={message.id}>
+                                <li key={message.ID}>
                                     {message.senderName ? (
                                         <>
                                             <strong>{message.senderName}: </strong>

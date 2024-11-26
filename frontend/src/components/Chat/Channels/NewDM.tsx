@@ -26,7 +26,7 @@ const NewDM = ({ friends, socket, token, setAlert }: NewDMProps) => {
             isDM: true,
             password: null,
             token,
-            memberIDs: [selectedFriend.id],
+            memberIDs: [selectedFriend.ID],
         };
 
         socket.emit('newChannel', newDMData);
@@ -52,11 +52,11 @@ const NewDM = ({ friends, socket, token, setAlert }: NewDMProps) => {
                         <h3>Select a Friend for the DM</h3>
                         <div>
                             {friends.map((friend) => (
-                                <label key={friend.id}>
+                                <label key={friend.ID}>
                                     <input
                                         type="radio"
                                         name="friendSelection"
-                                        checked={selectedFriend?.id === friend.id} // Safely check selectedFriend
+                                        checked={selectedFriend?.ID === friend.ID} // Safely check selectedFriend
                                         onChange={() => setSelectedFriend(friend)} // Select a friend
                                     />
                                     {friend.username}

@@ -21,6 +21,7 @@
     flex-grow: 1; /* Takes up remaining space */
     overflow-y: auto; /* Makes message list scrollable */
     padding: 10px;
+    background-color: rgb(253, 251, 147);
 }
 
 .messenger-input {

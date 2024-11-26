@@ -4,6 +4,7 @@ export interface ChannelData {
     isPrivate: boolean;
     isDM?: boolean;
     members: MemberData[]
+    messages: MessageData[]
   }
   
   export interface MemberData {
@@ -11,10 +12,14 @@ export interface ChannelData {
     username: string;
     isOwner: boolean;
     isAdmin: boolean;
+    isBanned: boolean;
+    user: {username: string}
     status: 'ONLINE' | 'OFFLINE' | 'IN_GAME' | 'AFK';
   }
   
   export interface MessageData {
+    ID: string;
+    senderName?: string;
     channelID: string;
     content: string;
   }

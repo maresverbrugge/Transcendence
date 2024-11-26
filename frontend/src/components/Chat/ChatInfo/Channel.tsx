@@ -3,7 +3,7 @@ import ChannelMemberList from './ChannelMemberList.tsx';
 import { ChannelData } from '../interfaces.tsx';
 
 interface ChannelProps {
-  channel: ChannelData | null;
+  channel: ChannelData;
   setChannel: (channel: ChannelData | null) => void;
   socket: any;
   token: string;
@@ -13,19 +13,19 @@ const Channel = ({ channel, setChannel, socket, token }: ChannelProps) => {
 
     useEffect(() => {
         if (channel && !channel.isPrivate) {
-            socket.emit('joinChannel', { channelID: channel.id, token }); // token later uit storage halen
+            socket.emit('joinChannel', { channelID: channel.ID, token }); // token later uit storage halen
         }
 
         return () => {
             if (channel && !channel.isPrivate) {
-                socket.emit('leaveChannel', { channelID: channel.id, token });
+                socket.emit('leaveChannel', { channelID: channel.ID, token });
             }
         };
     }, [channel, socket, token]);
 
     const leaveChannel = () => {
         if (channel) {
-            socket.emit('leaveChannel', { channelID: channel.id, token });
+            socket.emit('leaveChannel', { channelID: channel.ID, token });
             setChannel(null);
         }
     };
