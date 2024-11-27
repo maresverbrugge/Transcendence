@@ -35,19 +35,31 @@ export class LoginService {
   }
 
   async addUserToDatabase(user: string): Promise<void> {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { username: user },
-    });
-
-    if (!existingUser) {
-      await this.prisma.user.create({
-        data: { 
-          username: user,
-          intraUsername: user, 
-          Enabled2FA: false,
-          status: UserStatus.ONLINE,
-        },
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { intraUsername: user },
       });
+      
+      if (!existingUser) {
+        await this.prisma.user.create({
+          data: { 
+            username: user,
+            intraUsername: user, 
+            Enabled2FA: false,
+            status: UserStatus.ONLINE,
+          },
+        });
+      }
+      else {
+        await this.prisma.user.update({
+          where: { ID: existingUser.ID },
+          data: { status: UserStatus.ONLINE },
+        });
+      }
+    }
+    catch(error) {
+      console.error('Error while adding user to database:', error);
+      throw new InternalServerErrorException('Error while adding user to database');
     }
   }
 
