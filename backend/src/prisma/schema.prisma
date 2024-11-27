@@ -30,14 +30,14 @@ enum MatchStatus {
 
 model User {
   ID                Int           @id @default(autoincrement())
-  username          String        @unique
+  username          String
   intraUsername     String        @unique
   avatar            Bytes?
   Enabled2FA        Boolean
   token             String?
   websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
-  
+
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
   matchHistory      Match[]
@@ -78,8 +78,9 @@ model Channel {
   ID                Int           @id @default(autoincrement())
   name              String
   isPrivate         Boolean       @default(false)
+  isDM              Boolean       @default(false)
   password          String?       // Optional password field
-  
+
   ownerID           Int
   owner             User          @relation(fields: [ownerID], references: [ID], onDelete: Cascade) // when user is deleted, channel should not be deleted but a new admin should be assigned
   messages          Message[]
@@ -92,7 +93,7 @@ model Message {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   senderName        String
-  
+
   senderID          Int
   sender            User          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
   channelID         Int
@@ -102,9 +103,12 @@ model Message {
 model ChannelMember {
   ID                Int           @id @default(autoincrement())
   websocketID       String?       // The ID of the websocket, nullable
+  isOwner           Boolean       @default(false)
   isAdmin           Boolean       @default(false)
   isMuted           Boolean       @default(false)
+  muteUntil         DateTime?
   isBanned          Boolean       @default(false)
+  banUntil          DateTime?
 
   userID            Int
   user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
