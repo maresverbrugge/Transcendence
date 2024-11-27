@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import GameLogic from '../components/GameLogic';
+import GameControl from '../components/Game/GameControl';
 
 const Game = () => {
 	const [socket, setSocket] = useState(null);
@@ -100,7 +100,7 @@ const Game = () => {
 			{/* Display selected game */}
 			<div className="game-details">
 				{selectedGame ? (
-					<GameLogic gameID={selectedGame} socket={socket}/>
+					<GameControl gameID={selectedGame} socket={socket}/>
 				) : (
 					<p>Select or create a game to play.</p>
 				)}
