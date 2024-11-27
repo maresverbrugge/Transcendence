@@ -79,6 +79,7 @@ export class ChatGateway
     const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(client.id, token as string, this.server) // voor nu om de socket toe te wijzen aan een user zonder token
     this.server.emit('userStatusChange', user.ID, 'ONLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
     client.emit('token', client.id) //even socketID voor token vervangen tijdelijk
+    await this.channelMemberService.addSocketToAllRooms(client, token)
   }
 
   async handleDisconnect(client: Socket) {

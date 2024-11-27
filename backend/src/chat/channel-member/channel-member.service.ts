@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { Namespace } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { ChannelService } from '../channel/channel.service';
 import { ChannelMember, User } from '@prisma/client';
 
@@ -202,5 +202,17 @@ export class ChannelMemberService {
         } catch (error) {
             server.to(String(channelID)).emit('error', error);
         }
+    }
+
+    async addSocketToAllRooms(socket: Socket, token: string) {
+        const user = await this.prisma.user.findUnique({
+            where: {websocketID: socket.id}, // change to token later
+            select: {channelMembers: {select: {channelID: true}}}
+        })
+        const channelMembers = user.channelMembers;
+        channelMembers.map((member) => {
+            socket.join(String(member.channelID))
+            console.log(`${socket.id} joined channel ${member.channelID}`) //remove later
+        })
     }
 }
