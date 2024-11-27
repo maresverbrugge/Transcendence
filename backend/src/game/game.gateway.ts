@@ -43,21 +43,21 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 
 	@SubscribeMessage('createNewGame')
 	async handleNewGame(client: any, socketID: string) {
-		const member: User = await this.userService.getUserBySocketId(socketID);
+		const member: User = await this.userService.getUserBySocketID(socketID);
 		const newGame : Match = await this.prisma.match.create({
 			data: {
 				status: "PENDING",
+				players: [member]
 			}
 		});
 		this.server.emit('newGame', {
 			gameID: newGame,
-			players: [member]
         });
 	}
 
 	@SubscribeMessage('acceptGame')
 	async handleNewGameAccept(client: any, gameID: string, socketID: string) {
-		const member: User = await this.userService.getUserBySocketId(socketID);
+		const member: User = await this.userService.getUserBySocketID(socketID);
 		const updatedMatch: Match = await this.prisma.match.update({
 			where: {
 				matchID: parseInt(gameID),
@@ -78,12 +78,12 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	}
 
 	@SubscribeMessage('up')
-	handleUpKey(client: any, gameID: string, socketID: string) {
-		const playerID: number = await this.userService.getUserIDBySocketId(socketID);
+	async handleUpKey(client: any, gameID: string, socketID: string) {
+		const playerID: number = await this.userService.getUserIDBySocketID(socketID);
 		const game = this.prisma.match.findUnique({
 			where: { matchID: parseInt(gameID) },
 		  });
-		if (game.players[0].ID === parseInt(playerID))
+		if (game.players[0].ID === playerID)
 		{
 			this.server.emit('right up');
 		}
@@ -94,12 +94,12 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	}
 
 	@SubscribeMessage('down')
-	handleDownKey(client: any, gameID: string, socketID: string) {
-		const playerID: number = await this.userService.getUserIDBySocketId(socketID);
+	async handleDownKey(client: any, gameID: string, socketID: string) {
+		const playerID: number = await this.userService.getUserIDBySocketID(socketID);
 		const game = this.prisma.match.findUnique({
 			where: { matchID: parseInt(gameID) },
 		  });
-		if (game.players[0].ID === parseInt(playerID))
+		if (game.players[0].ID === playerID)
 		{
 			this.server.emit('right down');
 		}

@@ -59,8 +59,8 @@ model Match {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  players           User[] @relation("played")
-  spectators        User[] @relation("watched")
+  players           User[]        @relation("played")
+  spectators        User[]        @relation("watched")
 }
 
 model Statistics {
