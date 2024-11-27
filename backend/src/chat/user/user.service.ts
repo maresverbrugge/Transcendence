@@ -47,7 +47,7 @@ export class UserService {
     
       // Step 3: If no users have an empty or inactive websocketID, create a new user
       return await this.prisma.user.create({
-        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: UserStatus.ONLINE, websocketID: socketID, token: token },
+        data: { username: `user${socketID}`, intraUsername: `user${socketID}`, Enabled2FA: false, status: UserStatus.ONLINE, websocketID: socketID, token: token },
       });
     }
 

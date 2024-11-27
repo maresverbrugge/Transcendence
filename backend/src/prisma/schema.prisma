@@ -30,8 +30,8 @@ enum MatchStatus {
 
 model User {
   ID                Int           @id @default(autoincrement())
-  username          String        @unique
-  intraUsername     String
+  username          String
+  intraUsername     String        @unique
   avatar            Bytes?
   Enabled2FA        Boolean
   token             String?
