@@ -16,13 +16,13 @@ function Toggle2FA() {
       console.error('Error toggling 2FA:', error);
     }
   };
-  
+
   return (
     <div className="toggle-2FA">
     {/* Enable/disable 2FA Button */}
     <h4>2FA Status</h4>
     <p>{isTwoFactorEnabled ? '2FA is Enabled' : '2FA is Disabled'}</p>
-    <button onClick={handleToggleTwoFactor}>
+    <button class="btn btn-warning" onClick={handleToggleTwoFactor}>
       {isTwoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
     </button>
     </div>

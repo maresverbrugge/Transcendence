@@ -3,7 +3,7 @@ import axios from 'axios';
 
 function Username({ currentUsername }) {
   const [username, setUsername] = useState<string>(currentUsername);
-  
+
   const handleChangeUsername = async () => {
     if (!username.trim()) {
       alert("Username cannot be empty!");
@@ -32,7 +32,7 @@ function Username({ currentUsername }) {
         placeholder="Enter new username"
       />
       <br/><br/>
-      <button onClick={handleChangeUsername}> Change Username</button>
+      <button class="btn btn-warning" onClick={handleChangeUsername}> Change Username</button>
     </div>
   );
 }

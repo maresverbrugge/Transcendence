@@ -5,7 +5,7 @@ body {
     padding: 0;
     background-color: #f4f4f4;
   }
-  
+
   #root {
     display: flex;
     justify-content: center;
@@ -13,7 +13,7 @@ body {
     min-height: 100vh;
     padding: 20px;
   }
-  
+
   /* Chat App Styles */
   .App {
     max-width: 600px;
@@ -24,13 +24,13 @@ body {
     padding: 20px;
     box-sizing: border-box;
   }
-  
+
   h1 {
     font-size: 24px;
     margin-bottom: 20px;
     text-align: center;
   }
-  
+
   .message-list {
     max-height: 400px;
     overflow-y: auto;
@@ -40,23 +40,23 @@ body {
     border-radius: 4px;
     background-color: #f9f9f9;
   }
-  
+
   .message-list div {
     padding: 5px 0;
     border-bottom: 1px solid #ddd;
   }
-  
+
   .message-list div:last-child {
     border-bottom: none;
   }
-  
+
   input[type="text"] {
     width: calc(100% - 100px);
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
   }
-  
+
   button {
     padding: 10px 20px;
     border: none;
@@ -67,7 +67,11 @@ body {
     cursor: pointer;
     margin-left: 10px;
   }
-  
+
   button:hover {
     background-color: #0056b3;
+  }
+
+  .accordion-button:hover {
+    background-color: #ff75b3;
   }

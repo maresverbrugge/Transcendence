@@ -68,7 +68,7 @@ export class UserService {
         });
       }
     }
-    
+
     async getUsers(client: Socket) {
         const users: User[] = await this.prisma.user.findMany(); // Fetch all users from the User model
         client.emit('users', users);
@@ -94,10 +94,14 @@ export class UserService {
     }
 
     async getUserProfileByUserID(token): Promise<UserProfile | null> {
-      const intraUsername = await this.loginService.getIntraName(token);
-      
+      const intraName = await this.loginService.getIntraName(token);
+      console.log("intraName = ", intraName);
+
+      if (!intraName)
+        throw new NotFoundException('intraUsername not found');
+
       const user = await this.prisma.user.findUnique({
-        where: { intraUsername: intraUsername },
+        where: { intraUsername: intraName },
       });
       console.log("user = ", user);
 
@@ -108,9 +112,9 @@ export class UserService {
       const avatarURL = user.avatar
         ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
-      
+
       // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
-      
+
       return {
         ...user,
         avatarURL, // Attach either the user's avatar or the default avatar URL

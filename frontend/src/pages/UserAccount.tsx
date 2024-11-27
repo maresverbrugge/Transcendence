@@ -44,21 +44,6 @@ function UserAccount() {
     return <p>User not found</p>;
   }
 
-  const renderContent = () => {
-    switch (section) {
-      case "Statistics":
-        return <p>Statistics Content</p>;
-      case "Match History":
-        return <p>Match History Content</p>;
-      case "Leaderboard":
-        return <p>Leaderboard Content</p>;
-      case "Achievements":
-        return <p>Achievements Content</p>;
-      default:
-        return <p>Select a section to display data here.</p>;
-    }
-  };
-
   return (
     <div className="container mt-5">
       <div className="row">
@@ -79,33 +64,105 @@ function UserAccount() {
               <Toggle2FA  />
             </div>
           </div>
-          <button className="btn btn-danger w-100">Log Out</button>
+          <button className="btn btn-outline-danger w-100">Log Out</button>
         </div>
 
         {/* Middle Column */}
         <div className="col-md-6">
-          <div className="card shadow">
-            <div className="card-body">
-              <h3 className="text-center">User Information</h3>
-              <div className="dropdown text-center mt-3">
+          <div className="accordion" id="userAccordion">
+            {/* Accordion Item: Statistics */}
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingStatistics">
                 <button
-                  className="btn btn-primary dropdown-toggle"
+                  className="accordion-button"
                   type="button"
-                  id="dropdownMenuButton"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Choose Section
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseStatistics"
+                  aria-expanded="true"
+                  aria-controls="collapseStatistics">
+                  Statistics
                 </button>
-                <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Statistics")}>Statistics</a></li>
-                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Match History")}>Match History</a></li>
-                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Leaderboard")}>Leaderboard</a></li>
-                  <li><a className="dropdown-item" href="#" onClick={() => setSection("Achievements")}>Achievements</a></li>
-                </ul>
+              </h2>
+              <div
+                id="collapseStatistics"
+                className="accordion-collapse collapse show"
+                aria-labelledby="headingStatistics"
+                data-bs-parent="#userAccordion">
+                <div className="accordion-body">
+                  <p>Statistics Content</p>
+                </div>
               </div>
-              <div id="dynamic-content" className="mt-4">
-                {renderContent()}
+            </div>
+
+            {/* Accordion Item: Match History */}
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingMatchHistory">
+                <button
+                  className="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseMatchHistory"
+                  aria-expanded="false"
+                  aria-controls="collapseMatchHistory">
+                  Match History
+                </button>
+              </h2>
+              <div
+                id="collapseMatchHistory"
+                className="accordion-collapse collapse"
+                aria-labelledby="headingMatchHistory"
+                data-bs-parent="#userAccordion">
+                <div className="accordion-body">
+                  <p>Match History Content</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Accordion Item: Leaderboard */}
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingLeaderboard">
+                <button
+                  className="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseLeaderboard"
+                  aria-expanded="false"
+                  aria-controls="collapseLeaderboard">
+                  Leaderboard
+                </button>
+              </h2>
+              <div
+                id="collapseLeaderboard"
+                className="accordion-collapse collapse"
+                aria-labelledby="headingLeaderboard"
+                data-bs-parent="#userAccordion">
+                <div className="accordion-body">
+                  <p>Leaderboard Content</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Accordion Item: Achievements */}
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingAchievements">
+                <button
+                  className="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseAchievements"
+                  aria-expanded="false"
+                  aria-controls="collapseAchievements">
+                  Achievements
+                </button>
+              </h2>
+              <div
+                id="collapseAchievements"
+                className="accordion-collapse collapse"
+                aria-labelledby="headingAchievements"
+                data-bs-parent="#userAccordion">
+                <div className="accordion-body">
+                  <p>Achievements Content</p>
+                </div>
               </div>
             </div>
           </div>

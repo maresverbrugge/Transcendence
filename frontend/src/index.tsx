@@ -1,6 +1,7 @@
 import React from 'react';
 import App from './App.tsx';
 import './index.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootswatch/dist/quartz/bootstrap.min.css';
 

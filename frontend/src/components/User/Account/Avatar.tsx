@@ -42,10 +42,10 @@ function Avatar({ username, currentAvatarURL }) {
         style={{ width: '100px', height: '100px', borderRadius: '45%' }}
       />
 
-      {/* Avatar Upload */}  
+      {/* Avatar Upload */}
       <form onSubmit={handleSubmit}>
       <input type="file" onChange={handleFileChange} accept="image/*" />
-      <button type="submit">Upload Avatar</button>
+      <button type="submit" class="btn btn-warning">Upload Avatar</button>
       </form>
     </div>
   );
