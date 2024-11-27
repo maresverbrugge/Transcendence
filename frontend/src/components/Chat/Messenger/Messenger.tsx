@@ -36,14 +36,8 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
             }
         });
 
-        socket.on('action', (data: { username: string, action: keyof ReturnType<typeof getActionMessageMap> }) => {
-            const actionMessageMap = getActionMessageMap(data.username);
-            setMessages((prevMessages) => [...prevMessages, { content: actionMessageMap[data.action], ID: `${data.username}-${data.action}`, channelID: channel?.ID || '' }]);
-        });
-
         return () => {
             socket.off('newMessage');
-            socket.off('action');
         };
     }, [channel, socket]);
 
@@ -72,7 +66,7 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
                         <ul>
                             {messages?.map((message) => (
                                 <li key={message.ID}>
-                                    {message.senderName ? (
+                                    {message.senderID && message.senderName ? (
                                         <>
                                             <strong>{message.senderName}: </strong>
                                             {message.content}

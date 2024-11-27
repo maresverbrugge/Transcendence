@@ -4,6 +4,7 @@ import { UserService } from '../user/user.service';
 import { Namespace, Socket } from 'socket.io';
 import { ChannelService } from '../channel/channel.service';
 import { ChannelMember, User } from '@prisma/client';
+import { MessageService } from '../message/message.service';
 
 type ChannelMemberResponse = ChannelMember & {
     user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -16,6 +17,8 @@ export class ChannelMemberService {
     constructor(
         private prisma: PrismaService,
         private readonly userService: UserService,
+        @Inject(forwardRef(() => MessageService))
+        private readonly messageService: MessageService,
         @Inject(forwardRef(() => ChannelService))
         private readonly channelService: ChannelService,
       ) {}
@@ -152,7 +155,7 @@ export class ChannelMemberService {
         }
     }
 
-    async checkPermissions(token: string, channelID: number, targetIsAdmin: boolean, requiredRole: 'owner' | 'admin', action: string) {
+    async checkPermissions(token: string, channelID: number, targetIsAdmin: boolean, requiredRole: 'owner' | 'admin', action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
         const isAllowed = requiredRole === 'owner'
             ? await this.isOwner(token, channelID)
             : await this.isAdmin(token, channelID);
@@ -164,7 +167,7 @@ export class ChannelMemberService {
         }
     }
 
-    actionGetUpdateData(action: string) {
+    actionGetUpdateData(action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
         switch (action) {
             case 'ban':
                 return { isBanned: true };
@@ -186,7 +189,7 @@ export class ChannelMemberService {
     }
     
 
-    async action(server: Namespace, channelMemberID: number, token: string, channelID: number, action: string) {
+    async action(server: Namespace, channelMemberID: number, token: string, channelID: number, action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
         try {
             const targetChannelMember = await this.getChannelMember(channelMemberID);
             await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
@@ -198,7 +201,7 @@ export class ChannelMemberService {
                 if (socket)
                     socket.leave(String(channelID));
             }
-            server.to(String(channelID)).emit('action', {action, username: targetChannelMember.user.username})
+            this.messageService.sendActionLogMessage(server, channelID, targetChannelMember.user.username, action)
         } catch (error) {
             server.to(String(channelID)).emit('error', error);
         }

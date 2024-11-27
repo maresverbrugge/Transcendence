@@ -62,7 +62,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('channelAction')
-  async handleChannelAction(@MessageBody() data: { action: string; channelMemberID: number; token: string; channelID: number }) {
+  async handleChannelAction(@MessageBody() data: { action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'), channelMemberID: number; token: string; channelID: number }) {
   const { action, channelMemberID, token, channelID } = data;
   await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
 }

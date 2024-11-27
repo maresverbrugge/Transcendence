@@ -94,8 +94,8 @@ model Message {
   updatedAt         DateTime      @updatedAt
   senderName        String
   
-  senderID          Int
-  sender            User          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
+  senderID          Int?
+  sender            User?          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
@@ -111,7 +111,7 @@ model ChannelMember {
   banUntil          DateTime?
 
   userID            Int
-  user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
+  user              User         @relation(fields: [userID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
