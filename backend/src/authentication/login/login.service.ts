@@ -57,8 +57,9 @@ export class LoginService {
         });
       }
     }
-    catch(error) {
-      console.error('Error while adding user to database:', error);
+    catch (error) {
+      var message = error.response ? error.response.data : error.message;
+      console.error('Error while verifying token:', message);
       throw new InternalServerErrorException('Error while adding user to database');
     }
   }
@@ -80,7 +81,7 @@ export class LoginService {
         return true;
       }
     }
-    catch(error) {
+    catch (error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while verifying token:', message);
       throw new InternalServerErrorException('Error while verifying token');
@@ -96,7 +97,7 @@ export class LoginService {
       })
       return response.data.login;
     }
-    catch(error) {
+    catch (error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while getting intra name:', message);
       throw new InternalServerErrorException('Error while getting intra name');
