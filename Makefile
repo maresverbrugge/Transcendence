@@ -42,6 +42,7 @@ up:		build
 # start the containers
 start:
 		docker compose start
+		@docker compose logs -f backend
 		@echo "$(BOLD)$(G)Docker containers are now started and up running!$(RESET)"
 
 # stop the running containers without removing them (sends SIGTERM)
