@@ -207,12 +207,16 @@ export class ChannelMemberService {
     async addSocketToAllRooms(socket: Socket, token: string) {
         const user = await this.prisma.user.findUnique({
             where: {websocketID: socket.id}, // change to token later
-            select: {channelMembers: {select: {channelID: true}}}
+            select: {channelMembers: {select: {channelID: true, isBanned: true}}}
         })
         const channelMembers = user.channelMembers;
+        if (!channelMembers)
+            return
         channelMembers.map((member) => {
-            socket.join(String(member.channelID))
-            console.log(`${socket.id} joined channel ${member.channelID}`) //remove later
+            if (!member.isBanned) {
+                socket.join(String(member.channelID))
+                console.log(`${socket.id} joined channel ${member.channelID}`) //remove later
+            }
         })
     }
 }

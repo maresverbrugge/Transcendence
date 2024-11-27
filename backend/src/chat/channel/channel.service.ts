@@ -54,8 +54,12 @@ export class ChannelService {
     }
 
     async joinChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
-        const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
-        this.addChannelMemberToChannel(server, channelID, socket, channelMember)
+        try {
+            const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
+            this.addChannelMemberToChannel(server, channelID, socket, channelMember)
+        } catch (error) {
+            socket.emit('error', error)
+        }
     }
 
     
@@ -81,10 +85,11 @@ export class ChannelService {
             })
             if (!channelMember)
                 throw new NotFoundException('ChannelMember not found')
-            if (!channelMember.isBanned)
+            if (!channelMember.isBanned) {
                 this.channelMemberService.deleteChannelMember(channelMember.ID)
+                server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'leave'})
+            }
             socket.leave(String(channelID));
-            server.to(String(channelID)).emit('action', {username: channelMember.user.username, action: 'leave'})
             server.to(String(channelID)).emit('removeChannelMember', channelMember.ID);
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
