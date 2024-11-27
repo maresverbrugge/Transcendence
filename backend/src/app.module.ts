@@ -3,13 +3,10 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoginModule } from './authentication/authentication.module';
 import { UserModule } from './user/user.module';
-// import { ChatGateway } from './chat/chat.gateway';
-// import { ChannelService } from './chat/channel/channel.service';
-// import { MessageService } from './chat/message/message.service';
-// import { ChatModule } from './chat/chat.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [PrismaModule, LoginModule, UserModule],
+  imports: [PrismaModule, LoginModule, UserModule, ChatModule],
   providers: [PrismaService],
   exports: [PrismaService],
   controllers: [],
