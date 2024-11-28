@@ -212,7 +212,7 @@ export class ChannelMemberService {
             where: {websocketID: socket.id}, // change to token later
             select: {channelMembers: {select: {channelID: true, isBanned: true}}}
         })
-        const channelMembers = user.channelMembers;
+        const channelMembers = user?.channelMembers;
         if (!channelMembers)
             return
         channelMembers.map((member) => {

@@ -36,7 +36,6 @@ const NewChannel = ({ friends, setSelectedChannel, socket, token }: NewChannelPr
             memberIDs: isPrivate ? selectedMemberIDs : [],  // Only include members if private
         };
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
-        console.log('check front', response)
         socket.emit('newChannel', response.data);
         resetForm();
         setSelectedChannel(response.data)

@@ -57,7 +57,6 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
         };
     }, [channel, token, socket]);
 
-    console.log('check', channel)
     const currentMember = members.find(member => member.ID === memberID);
     if (currentMember?.isBanned) setChannel(null);
 

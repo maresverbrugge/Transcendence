@@ -57,6 +57,8 @@ export class ChannelService {
     async joinChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
             const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
+            // if (channelMember.isOwner)
+            //     return
             this.addChannelMemberToChannel(server, channelID, socket, channelMember)
             this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'join')
         } catch (error) {

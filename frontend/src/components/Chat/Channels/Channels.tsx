@@ -76,7 +76,6 @@ const Channels = ({
         [channelID]: 0,
       }));
     } catch (error: any) {
-      console.error('Error fetching channel:', error);
       if (error.response && error.response.status === 403) {
         setShowBannedAlert(error.response.data.message);
       } else {
@@ -124,7 +123,7 @@ const Channels = ({
                 .filter((channel) => channel.isPrivate && !channel.isDM)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel)}>
+                    <button onClick={() => handleSelectChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
                       {unreadCounts[channel.ID] > 0 &&
                         ` (${unreadCounts[channel.ID]} unread messages)`}
