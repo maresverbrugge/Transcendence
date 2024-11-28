@@ -33,8 +33,9 @@ export class TwoFactorService {
 			return verified
 		}
 		catch (error) {
-			console.error("Error in 2FA service:", error);
-			return false
+			var message = error.response ? error.response.data : error.message;
+      		console.error('Error while verifying token:', message);
+			throw new InternalServerErrorException('Error while verifying token');
 		}
 	}
 }
