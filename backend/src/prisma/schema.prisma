@@ -30,8 +30,8 @@ enum MatchStatus {
 
 model User {
   ID                Int           @id @default(autoincrement())
-  username          String        @unique
-  intraUsername     String
+  username          String
+  intraUsername     String        @unique
   avatar            Bytes?
   Enabled2FA        Boolean
   token             String?
@@ -81,6 +81,7 @@ model Channel {
   ID                Int           @id @default(autoincrement())
   name              String
   isPrivate         Boolean       @default(false)
+  isDM              Boolean       @default(false)
   password          String?       // Optional password field
   
   ownerID           Int
@@ -105,9 +106,11 @@ model Message {
 model ChannelMember {
   ID                Int           @id @default(autoincrement())
   websocketID       String?       // The ID of the websocket, nullable
+  isOwner           Boolean       @default(false)
   isAdmin           Boolean       @default(false)
   muteUntil         DateTime?
   isMuted           Boolean       @default(false)
+  muteUntil         DateTime?
   isBanned          Boolean       @default(false)
   banUntil          DateTime?
 
