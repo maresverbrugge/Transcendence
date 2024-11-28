@@ -1,10 +1,15 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import axios from 'axios';
+import { UserStatus } from '@prisma/client';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 
 @Injectable()
 export class LoginService {
+
+  constructor(private prisma: PrismaService) {}
+
   async getToken(response_code: string): Promise<any> {
     // Load the environment variables needed for the login process
     const clientId = process.env.REACT_APP_LOGIN_CLIENT_ID;
@@ -31,6 +36,36 @@ export class LoginService {
     }
   }
 
+  async addUserToDatabase(user: string): Promise<void> {
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { intraUsername: user },
+      });
+      
+      if (!existingUser) {
+        await this.prisma.user.create({
+          data: { 
+            username: user,
+            intraUsername: user, 
+            Enabled2FA: false,
+            status: UserStatus.ONLINE,
+          },
+        });
+      }
+      else {
+        await this.prisma.user.update({
+          where: { ID: existingUser.ID },
+          data: { status: UserStatus.ONLINE },
+        });
+      }
+    }
+    catch (error) {
+      var message = error.response ? error.response.data : error.message;
+      console.error('Error while verifying token:', message);
+      throw new InternalServerErrorException('Error while adding user to database');
+    }
+  }
+
   async verifyToken(token: string): Promise<boolean> {
     try {
       const response = await axios.get('https://api.intra.42.fr/oauth/token/info', {
@@ -48,10 +83,10 @@ export class LoginService {
         return true;
       }
     }
-    catch(error) {
+    catch (error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while verifying token:', message);
-      return false;
+      throw new InternalServerErrorException('Error while verifying token');
     };
   }
 
@@ -64,10 +99,10 @@ export class LoginService {
       })
       return response.data.login;
     }
-    catch(error) {
+    catch (error) {
       var message = error.response ? error.response.data : error.message;
       console.error('Error while getting intra name:', message);
-      return null;
+      throw new InternalServerErrorException('Error while getting intra name');
     };
   }
 }
