@@ -57,9 +57,9 @@ export class ChannelService {
     async joinChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
             const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
-            // if (channelMember.isOwner)
-            //     return
             this.addChannelMemberToChannel(server, channelID, socket, channelMember)
+            if (channelMember.isOwner)
+                return
             this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'join')
         } catch (error) {
             socket.emit('error', error)
@@ -71,7 +71,7 @@ export class ChannelService {
             const userID = await this.userService.getUserIDBySocketID(token)
             const channelMember = await this.prisma.channelMember.findFirst({
                 where: {userID: userID, channelID: channelID},
-                select: {ID: true, isBanned: true, user: {select: {username: true}}}
+                select: {ID: true, isBanned: true, channelID: true, user: {select: {username: true}}}
             })
             if (!channelMember)
                 throw new NotFoundException('ChannelMember not found')
@@ -80,7 +80,7 @@ export class ChannelService {
                 this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'leave')
             }
             socket.leave(String(channelID));
-            server.to(String(channelID)).emit('removeChannelMember', channelMember.ID);
+            server.to(String(channelID)).emit('removeChannelMember', channelMember);
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
             socket.emit('error', error);

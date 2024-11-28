@@ -76,7 +76,7 @@ const Channels = ({
         [channelID]: 0,
       }));
     } catch (error: any) {
-      if (error.response && error.response.status === 403) {
+      if (error.response?.status === 403) {
         setShowBannedAlert(error.response.data.message);
       } else {
         console.error('Error fetching channel:', error);
@@ -134,7 +134,7 @@ const Channels = ({
           </>
         )}
 
-        <NewChannel friends={friends} setSelectedChannel={setSelectedChannel} socket={socket} token={token} />
+        <NewChannel friends={friends} handleSelectChannel={handleSelectChannel} socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -152,7 +152,7 @@ const Channels = ({
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} setSelectedChannel={setSelectedChannel} socket={socket} token={token} setAlert={setAlert} />
+        <NewDM friends={friends} handleSelectChannel={handleSelectChannel} socket={socket} token={token} setAlert={setAlert} />
       </div>
     </div>
   );

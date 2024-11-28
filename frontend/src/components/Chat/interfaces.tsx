@@ -13,8 +13,9 @@ export interface ChannelData {
     isOwner: boolean;
     isAdmin: boolean;
     isBanned: boolean;
-    user: {username: string}
+    user: {username: string};
     status: 'ONLINE' | 'OFFLINE' | 'IN_GAME' | 'AFK';
+    channelID: string;
   }
   
   export interface MessageData {

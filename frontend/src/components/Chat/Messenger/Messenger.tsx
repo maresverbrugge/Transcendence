@@ -14,18 +14,6 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
     const [newMessage, setNewMessage] = useState<string>('');
 
     useEffect(() => {
-        const getActionMessageMap = (username: string) => {
-            return {
-                demote: `${username} is no longer an Admin.`,
-                makeAdmin: `${username} is now an Admin.`,
-                mute: `${username} is now muted for 60 seconds.`,
-                kick: `${username} has been kicked from the channel.`,
-                ban: `${username} is now banned from the channel.`,
-                join: `${username} has joined the channel.`,
-                leave: `${username} has left the channel.`,
-            }
-        };
-
         if (channel) {
             setMessages(channel.messages);
         }

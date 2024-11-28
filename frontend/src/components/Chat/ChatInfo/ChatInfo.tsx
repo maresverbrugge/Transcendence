@@ -24,7 +24,7 @@ interface ChannelInfoProps {
 const ChannelInfo = ({ channel, setChannel, token, socket }: ChannelInfoProps) => {
     return (
         <div className="channel-info">
-            {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} setChannel={setSelectedChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
+            {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} handleSelectChannel={handleSelectChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
             <Channel channel={channel} setChannel={setChannel} socket={socket} token={token} />
         </div>
     );

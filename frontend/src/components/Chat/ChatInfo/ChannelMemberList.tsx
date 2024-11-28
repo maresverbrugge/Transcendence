@@ -11,13 +11,15 @@ interface ChannelMemberListProps {
 }
 
 const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMemberListProps) => {
-    const [members, setMembers] = useState<MemberData[]>(channel.members);
+    const [members, setMembers] = useState<MemberData[]>([]);
     const [showConfirm, setShowConfirm] = useState<boolean>(false);
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
     const [selectedMemberID, setSelectedMemberID] = useState<string | null>(null);
     const [memberID, setMemberID] = useState<string | null>(null);
     
     useEffect(() => {
+        setMembers(channel.members);
+
         const fetchCurrentMemberID = async (channelID: string, token: string) => {
             try {
                 const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channelID}/${token}`);
@@ -31,6 +33,8 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
         fetchCurrentMemberID(channel.ID, token);
 
         const handleIncomingMember = (incomingMember: MemberData) => {
+            if (incomingMember.channelID !== channel.ID)
+                return
             setMembers((prevMembers) => {
                 const memberExists = prevMembers.some(member => member.ID === incomingMember.ID);
                 if (memberExists) {
@@ -42,9 +46,11 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
             });
         };
 
-        const handleRemoveChannelMember = (channelMemberID: string) => {
+        const handleRemoveChannelMember = (channelMember: MemberData) => {
+            if (channelMember.channelID !== channel.ID)
+                return
             setMembers((prevMembers) => {
-                return prevMembers.filter((member) => member.ID !== channelMemberID);
+                return prevMembers.filter((member) => member.ID !== channelMember.ID);
             });
         };
     
@@ -55,7 +61,7 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
             socket.off('channelMember', handleIncomingMember);
             socket.off('removeChannelMember', handleRemoveChannelMember);
         };
-    }, [channel, token, socket]);
+    }, [channel]);
 
     const currentMember = members.find(member => member.ID === memberID);
     if (currentMember?.isBanned) setChannel(null);

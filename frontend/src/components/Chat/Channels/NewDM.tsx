@@ -5,13 +5,13 @@ import axios from 'axios';
 
 interface NewDMProps {
     friends: MemberData[];
-    setSelectedChannel: (channel: ChannelData | null) => void;
+    handleSelectChannel: (channelID: string) => void;
     socket: any;
     token: string;
     setAlert: (message: string) => void;
 }
 
-const NewDM = ({ friends, setSelectedChannel, socket, token, setAlert }: NewDMProps) => {
+const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null); // For selecting a single friend
 
@@ -32,7 +32,7 @@ const NewDM = ({ friends, setSelectedChannel, socket, token, setAlert }: NewDMPr
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
         socket.emit('newChannel', response.data);
         resetForm();
-        setSelectedChannel(response.data)
+        handleSelectChannel(response.data)
     };
 
     const resetForm = () => {
