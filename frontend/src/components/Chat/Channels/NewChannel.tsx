@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import './NewChannel.css';
-import { MemberData } from '../interfaces.tsx'
+import { MemberData, ChannelData } from '../interfaces.tsx'
+import axios from 'axios';
 
 interface NewChannelProps {
     friends: MemberData[];
+    setSelectedChannel: (channel: ChannelData | null) => void;
     socket: any;
     token: string;
 }
 
-const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
+const NewChannel = ({ friends, setSelectedChannel, socket, token }: NewChannelProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [channelName, setChannelName] = useState<string>('');
     const [isPrivate, setIsPrivate] = useState<boolean>(false);  // Default to public
@@ -24,7 +26,7 @@ const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
         );
     };
 
-    const handleCreateChannel = () => {
+    const handleCreateChannel = async () => {
         const newChannelData = {
             name: channelName,
             isPrivate,
@@ -33,8 +35,11 @@ const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
             token,
             memberIDs: isPrivate ? selectedMemberIDs : [],  // Only include members if private
         };
-        socket.emit('newChannel', newChannelData);
+        const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
+        console.log('check front', response)
+        socket.emit('newChannel', response.data);
         resetForm();
+        setSelectedChannel(response.data)
     };
 
     const resetForm = () => {

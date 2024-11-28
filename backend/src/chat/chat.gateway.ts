@@ -4,6 +4,14 @@ import { UserService } from './user/user.service';
 import { ChannelService } from './channel/channel.service'
 import { MessageService } from './message/message.service'
 import { ChannelMemberService } from './channel-member/channel-member.service';
+import { Channel, ChannelMember, User, Message } from '@prisma/client'
+
+type ChannelWithMembersAndMessages = Channel & {
+  members: (ChannelMember & {
+      user: Pick<User, 'ID' | 'username'>;
+  })[];
+  messages: Message[];
+};
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -26,24 +34,10 @@ export class ChatGateway
     private readonly messageService: MessageService,
     private readonly channelMemberService: ChannelMemberService,
   ) {}
-  
-  // @SubscribeMessage('channelInvite')
-  //   handleChannelInvite(client: Socket, memberID: number ) {
-  //     this.channelService.sendChannelInvite(client, this.server, memberID)
-  //   }
-
-  // @SubscribeMessage('acceptChannelInvite')
-  //   async handleAcceptChannelInvite(client: Socket, data: { ownerID: number, memberID: number , channelName: string}) {
-  //     this.channelService.acceptChannelInvite(this.server, data.memberID, data.ownerID, data.channelName)
-  //   }
 
   @SubscribeMessage('newChannel')
-  async handleNewChannel(client: Socket, data: {name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }) {
-    try {
-      await this.channelService.newChannel(this.server, data)
-    } catch (error) {
-      client.emit('error', error)
-    }
+  async handleNewChannel(client: Socket, channel: ChannelWithMembersAndMessages) {
+    this.channelService.emitNewChannel(this. server, channel)
   }
 
   @SubscribeMessage('joinChannel')

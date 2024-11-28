@@ -85,7 +85,7 @@ export class ChannelService {
         }
     }
 
-    emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembers) {
+    emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembersAndMessages) {
         channel.members.map(async (member) => {
             const personalizedChannel = { ...channel }; // Create a copy of the channel object
     
@@ -99,6 +99,13 @@ export class ChannelService {
             this.addChannelMemberToChannel(server, channel.ID, socket, member)
             socket.emit('newChannel', personalizedChannel); // Emit the personalized channel
         });
+    }
+
+    emitNewChannel(server: Namespace, channel: ChannelWithMembersAndMessages) {
+        if (channel.isPrivate)
+            this.emitNewPrivateChannel(server, channel)
+        else
+            server.emit('newChannel', channel);
     }
 
     async DMExists(ownerID: number, memberIDs: number[]): Promise<boolean> {
@@ -118,7 +125,7 @@ export class ChannelService {
     }
     
 
-    async newChannel(server: Namespace, data: { name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }) {
+    async newChannel(data: { name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }): Promise<ChannelWithMembersAndMessages> {
         const ownerID = await this.userService.getUserIDBySocketID(data.token)
         if (data.isDM && await this.DMExists(ownerID, data.memberIDs))
             throw new ForbiddenException('DM already exists')
@@ -139,14 +146,10 @@ export class ChannelService {
                 }
             },
             include: {
-                members: { include: { user: { select: { ID: true, username: true } } }, }
+                members: { include: { user: { select: { ID: true, username: true } } }, },
+                messages: true
             }
         })
-
-        if (newChannel.isPrivate)
-            this.emitNewPrivateChannel(server, newChannel)
-        else
-            server.emit('newChannel', newChannel);
         return newChannel;
     }
 

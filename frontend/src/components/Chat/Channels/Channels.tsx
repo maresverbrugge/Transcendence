@@ -61,19 +61,19 @@ const Channels = ({
     };
   }, [selectedChannel, socket, token]);
 
-  const handleSelectChannel = async (channel: ChannelData) => {
-    if (channel?.ID === selectedChannel?.ID) {
+  const handleSelectChannel = async (channelID: string) => {
+    if (channelID === selectedChannel?.ID) {
       setSelectedChannel(null);
       return;
     }
     try {
       const response = await axios.get<ChannelData>(
-        `http://localhost:3001/chat/channel/${channel.ID}/${token}`
+        `http://localhost:3001/chat/channel/${channelID}/${token}`
       );
       setSelectedChannel(response.data);
       setUnreadCounts((prevCounts) => ({
         ...prevCounts,
-        [channel.ID]: 0,
+        [channelID]: 0,
       }));
     } catch (error: any) {
       console.error('Error fetching channel:', error);
@@ -105,7 +105,7 @@ const Channels = ({
                 .filter((channel) => !channel.isPrivate)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel)}>
+                    <button onClick={() => handleSelectChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
                       {unreadCounts[channel.ID] > 0 &&
                         ` (${unreadCounts[channel.ID]} unread messages)`}
@@ -135,7 +135,7 @@ const Channels = ({
           </>
         )}
 
-        <NewChannel friends={friends} socket={socket} token={token} />
+        <NewChannel friends={friends} setSelectedChannel={setSelectedChannel} socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -145,7 +145,7 @@ const Channels = ({
             .filter((channel) => channel.isDM)
             .map((channel) => (
               <li key={channel.ID}>
-                <button onClick={() => handleSelectChannel(channel)}>
+                <button onClick={() => handleSelectChannel(channel.ID)}>
                   {channel.name || `Channel ${channel.ID}`}
                   {unreadCounts[channel.ID] > 0 &&
                     ` (${unreadCounts[channel.ID]} unread messages)`}

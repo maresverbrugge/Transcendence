@@ -16,7 +16,7 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
     const [selectedMemberID, setSelectedMemberID] = useState<string | null>(null);
     const [memberID, setMemberID] = useState<string | null>(null);
-
+    
     useEffect(() => {
         const fetchCurrentMemberID = async (channelID: string, token: string) => {
             try {
@@ -25,8 +25,9 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
             } catch (error) {
                 console.error('Error fetching current channelMemberID:', error);
             }
+            
         };
-    
+        
         fetchCurrentMemberID(channel.ID, token);
 
         const handleIncomingMember = (incomingMember: MemberData) => {
@@ -56,6 +57,7 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
         };
     }, [channel, token, socket]);
 
+    console.log('check', channel)
     const currentMember = members.find(member => member.ID === memberID);
     if (currentMember?.isBanned) setChannel(null);
 
