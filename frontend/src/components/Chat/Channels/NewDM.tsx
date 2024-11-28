@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
-import { MemberData } from '../interfaces';
+import { MemberData, ChannelData } from '../interfaces.tsx'
 import './NewChannel.css'; // Update the CSS file name if necessary
-
+import axios from 'axios';
 
 interface NewDMProps {
     friends: MemberData[];
+    setSelectedChannel: (channel: ChannelData | null) => void;
     socket: any;
     token: string;
     setAlert: (message: string) => void;
 }
 
-const NewDM = ({ friends, socket, token, setAlert }: NewDMProps) => {
+const NewDM = ({ friends, setSelectedChannel, socket, token, setAlert }: NewDMProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null); // For selecting a single friend
 
-    const handleCreateDM = () => {
+    const handleCreateDM = async () => {
         if (!selectedFriend) {
             setAlert("Please select a friend to start a DM!");
             return;
         }
 
-        const newDMData = {
+        const newChannelData = {
             name: '',
             isPrivate: true,
             isDM: true,
@@ -28,9 +29,10 @@ const NewDM = ({ friends, socket, token, setAlert }: NewDMProps) => {
             token,
             memberIDs: [selectedFriend.ID],
         };
-
-        socket.emit('newChannel', newDMData);
+        const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
+        socket.emit('newChannel', response.data);
         resetForm();
+        setSelectedChannel(response.data)
     };
 
     const resetForm = () => {

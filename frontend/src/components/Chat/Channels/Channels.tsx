@@ -152,7 +152,7 @@ const Channels = ({
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} socket={socket} token={token} setAlert={setAlert} />
+        <NewDM friends={friends} setSelectedChannel={setSelectedChannel} socket={socket} token={token} setAlert={setAlert} />
       </div>
     </div>
   );
