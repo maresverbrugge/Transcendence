@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent, useRef } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useRef, useEffect } from 'react';
 import axios from 'axios';
 
 function Avatar({ username, currentAvatarURL }: { username: string; currentAvatarURL: string }) {
@@ -6,22 +6,39 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const fileInputRef = useRef<HTMLInputElement | null>(null); // Ref for resetting input value
+  const [buttonVisible, setButtonVisible] = useState<boolean>(true); // State to manage button visibility
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewURL) {
+        URL.revokeObjectURL(previewURL); // Cleanup on unmount
+      }
+    };
+  }, [previewURL]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const file = event.target.files[0];
+    const file = event.target.files?.[0];
+    if (file) {
+      if (previewURL) {
+        URL.revokeObjectURL(previewURL); // Revoke previous URL
+      }
       setSelectedFile(file);
-      setPreviewURL(URL.createObjectURL(file)); // Create a preview URL
+      setPreviewURL(URL.createObjectURL(file));
+      setButtonVisible(true);
     }
   };
 
   const handleCancel = () => {
+    if (previewURL) {
+      URL.revokeObjectURL(previewURL);
+    }
     setSelectedFile(null);
     setPreviewURL(null);
     setUploadStatus('idle');
+    setButtonVisible(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset file input value to allow reselecting the same file
+      fileInputRef.current.value = '';
     }
   };
 
@@ -29,6 +46,8 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
     event.preventDefault();
     if (selectedFile) {
       setUploadStatus('uploading');
+      setButtonVisible(false);
+
       const formData = new FormData();
       formData.append('avatar', selectedFile);
 
@@ -41,9 +60,9 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
 
         // Fetch updated avatar
         const response = await axios.get(`http://localhost:3001/user/${token}`);
-        setAvatarURL(response.data.avatarURL); // Update avatar URL
-        setPreviewURL(null); // Clear preview
-        setSelectedFile(null); // Clear selected file
+        setAvatarURL(response.data.avatarURL);
+        setPreviewURL(null);
+        setSelectedFile(null);
       } catch (error) {
         setUploadStatus('error');
         console.error('Error uploading avatar:', error);
@@ -54,7 +73,7 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
   const isDefaultAvatar = avatarURL === 'http://localhost:3001/images/default-avatar.png';
 
   return (
-    <div className="d-flex flex-column align-items-center">
+    <div className="avatar-component d-flex flex-column align-items-center">
       {/* Avatar Display */}
       <img
         src={previewURL || avatarURL}
@@ -77,11 +96,11 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
 
       {/* File Input */}
       <form onSubmit={handleSubmit} className="text-center">
-        <label className="btn btn-secondary btn-sm mb-2">
+        <label className="btn btn-outline-primary btn-sm mb-2">
           Pick New Avatar
           <input
             type="file"
-            ref={fileInputRef} // Attach ref to the input
+            ref={fileInputRef}
             onChange={handleFileChange}
             accept="image/*"
             hidden
@@ -89,7 +108,7 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
         </label>
 
         {/* Conditional Buttons */}
-        {previewURL && (
+        {previewURL && buttonVisible && (
           <div className="mt-2">
             <button
               type="button"
@@ -99,7 +118,7 @@ function Avatar({ username, currentAvatarURL }: { username: string; currentAvata
             </button>
             <button
               type="submit"
-              className="btn btn-warning btn-sm  me-2">
+              className="btn btn-warning btn-sm">
               Upload Avatar
             </button>
           </div>
