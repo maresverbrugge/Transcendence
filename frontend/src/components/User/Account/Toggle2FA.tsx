@@ -1,48 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function Toggle2FA() {
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState<boolean>(false);
+interface TwoFactorAuthenticationProps {
+  twoFactorAuthenticationEnabled: boolean;
+  userID: number;
+}
 
-  const handleToggleTwoFactor = async (enable:boolean) => {
+const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthenticationEnabled, userID }) => {
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(twoFactorAuthenticationEnabled);
+
+  useEffect(() => {
+    setTwoFactorEnabled(twoFactorAuthenticationEnabled);
+  }, [twoFactorAuthenticationEnabled]);
+
+  const enable2FA = async () => {
+    window.location.href = `/login/2fa?userID=${userID}`;
+  };
+
+  const disable2FA = async () => {
     try {
-      const token = localStorage.getItem('authenticationToken');
-      const response = await axios.patch(`http://localhost:3001/user/${token}/2fa`, {
-        enable,
-      });
-      setIsTwoFactorEnabled(response.data.Enabled2FA); // Update 2FA status
-      console.log('2FA status updated successfully', response.data);
-    } catch (error) {
-      console.error('Error toggling 2FA:', error);
+      const response = await axios.post('http://localhost:3001/two-factor/disable', { userID });
+      console.log('2FA disabled:', response.data); // For debugging
+      setTwoFactorEnabled(false);
+    } catch (err) {
+      console.error('Error while disabling 2FA:', err);
     }
   };
 
   return (
-    <div className="btn-group" role="group" aria-label="2FA toggle button group">
-      <input
-        type="radio"
-        className="btn-check"
-        name="btnradio"
-        id="btnEnable2FA"
-        autoComplete="off"
-        checked={isTwoFactorEnabled}
-        onChange={() => handleToggleTwoFactor(true)}/>
-      <label className="btn btn-outline-primary" htmlFor="btnEnable2FA">
-        Enable 2FA
-      </label>
-
-      <input
-        type="radio"
-        className="btn-check"
-        name="btnradio"
-        id="btnDisable2FA"
-        autoComplete="off"
-        checked={!isTwoFactorEnabled}
-        onChange={() => handleToggleTwoFactor(false)}/>
-      <label className="btn btn-outline-primary" htmlFor="btnDisable2FA">
-        Disable 2FA
-      </label>
-    </div>
+    <button
+      className="btn btn-outline-primary btn-sm mb-2"
+      onClick={twoFactorEnabled ? disable2FA : enable2FA}>
+      {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+    </button>
   );
 };
 

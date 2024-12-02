@@ -1,41 +1,74 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
-
-const SECRET = 'dZwW4A)!qcey/QN)KxzWwnhTJtTEySFn';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TwoFactorService {
 
-	async getQRCode(): Promise<any> {
+	constructor(private prisma: PrismaService) {}
+
+	async getQRCode(userID: number): Promise<any> {
 		try {
 			var secret = speakeasy.generateSecret({
 				name: "Transcendancing Queens"
 			});
 			console.log("Unique secret:", secret.ascii); // For debugging
 			const dataURL = await qrcode.toDataURL(secret.otpauth_url);
+			await this.prisma.user.update({
+				where: { ID: userID },
+				data: { twoFactorSecret: secret.ascii },
+			});
 			return dataURL
 
 		} catch (error) {
-			console.error("Error in 2FA service:", error);
-			throw new InternalServerErrorException("Error generating QR code");
+			throw new InternalServerErrorException("Error generating QR code for 2FA");
 		}
 	}
 
-	async verifyOneTimePassword(oneTimePassword: string): Promise<boolean> {
+	async verifyOneTimePassword(oneTimePassword: string, userID: number): Promise<boolean> {
 		console.log("oneTimePassword: ", oneTimePassword); // For debugging
 		try {
+			const twoFactorSecret = await this.prisma.user.findUnique({
+				where: { ID: userID },
+				select: { twoFactorSecret: true },
+			});
 			const verified = speakeasy.totp.verify({
-				secret: SECRET,
+				secret: twoFactorSecret,
 				encoding: 'ascii',
 				token: oneTimePassword,
 			});
 			return verified
 		}
 		catch (error) {
-			var message = error.response ? error.response.data : error.message;
-      		console.error('Error while verifying token:', message);
 			throw new InternalServerErrorException('Error while verifying token');
+		}
+	}
+
+	async enableTwoFactor(userID: number): Promise<void> {
+		try {
+			await this.prisma.user.update({
+				where: { ID: userID },
+				data: { Enabled2FA: true },
+			});
+		}
+		catch (error) {
+			throw new InternalServerErrorException('Error while enabling two-factor authentication');
+		}
+	}
+
+	async disableTwoFactor(userID: number): Promise<void> {
+		try {
+			await this.prisma.user.update({
+				where: { ID: userID },
+				data: { 
+					twoFactorSecret: null,
+					Enabled2FA: false,
+				},
+			});
+		}
+		catch (error) {
+			throw new InternalServerErrorException('Error while disabling two-factor authentication');
 		}
 	}
 }
