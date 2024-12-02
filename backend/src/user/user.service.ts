@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client'
-import { LoginService } from 'src/authentication/login.service';
+import { LoginService } from '../authentication//login/login.service';
 
 interface UserProfile extends User {
   avatarURL: string;

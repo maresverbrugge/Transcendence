@@ -61,10 +61,16 @@ function UserAccount() {
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <Toggle2FA  />
+              <div className="d-flex justify-content-center align-items-center">
+              <Toggle2FA />
+              </div>
             </div>
           </div>
-          <button className="btn btn-outline-danger w-100">Log Out</button>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <LogOut />
+            </div>
+          </div>
         </div>
 
         {/* Middle Column */}

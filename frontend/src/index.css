@@ -75,3 +75,13 @@ body {
   .accordion-button:hover {
     background-color: #ff75b3;
   }
+
+  .btn-group .btn {
+    font-size: 0.875rem; /* Smaller font size */
+    padding: 0.5rem 0.9rem; /* Adjust button padding */
+    width: 100%; /* Stretch buttons to fit the container */
+  }
+
+  .card-body {
+    text-align: center; /* Center content in the card */
+  }

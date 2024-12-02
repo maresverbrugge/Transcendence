@@ -32,7 +32,7 @@ function Username({ currentUsername }) {
         placeholder="Enter new username"
       />
       <br/><br/>
-      <button class="btn btn-warning" onClick={handleChangeUsername}> Change Username</button>
+      <button className="btn btn-warning" onClick={handleChangeUsername}> Change Username</button>
     </div>
   );
 }

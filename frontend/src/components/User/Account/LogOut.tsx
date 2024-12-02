@@ -7,11 +7,11 @@ function LogOut() {
   return (
     <div className="LogOut">
       {/* Log Out Button */}
-      <button onClick={() => navigate('/')}>Log Out</button>
+      <button onClick={() => navigate('/')} className="btn btn-outline-danger w-100">Log Out</button>
     </div>
   );
 };
 
-// ! deze navigate('/') moet absoluut vervangen worden door het verwijderen van de token uit local storage oid!!!!
+// ! nog toevoegen: het verwijderen van de token uit local storage oid!!!!
 
 export default LogOut;
