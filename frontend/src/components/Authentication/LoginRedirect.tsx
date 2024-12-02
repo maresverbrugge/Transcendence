@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import SingleHeader from './Pages/SingleHeader.tsx';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 
@@ -13,13 +14,13 @@ const LoginRedirect = () => {
     const code = params.get('code');
     const state = params.get('state');
 
-    if (state !== original_state) {
-      console.error('Invalid state');
+    if (!code || !state) {
+      console.error('No code or state');
       setAccessDenied(true);
       return;
     }
-    else if (!code || !state) {
-      console.error('No code or state');
+    else if (state !== original_state) {
+      console.error('Invalid state');
       setAccessDenied(true);
       return;
     }
@@ -44,13 +45,11 @@ const LoginRedirect = () => {
   }, []);
 
   if (accessDenied) {
-    return <div>Access denied</div>;
-  }
-  else if (errorOccurred) {
-    return <div>Error occurred</div>;
-  }
-  else {
-    return <div>Redirecting...</div>;
+    return <SingleHeader text='Access Denied' />;
+  } else if (errorOccurred) {
+    return <SingleHeader text='Error Occurred' />;
+  } else {
+    return <SingleHeader text='Logging In...' />;
   }
 };
 
