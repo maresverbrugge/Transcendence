@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 
-var g_socket;
-var g_gameID;
-var end = 0;
-var paddleLeft;
-var paddleRight;
-var scoreLeft = 0;
-var scoreRight = 0;
+var g_socket: Socket;
+var g_gameID: number;
+var end: number = 0;
+var paddleLeft: Paddle;
+var paddleRight: Paddle;
+var scoreLeft: number = 0;
+var scoreRight: number = 0;
 
 class Ball {
-	constructor(x, y, diameter, context, gameID) {
+	x: number
+	y: number
+	diameter: number
+	speedX: number
+	speedY: number
+	context: any
+	gameID: number
+	constructor(x: number, y: number, diameter: number, context: any, gameID: number) {
 		this.x = x;
 		this.y = y;
 		this.diameter = diameter;
@@ -31,7 +39,7 @@ class Ball {
 	bottom() {
 		return this.y+this.diameter/2;
 	};
-	move(width, height) {
+	move(width: number, height: number) {
 		this.x += this.speedX;
 		this.y += this.speedY;
 		if (this.right() > width) {
@@ -63,7 +71,13 @@ class Ball {
 };
 
 class Paddle{
-	constructor(x, y, w, h, context) {
+	x: number
+	y: number
+	w: number
+	h: number
+	speedY: number
+	context: any
+	constructor(x: number, y: number, w: number, h: number, context: any) {
 		this.x = x;
 		this.y = y;
 		this.w = w;
@@ -83,7 +97,7 @@ class Paddle{
 	bottom() {
 		return this.y+this.h/2;
 	};
-	display(height) {
+	display(height: number) {
 		if (this.bottom() > height) {
 			this.y = height-this.h/2;
 		}
@@ -96,26 +110,15 @@ class Paddle{
 	};
 };
 
-window.onkeydown = function(press){
-	if (end === 0 && press.key === "upArrow"){
-		g_socket.emit("up", g_gameID, g_socket.ID);
-		paddleRight.y -= 3;
-	}
-	if (end === 0 && press.key === "downArrow"){
-		g_socket.emit("down", g_gameID, g_socket.ID);
-		paddleRight.y += 3;
-	}
-}
-
-function map_range(value, low1, high1, low2, high2) {
+function map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
 	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 
 const GameLogic = ({ gameID, socket }) => {
-    const canvas = React.useRef();
-	var width = 500;
-	var height = 500;
-	var ball;
+    const canvas: any = React.useRef();
+	var width: number = 500;
+	var height: number = 500;
+	var ball: Ball;
 	const draw = (ctx, socket) => {
 		ctx.clearRect(0, 0, width, height);
 		ball.move(width, height);
@@ -146,16 +149,16 @@ const GameLogic = ({ gameID, socket }) => {
 		socket.emit("start");
 		g_socket = socket;
 		g_gameID = gameID;
-		const context = canvas.current.getContext('2d');
-		let frameCount = 0;
-		let frameId;
+		const context: any = canvas.current.getContext('2d');
+		let frameCount: number = 0;
+		let frameId: number;
 		context.strokeStyle = 'black';
 		context.font = "80 px Arial";
 		context.textAlign = "center";
 		context.lineWidth = 1;
 		ball = new Ball(width/2, height/2, 50, context, gameID);
 		ball.speedX = 5;
-		socket.on('ballSpeedY', (speed) => {
+		socket.on('ballSpeedY', (speed: string) => {
             ball.speedY = parseInt(speed);
         })
 		socket.on('right up', () => {
@@ -184,6 +187,15 @@ const GameLogic = ({ gameID, socket }) => {
 			window.cancelAnimationFrame(frameId);
 		}
     }, []);
+
+	onkeydown = (event: KeyboardEvent) => {
+		if (event.key === "ArrowUp"){
+			g_socket.emit('up', g_gameID, g_socket.id);
+		}
+		if (event.key === "ArrowDown"){
+			g_socket.emit('down', g_gameID, g_socket.id);
+		}
+	}
 
     return (
 		<canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>

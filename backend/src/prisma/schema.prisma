@@ -110,7 +110,6 @@ model ChannelMember {
   isAdmin           Boolean       @default(false)
   muteUntil         DateTime?
   isMuted           Boolean       @default(false)
-  muteUntil         DateTime?
   isBanned          Boolean       @default(false)
   banUntil          DateTime?
 

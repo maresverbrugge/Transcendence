@@ -47,11 +47,13 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 		const newGame : Match = await this.prisma.match.create({
 			data: {
 				status: "PENDING",
-				players: [member]
+				players: {
+					connect: member
+				}
 			}
 		});
 		this.server.emit('newGame', {
-			gameID: newGame,
+			game: newGame,
         });
 	}
 
@@ -66,7 +68,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 				status: "ACCEPTED",
 				updatedAt: new Date(),
 				players: {
-					push: member
+					connect: member
 				}
 			},
 		})
@@ -83,6 +85,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 		const game = this.prisma.match.findUnique({
 			where: { matchID: parseInt(gameID) },
 		  });
+		console.log(playerID)
 		if (game.players[0].ID === playerID)
 		{
 			this.server.emit('right up');

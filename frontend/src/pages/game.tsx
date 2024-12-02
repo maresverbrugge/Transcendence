@@ -6,10 +6,10 @@ import { io } from 'socket.io-client';
 import GameControl from '../components/Game/GameControl';
 
 const Game = () => {
-	const [socket, setSocket] = useState(null);
-	const [tempToken, setTempToken] = useState(null); //tijdelijke oplossing voor Token
-	const [games, setGames] = useState([]);
-	const [selectedGame, setSelectedGame] = useState(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
+	const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
+	const [games, setGames] = useState<Match[] | null>([]);
+	const [selectedGame, setSelectedGame] = useState<number | null>(null);
     
     useEffect(() => {
         //because dev mode sometimes didnt disconnect old sockets
@@ -19,14 +19,14 @@ const Game = () => {
         }
         
         // Initialize socket connection
-		const token = localStorage.getItem('token');
-        const socketIo = io('http://localhost:3001/game', {
+		const token: string = localStorage.getItem('token');
+        const socketIo: Socket = io('http://localhost:3001/game', {
 			transports: ['websocket', 'polling'],
             query: { token: token } // Hier de token uit localstorage halen
         });
 
 		//temporary replacing token for websocketID for testing
-        socketIo.on('token', (websocketID) => {
+        socketIo.on('token', (websocketID: string) => {
             setTempToken(websocketID);
             console.log('replaced token with websocketID')
         })
@@ -36,7 +36,7 @@ const Game = () => {
 
 		const fetchGames = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/game/matches`);
+                const response: AxiosResponse<Match[]> = await axios.get(`http://localhost:3001/game/matches`);
                 setGames(response.data);
             } catch (error) {
                 console.error('Error fetching games:', error);
@@ -45,11 +45,10 @@ const Game = () => {
     
         fetchGames();
 		
-		socketIo.on('newGame', (data) => {
+		socketIo.on('newGame', (data: any) => {
 			setGames((prevGames) => prevGames.concat(data.game));
 			if (confirm(`game ${data.game.matchID} is looking for another player, join?`)) {
 				setSelectedGame(data.game.matchID);
-				socketIo.emit('acceptGame', data.game.matchID);
 			} else {
 				// sent inviteDecline en dan pop up op andere frontend?
 			}
@@ -61,12 +60,12 @@ const Game = () => {
         };
     }, [])
 
-	const handleSelectGame = (gameID) => {
+	const handleSelectGame = (gameID: number) => {
 		socket.emit('acceptGame', gameID, socket.id);
 		setSelectedGame(gameID);
 	}
 
-	const createNewGame = (socket) => {
+	const createNewGame = (socket: Socket) => {
 		socket.emit('createNewGame', socket.id);
 	}
     
