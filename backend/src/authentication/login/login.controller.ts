@@ -15,7 +15,7 @@ export class LoginController {
     const user = await this.loginService.getIntraName(token.access_token);
     return { token, user };
   }
-  
+
   @Post('online')
   async online(@Body() body: { token: string }) {
     const { token } = body;

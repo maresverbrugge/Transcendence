@@ -10,6 +10,7 @@ const LoginRedirect = () => {
   const [accessDenied, setAccessDenied] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
 
+
   useEffect(() => {
     const original_state = process.env.REACT_APP_LOGIN_STATE;
     const params = new URLSearchParams(window.location.search);
@@ -36,8 +37,20 @@ const LoginRedirect = () => {
         const user = response.data.user;
         const token = response.data.token;
         // check if user has 2fa enabled
-        // if user has 2fa enabled, redirect to 2fa page
-        // if user does not have 2fa enabled, set token in local storage and redirect to main page
+        localStorage.setItem('tempToken', token.access_token);
+        axios.post('http://localhost:3001/two-factor/is-enabled', { intraName: user })
+        .then(response => {
+          // if user has 2fa enabled, redirect to 2fa page
+          if (response.data.isEnabled) {
+            navigate('/login/verify-2fa', { state: { userID: response.data.userID } });
+          }
+          else {
+            localStorage.setItem('authenticationToken', token.access_token);
+            navigate('/main');
+          }
+        })
+        .catch(err => {})
+        localStorage.removeItem('tempToken');
         localStorage.setItem('authenticationToken', token.access_token);
         axios.post('http://localhost:3001/login/online', { token: token.access_token })
         navigate('/main');

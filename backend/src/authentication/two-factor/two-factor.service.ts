@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -22,6 +22,23 @@ export class TwoFactorService {
 
 		} catch (error) {
 			throw new InternalServerErrorException("Error generating QR code for 2FA");
+		}
+	}
+
+	async isTwoFactorEnabled(userID: number): Promise<boolean> {
+		try {
+			const isEnabled = await this.prisma.user.findUnique({
+				where: { ID: userID },
+				select: { Enabled2FA: true },
+			});
+			if (isEnabled === null) {
+				throw new NotFoundException('User not found');
+			} else {
+				return isEnabled.Enabled2FA
+			}
+		}
+		catch (error) {
+			throw new InternalServerErrorException('Error while checking if two-factor authentication is enabled');
 		}
 	}
 

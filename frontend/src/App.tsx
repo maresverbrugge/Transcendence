@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainPage from './pages/landingPage.tsx';
 import Login from './components/Authentication/Login.tsx';
 import SetUp2FA from './components/Authentication/SetUp2FA.tsx';
+import Verify2FA from './components/Authentication/Verify2FA.tsx';
 import LoginRedirect from './components/Authentication/LoginRedirect.tsx';
 import ProtectedRoute from './components/Authentication/ProtectedRoute.tsx';
 import Logout from './components/Authentication/Logout.tsx';
@@ -23,7 +24,8 @@ const App = () => {
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
 			<Route path="/logout" element={<Logout />} />
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
-			<Route path="/login/2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
+			<Route path="/login/set-up-2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
+			<Route path="/login/verify-2fa" element={<ProtectedRoute element={<Verify2FA />} />} />
 		  </Routes>
 		</Router>
 	  );

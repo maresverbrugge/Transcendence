@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Navigate } from 'react-router-dom';
 import SingleHeader from './Pages/SingleHeader';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const SetUp2FA = () => {
+const Verify2FA = () => {
+	const navigate = useNavigate();
+  const location = useLocation();
 	const [oneTimePassword, setOneTimePassword] = useState('');
 	const [passwordVerified, setPasswordVerified] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
@@ -11,12 +14,31 @@ const SetUp2FA = () => {
 
 	const verifyOneTimePassword = () => {
 		setIsLoading(true);
+
+		const userID = location.state?.userID;
+    if (!userID) {
+      console.error('Error getting userID from location');
+      setErrorOccurred(true);
+      return;
+    }
+
 		axios.post('http://localhost:3001/two-factor/verify', {
-			oneTimePassword: oneTimePassword
+			oneTimePassword: oneTimePassword,
+			userID: userID,
 		})
 		.then(response => {
 			console.log('Verified:', response.data); // For debugging
 			setPasswordVerified(response.data);
+			const token = localStorage.getItem('tempToken');
+			if (token) {
+				localStorage.setItem('authenticationToken', token);
+				localStorage.removeItem('tempToken');
+				axios.post('http://localhost:3001/login/online', { token: token })
+				navigate('/main');
+		} else {
+				console.error('Temp token not found');
+				setErrorOccurred(true);
+		}
 		})
 		.catch(err => {
 			console.error('Error while verifying one time password:', err);
@@ -47,4 +69,4 @@ const SetUp2FA = () => {
 	} 
 }
 
-export default SetUp2FA;
+export default Verify2FA;

@@ -16,7 +16,7 @@ const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthentica
   }, [twoFactorAuthenticationEnabled]);
 
   const enable2FA = async () => {
-    navigate('/login/2fa', { state: { userID } });
+    navigate('/login/set-up-2fa', { state: { userID } });
   };
 
   const disable2FA = async () => {

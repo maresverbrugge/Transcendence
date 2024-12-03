@@ -1,15 +1,29 @@
 import { Controller, Post, Get, Body } from '@nestjs/common';
 import { TwoFactorService } from './two-factor.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('two-factor')
 export class TwoFactorController {
-  constructor(private readonly twoFactorService: TwoFactorService) {}
+  constructor(private readonly twoFactorService: TwoFactorService, private readonly userService: UserService) {}
 
   @Post('qrcode')
   async qrcode(@Body() body: { userID: number }) {
     const { userID } = body;
     const qrcode = await this.twoFactorService.getQRCode(userID);
     return qrcode
+  }
+
+  @Post('is-enabled')
+  async isEnabled(@Body() body: { intraName: string }) {
+    const { intraName } = body;
+    try {
+      const userID = await this.userService.getUserIDByIntraUsername(intraName);
+      var isEnabled = await this.twoFactorService.isTwoFactorEnabled(userID);
+    }
+    catch (error) {
+      return false
+    }
+    return isEnabled
   }
 
   @Post('verify')
