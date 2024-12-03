@@ -114,11 +114,25 @@ function map_range(value: number, low1: number, high1: number, low2: number, hig
 	return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 }
 
+onkeydown = (event: KeyboardEvent) => {
+	if (end)
+		return
+	var move: string
+	if (event.key === "ArrowUp"){
+		move = "up"
+	}
+	if (event.key === "ArrowDown"){
+		move = "down"
+	}
+	g_socket.emit('key', move, g_gameID, g_socket.id);
+}
+
 const GameLogic = ({ gameID, socket }) => {
     const canvas: any = React.useRef();
 	var width: number = 500;
 	var height: number = 500;
 	var ball: Ball;
+	g_socket = socket;
 	const draw = (ctx, socket) => {
 		ctx.clearRect(0, 0, width, height);
 		ball.move(width, height);
@@ -136,6 +150,7 @@ const GameLogic = ({ gameID, socket }) => {
 		ctx.fillText(scoreRight, width/2 + 30, 30); // Right side score
 		ctx.fillText(scoreLeft, width/2 - 30, 30); // Left side score
 		if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
+			socket.emit('done', g_gameID)
 			ctx.fillText("You've won, nice game!", width/2, height/2);
 			end = 1;
 			ball.x = width/2;
@@ -146,8 +161,7 @@ const GameLogic = ({ gameID, socket }) => {
 	}
 	
     useEffect(() => {
-		socket.emit("start");
-		g_socket = socket;
+		socket.emit('start');
 		g_gameID = gameID;
 		const context: any = canvas.current.getContext('2d');
 		let frameCount: number = 0;
@@ -163,15 +177,19 @@ const GameLogic = ({ gameID, socket }) => {
         })
 		socket.on('right up', () => {
             console.log("right player up");
+			paddleRight.y -= 3;
         })
 		socket.on('left up', () => {
             console.log("left player up");
+			paddleLeft.y -= 3
         })
 		socket.on('right down', () => {
             console.log("right player down");
+			paddleRight.y += 3
         })
 		socket.on('left down', () => {
             console.log("left player down");
+			paddleLeft.y += 3
         })
 		paddleLeft = new Paddle(15, height/2, 30, 200, context);
 		paddleRight = new Paddle(width-15, height/2, 30, 200, context);
@@ -185,17 +203,13 @@ const GameLogic = ({ gameID, socket }) => {
 		
 		return () => {
 			window.cancelAnimationFrame(frameId);
+			socket.off('ballSpeedY')
+			socket.off('right up')
+			socket.off('left up')
+			socket.off('right down')
+			socket.off('left down')
 		}
     }, []);
-
-	onkeydown = (event: KeyboardEvent) => {
-		if (event.key === "ArrowUp"){
-			g_socket.emit('up', g_gameID, g_socket.id);
-		}
-		if (event.key === "ArrowDown"){
-			g_socket.emit('down', g_gameID, g_socket.id);
-		}
-	}
 
     return (
 		<canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>

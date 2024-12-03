@@ -11,6 +11,7 @@ import { Logger } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
+import { GameService } from './game.service';
 import { User, Match } from '@prisma/client'
 
 @WebSocketGateway({
@@ -30,6 +31,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	constructor(
         private prisma: PrismaService,
         private readonly userService: UserService,
+		private readonly gameService: GameService
     ) {}
 	@WebSocketServer() server: Namespace;
 	private logger: Logger = new Logger('GameGateway');
@@ -43,15 +45,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 
 	@SubscribeMessage('createNewGame')
 	async handleNewGame(client: any, socketID: string) {
-		const member: User = await this.userService.getUserBySocketID(socketID);
-		const newGame : Match = await this.prisma.match.create({
-			data: {
-				status: "PENDING",
-				players: {
-					connect: member
-				}
-			}
-		});
+		const newGame: Match = await this.gameService.newGame(socketID)
 		this.server.emit('newGame', {
 			game: newGame,
         });
@@ -79,36 +73,28 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 		this.server.emit('ballSpeedY', Math.floor(Math.random() * 6 - 3));
 	}
 
-	@SubscribeMessage('up')
-	async handleUpKey(client: any, gameID: string, socketID: string) {
-		const playerID: number = await this.userService.getUserIDBySocketID(socketID);
-		const game = this.prisma.match.findUnique({
-			where: { matchID: parseInt(gameID) },
-		  });
-		console.log(playerID)
+	@SubscribeMessage('key')
+	async handleKey(@MessageBody() data: { move: string; gameID: number; socketID: string }) {
+		const playerID: number = await this.userService.getUserIDBySocketID(data[2]);
+		const game = await this.prisma.match.findUnique({
+			where: { matchID: parseInt(data[1]) },
+			select: {
+                players: { select: { ID: true } },
+            },
+		});
 		if (game.players[0].ID === playerID)
 		{
-			this.server.emit('right up');
+			if (data[0] === "up")
+				this.server.emit('right up');
+			else
+				this.server.emit('right down');
 		}
 		else
 		{
-			this.server.emit('left up');
-		}
-	}
-
-	@SubscribeMessage('down')
-	async handleDownKey(client: any, gameID: string, socketID: string) {
-		const playerID: number = await this.userService.getUserIDBySocketID(socketID);
-		const game = this.prisma.match.findUnique({
-			where: { matchID: parseInt(gameID) },
-		  });
-		if (game.players[0].ID === playerID)
-		{
-			this.server.emit('right down');
-		}
-		else
-		{
-			this.server.emit('left down');
+			if (data[0] === "up")
+				this.server.emit('left up');
+			else
+				this.server.emit('left down');
 		}
 	}
 
@@ -139,6 +125,18 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 			},
 		})
 	}
+
+	// @SubscribeMessage('done')
+	// async handleFinish(client: any, gameID: string) {
+	// 	const updatedMatch: Match = await this.prisma.match.update({
+	// 		where: {
+	// 			matchID: parseInt(gameID),
+	// 		},
+	// 		data: {
+	// 			status: "FINISHED"
+	// 		},
+	// 	})
+	// }
 
 	afterInit(server: Namespace) {
 	  this.logger.log('WebSocket Gateway Initialized');

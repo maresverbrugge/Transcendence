@@ -11,10 +11,11 @@ import { UserService } from './user/user.service';
 import { GameGateway } from './game/game.gateway';
 import { GameController } from './game/game.controller';
 // import { ChannelMemberService } from './chat/channel-member/channel-member.service';
+import { GameService } from './game/game.service';
 
 @Module({
   imports: [PrismaModule, LoginModule, UserModule],
-  providers: [PrismaService, UserService, GameGateway],
+  providers: [PrismaService, UserService, GameGateway, GameService],
   exports: [PrismaService],
   controllers: [GameController],
 })

@@ -56,6 +56,7 @@ const Game = () => {
 
         return () => {
 			socketIo.off('newGame');
+			socketIo.off('token');
             socketIo.disconnect(); // Disconnect the socket when the component unmounts
         };
     }, [])
