@@ -17,8 +17,6 @@ export class LoginService {
     const redirectUri = 'http://localhost:3000/login/redirect';
 
     try {
-      console.log("clientId = ", clientId);
-      console.log("clientSecret = ", clientSecret);
       // Request the token from the 42 API
       const response = await axios.post('https://api.intra.42.fr/oauth/token', {
         grant_type: 'authorization_code',
