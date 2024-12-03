@@ -45,38 +45,37 @@ function UserAccount() {
   }
 
   return (
-    <div className="container mt-5">
-      <div className="row">
+    <div className="container my-5">
+      <div className="row g-4">
         {/* Left Column */}
-        <div className="col-md-3">
-          <div className="card shadow mb-4">
-            <div className="card-body text-center">
-              <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
-            </div>
-          </div>
-          <div className="card shadow mb-4">
-            <div className="card-body">
-              <Username currentUsername={userData.username} />
-            </div>
-          </div>
-          <div className="card shadow mb-4">
-            <div className="card-body">
-              <div className="d-flex justify-content-center align-items-center">
-              <Toggle2FA />
+        <div className="col-lg-3">
+          <div className="d-flex flex-column gap-3">
+            <div className="card shadow">
+              <div className="card-body text-center">
+                <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
               </div>
             </div>
-          </div>
-          <div className="card shadow mb-4">
-            <div className="card-body">
-              <LogOut />
+            <div className="card shadow">
+              <div className="card-body">
+                <Username currentUsername={userData.username} />
+              </div>
+            </div>
+            <div className="card shadow">
+              <div className="card-body d-flex justify-content-center align-items-center">
+                <Toggle2FA />
+              </div>
+            </div>
+            <div className="card shadow">
+              <div className="card-body">
+                <LogOut />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Middle Column */}
-        <div className="col-md-6">
+        <div className="col-lg-6">
           <div className="accordion" id="userAccordion">
-            {/* Accordion Item: Statistics */}
             <div className="accordion-item">
               <h2 className="accordion-header" id="headingStatistics">
                 <button
@@ -175,23 +174,19 @@ function UserAccount() {
         </div>
 
         {/* Right Column */}
-        <div className="col-md-3">
+        <div className="col-lg-3">
           <div className="card shadow">
             <div className="card-body">
               <h4 className="text-center">Friends</h4>
               <ul className="list-group">
-                {/* Mock friend list */}
-                <li className="list-group-item d-flex justify-content-between align-items-center">
-                  Alice
-                  <span className="badge bg-success">Online</span>
+                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
+                  Alice <span className="badge bg-success">Online</span>
                 </li>
-                <li className="list-group-item d-flex justify-content-between align-items-center">
-                  Bob
-                  <span className="badge bg-secondary">Offline</span>
+                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
+                  Bob <span className="badge bg-secondary">Offline</span>
                 </li>
-                <li className="list-group-item d-flex justify-content-between align-items-center">
-                  Charlie
-                  <span className="badge bg-success">Online</span>
+                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
+                  Charlie <span className="badge bg-success">Online</span>
                 </li>
               </ul>
             </div>

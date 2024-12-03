@@ -11,7 +11,7 @@ function Username({ currentUsername }: { currentUsername: string }) {
 
   const validateUsername = (value: string): string | null => {
     if (!value.trim()) return 'Username cannot be empty!';
-    if (value.length > 20) return 'Username must not exceed 20 characters!';
+    if (value.length > 15) return 'Username must not exceed 15 characters!';
     if (/[^a-zA-Z0-9-_]/.test(value)) return 'Username can only contain letters, numbers, dashes, and underscores.';
     return null;
   };
@@ -20,7 +20,7 @@ function Username({ currentUsername }: { currentUsername: string }) {
     const value = e.target.value;
     setTempUsername(value);
     const validationError = validateUsername(value);
-    setValidationMessage(validateUsername(value));
+    setValidationMessage(validationError);
   };
 
   const handleCancel = () => {
@@ -59,25 +59,56 @@ function Username({ currentUsername }: { currentUsername: string }) {
       {isEditing ? (
         <>
           {/* Input Field with Validation */}
-          <div className="mb-3">
-            <input
-              type="text"
-              value={tempUsername}
-              onChange={handleInputChange}
-              className={`form-control ${validationMessage ? 'is-invalid' : tempUsername.trim() ? 'is-valid' : ''}`}
-              placeholder="Enter a new username"
-            />
-            {validationMessage ? (
-              <div className="invalid-feedback">{validationMessage}</div>
-            ) : (
-              tempUsername.trim() && <div className="valid-feedback">Username looks good!</div>
-            )}
+          <div className="mb-2 w-100" style={{ maxWidth: '22ch' }}>
+          <input
+            type="text"
+            value={tempUsername}
+            onChange={handleInputChange}
+            className={`form-control text-center ${validationMessage ? 'is-invalid' : tempUsername.trim() ? 'is-valid' : ''}`}
+            placeholder="Enter new name"
+            style={{
+              width: '100%', // Make width responsive
+              paddingInline: '5%', // Adjust padding based on container width
+              boxSizing: 'border-box', // Ensure borders and padding are included in width
+            }}
+          />
+          
+          {validationMessage ? (
+            <div
+              className="invalid-feedback text-center"
+              style={{
+                width: '100%', // Full width of the container
+                maxWidth: '90%', // Prevent it from exceeding the layout
+                margin: '0 auto', // Center the message within the parent
+                padding: '0.5%', // Responsive padding
+                boxSizing: 'border-box', // Ensures padding doesn't affect width
+              }}
+            >
+              {validationMessage}
+            </div>
+          ) : (
+            tempUsername.trim() && (
+              <div
+                className="valid-feedback text-center"
+                style={{
+                  width: '100%',
+                  maxWidth: '90%',
+                  margin: '0 auto',
+                  padding: '0.5%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                Username looks good!
+              </div>
+            )
+          )}
           </div>
 
           {/* Cancel and Save Buttons */}
-          <div className="d-flex justify-content-between  w-100">
+          <div className="mt-1">
             <button
-              className="btn btn-danger btn-sm"
+              type="button"
+              className="btn btn-danger btn-sm me-2"
               onClick={handleCancel}>
               Cancel
             </button>
@@ -95,14 +126,16 @@ function Username({ currentUsername }: { currentUsername: string }) {
           {/* Edit Button */}
           <button
             className="btn btn-outline-primary btn-sm mb-3"
-            onClick={() => setIsEditing(true)}>
+            onClick={() => {
+              setIsEditing(true);
+              setUploadStatus('idle');}}>
             Edit Username
           </button>
 
           {/* Undo Button */}
           {uploadStatus === 'success' && (
             <button
-              className="btn btn-secondary btn-sm"
+              className="btn btn-outline-danger btn-sm"
               onClick={handleUndo}>
               Reset
             </button>
