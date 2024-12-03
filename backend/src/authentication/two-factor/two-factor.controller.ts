@@ -5,7 +5,7 @@ import { TwoFactorService } from './two-factor.service';
 export class TwoFactorController {
   constructor(private readonly twoFactorService: TwoFactorService) {}
 
-  @Get('qrcode')
+  @Post('qrcode')
   async qrcode(@Body() body: { userID: number }) {
     const { userID } = body;
     const qrcode = await this.twoFactorService.getQRCode(userID);

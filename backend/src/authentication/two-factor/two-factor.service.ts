@@ -13,11 +13,10 @@ export class TwoFactorService {
 			var secret = speakeasy.generateSecret({
 				name: "Transcendancing Queens"
 			});
-			console.log("Unique secret:", secret.ascii); // For debugging
 			const dataURL = await qrcode.toDataURL(secret.otpauth_url);
 			await this.prisma.user.update({
 				where: { ID: userID },
-				data: { twoFactorSecret: secret.ascii },
+				data: { secretKey: secret.ascii },
 			});
 			return dataURL
 
@@ -29,12 +28,12 @@ export class TwoFactorService {
 	async verifyOneTimePassword(oneTimePassword: string, userID: number): Promise<boolean> {
 		console.log("oneTimePassword: ", oneTimePassword); // For debugging
 		try {
-			const twoFactorSecret = await this.prisma.user.findUnique({
+			const secretKey = await this.prisma.user.findUnique({
 				where: { ID: userID },
-				select: { twoFactorSecret: true },
+				select: { secretKey: true },
 			});
 			const verified = speakeasy.totp.verify({
-				secret: twoFactorSecret,
+				secret: secretKey,
 				encoding: 'ascii',
 				token: oneTimePassword,
 			});
@@ -62,7 +61,7 @@ export class TwoFactorService {
 			await this.prisma.user.update({
 				where: { ID: userID },
 				data: { 
-					twoFactorSecret: null,
+					secretKey: null,
 					Enabled2FA: false,
 				},
 			});

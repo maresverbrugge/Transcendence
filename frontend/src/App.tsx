@@ -23,7 +23,7 @@ const App = () => {
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
 			<Route path="/logout" element={<Logout />} />
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
-			{/* <Route path="/login/2fa" element={<ProtectedRoute element={<SetUp2FA />} />} /> */}
+			<Route path="/login/2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
 		  </Routes>
 		</Router>
 	  );

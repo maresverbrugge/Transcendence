@@ -62,7 +62,7 @@ function UserAccount() {
           <div className="card shadow mb-4">
             <div className="card-body">
               <div className="d-flex justify-content-center align-items-center">
-                <Toggle2FA user={userData.Enabled2FA} userID={userData.userID}/>
+              <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} userID={userData.ID} />
               </div>
             </div>
           </div>

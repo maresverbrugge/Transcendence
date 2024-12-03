@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface TwoFactorAuthenticationProps {
   twoFactorAuthenticationEnabled: boolean;
@@ -8,19 +9,19 @@ interface TwoFactorAuthenticationProps {
 
 const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthenticationEnabled, userID }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(twoFactorAuthenticationEnabled);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setTwoFactorEnabled(twoFactorAuthenticationEnabled);
   }, [twoFactorAuthenticationEnabled]);
 
   const enable2FA = async () => {
-    window.location.href = `/login/2fa?userID=${userID}`;
+    navigate('/login/2fa', { state: { userID } });
   };
 
   const disable2FA = async () => {
     try {
       const response = await axios.post('http://localhost:3001/two-factor/disable', { userID });
-      console.log('2FA disabled:', response.data); // For debugging
       setTwoFactorEnabled(false);
     } catch (err) {
       console.error('Error while disabling 2FA:', err);
