@@ -22,7 +22,6 @@ const SetUp2FA = () => {
     if (!isFetched) {
       axios.post('http://localhost:3001/two-factor/qrcode', { userID })
         .then(response => {
-					console.log('response:', response);
           setQrcodeUrl(response.data);
           setIsFetched(true);
         })
@@ -30,14 +29,9 @@ const SetUp2FA = () => {
           setQrcodeUrl(null);
           setErrorOccurred(true);
           console.error('Error while setting up 2FA:', err);
-          try {
-            axios.post('http://localhost:3001/two-factor/disable', { userID });
-          } catch (disableErr) {
-            console.error('Error while disabling 2FA:', disableErr);
-          }
         });
     }
-  }, [location.state?.userID, isFetched]);
+  }, [location, isFetched, errorOccurred]);
 
   const enable2FA = (userID: number) => {
     axios.post('http://localhost:3001/two-factor/enable', { userID })
@@ -50,25 +44,22 @@ const SetUp2FA = () => {
 
   if (!isFetched && !errorOccurred) {
     return <SingleHeader text="Loading..." />;
-  } else if (qrcodeUrl != null && !errorOccurred) {
+  } else if (errorOccurred) {
+	  return <SingleHeader text="Error occurred while setting up 2FA" />;
+	} else if (qrcodeUrl != null && !errorOccurred) {
     return (
-      <div>
-				<p>Scan the QR code below with Google Authenticator to set up 2FA:</p>
-				<div>
-					<img src={qrcodeUrl} alt="QR Code for 2FA setup" />
-				</div>
-				<div>
-					<button
-						className="btn btn-primary"
-						onClick={() => enable2FA(location.state?.userID)}>
-						Done
-					</button>
-				</div>
-      </div>
+			<div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
+				<p>Scan the QR code below with Google Authenticator to set up 2FA</p>
+				<img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
+				<button
+					style={{ width: '200px', marginTop: '30px' }}
+					className="btn btn-primary btn-sm"
+					onClick={() => enable2FA(location.state?.userID)}>
+					Done
+				</button>
+			</div>
     );
-  } else {
-    return <SingleHeader text="Error occurred while setting up 2FA" />;
-  }
+  } 
 };
 
 export default SetUp2FA;
