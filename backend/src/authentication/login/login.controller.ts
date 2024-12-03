@@ -13,8 +13,14 @@ export class LoginController {
     }
     const token = await this.loginService.getToken(code);
     const user = await this.loginService.getIntraName(token.access_token);
+    return { token, user };
+  }
+  
+  @Post('online')
+  async online(@Body() body: { token: string }) {
+    const { token } = body;
+    const user = await this.loginService.getIntraName(token);
     this.loginService.addUserToDatabase(user);
-    return token;
   }
 
   @Post('verify-token')
