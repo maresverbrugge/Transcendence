@@ -5,7 +5,7 @@ import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { User, Message } from '@prisma/client'
 
-
+type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
 
 @Injectable()
 export class MessageService {
@@ -50,7 +50,7 @@ export class MessageService {
       }
     }
 
-    async createActionLogMessage(channelID: number, username: string, action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')): Promise<Message> {
+    async createActionLogMessage(channelID: number, username: string, action: action): Promise<Message> {
       const actionMessageMap = {
         demote: `${username} is no longer an Admin.`,
         makeAdmin: `${username} is now an Admin.`,
@@ -72,7 +72,7 @@ export class MessageService {
       });
     }
 
-    async sendActionLogMessage(server: Namespace, channelID: number, username: string, action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
+    async sendActionLogMessage(server: Namespace, channelID: number, username: string, action: action) {
       const message = await this.createActionLogMessage(channelID, username, action)
       server.to(String(channelID)).emit('newMessage', message)
     }

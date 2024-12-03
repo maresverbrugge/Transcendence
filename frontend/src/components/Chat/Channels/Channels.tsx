@@ -42,9 +42,10 @@ const Channels = ({
     fetchChannels();
 
     // Listen for new channels and messages
-    socket.on('newChannel', (channel: ChannelData) => {
-      setChannels((prevChannels) => prevChannels.concat(channel));
+    socket.on('refreshChannels', () => {
+      fetchChannels()
     });
+  
 
     socket.on('newMessage', (message: MessageData) => {
       if (message.channelID !== selectedChannel?.ID) {
@@ -56,7 +57,7 @@ const Channels = ({
     });
 
     return () => {
-      socket.off('newChannel');
+      socket.off('refreshChannels');
       socket.off('newMessage');
     };
   }, [selectedChannel, socket, token]);

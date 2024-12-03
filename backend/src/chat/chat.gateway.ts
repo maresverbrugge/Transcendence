@@ -13,6 +13,8 @@ type ChannelWithMembersAndMessages = Channel & {
   messages: Message[];
 };
 
+type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
+
 @WebSocketGateway({
   namespace: 'chat',
   cors: {
@@ -56,7 +58,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('channelAction')
-  async handleChannelAction(@MessageBody() data: { action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'), channelMemberID: number; token: string; channelID: number }) {
+  async handleChannelAction(@MessageBody() data: { action: action, channelMemberID: number; token: string; channelID: number }) {
   const { action, channelMemberID, token, channelID } = data;
   await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
 }

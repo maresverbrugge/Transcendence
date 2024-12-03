@@ -10,6 +10,8 @@ type ChannelMemberResponse = ChannelMember & {
     user: Pick<User, 'ID' | 'username' | 'websocketID'>;
 };
 
+type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
+
 
 @Injectable()
 export class ChannelMemberService {
@@ -155,7 +157,7 @@ export class ChannelMemberService {
         }
     }
 
-    async checkPermissions(token: string, channelID: number, targetIsAdmin: boolean, requiredRole: 'owner' | 'admin', action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
+    async checkPermissions(token: string, channelID: number, targetIsAdmin: boolean, requiredRole: 'owner' | 'admin', action: action) {
         const isAllowed = requiredRole === 'owner'
             ? await this.isOwner(token, channelID)
             : await this.isAdmin(token, channelID);
@@ -167,7 +169,7 @@ export class ChannelMemberService {
         }
     }
 
-    actionGetUpdateData(action: ('demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave')) {
+    actionGetUpdateData(action: action) {
         switch (action) {
             case 'ban':
                 return { isBanned: true };

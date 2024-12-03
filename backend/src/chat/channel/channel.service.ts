@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client'
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
+import { channel } from 'diagnostics_channel';
 
 type ChannelWithMembersAndMessages = Channel & {
     members: (ChannelMember & {
@@ -68,7 +69,7 @@ export class ChannelService {
 
     async removeChannelMemberFromChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
         try {
-            const userID = await this.userService.getUserIDBySocketID(token)
+            const userID = await this.userService.getUserIDBySocketID(token) //change to token later
             const channelMember = await this.prisma.channelMember.findFirst({
                 where: {userID: userID, channelID: channelID},
                 select: {ID: true, isBanned: true, channelID: true, user: {select: {username: true}}}
@@ -80,6 +81,7 @@ export class ChannelService {
                 this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'leave')
             }
             socket.leave(String(channelID));
+            socket.emit('refreshChannels');
             server.to(String(channelID)).emit('removeChannelMember', channelMember);
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
@@ -89,17 +91,10 @@ export class ChannelService {
 
     emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembersAndMessages) {
         channel.members.map(async (member) => {
-            const personalizedChannel = { ...channel }; // Create a copy of the channel object
-    
-            if (channel.isDM) {
-                // Get the name dynamically based on the other member
-                personalizedChannel.name = this.getDMName(member.user.username, channel);
-                console.log('namechange', personalizedChannel.name, member);
-            }
-    
-            const socket = await this.userService.getWebSocketByUserID(server, member.userID);
-            this.addChannelMemberToChannel(server, channel.ID, socket, member)
-            socket.emit('newChannel', personalizedChannel); // Emit the personalized channel
+            const socket = await this.userService.getWebSocketByUserID(server, member.userID); //error handling toevoegen
+            if (socket)
+                this.addChannelMemberToChannel(server, channel.ID, socket, member)
+            socket.emit('refreshChannels');
         });
     }
 
@@ -107,7 +102,7 @@ export class ChannelService {
         if (channel.isPrivate)
             this.emitNewPrivateChannel(server, channel)
         else
-            server.emit('newChannel', channel);
+            server.emit('refreshChannels');
     }
 
     async DMExists(ownerID: number, memberIDs: number[]): Promise<boolean> {
@@ -162,11 +157,7 @@ export class ChannelService {
 
     async getPublicChannels() : Promise<Channel[]> {
         return this.prisma.channel.findMany( {
-            where: { isPrivate: false },
-            // include: {
-            //   members: { include: { user: { select: { ID: true, username: true } } }, },
-            //   messages: true,
-            // },
+            where: { isPrivate: false }
           });
     }
 
