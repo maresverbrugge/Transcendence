@@ -16,14 +16,9 @@ export class TwoFactorController {
   @Post('is-enabled')
   async isEnabled(@Body() body: { intraName: string }) {
     const { intraName } = body;
-    try {
-      const userID = await this.userService.getUserIDByIntraUsername(intraName);
-      var isEnabled = await this.twoFactorService.isTwoFactorEnabled(userID);
-    }
-    catch (error) {
-      return false
-    }
-    return isEnabled
+    const userID = await this.userService.getUserIDByIntraUsername(intraName);
+    const isEnabled = await this.twoFactorService.isTwoFactorEnabled(userID);
+    return { userID, isEnabled }
   }
 
   @Post('verify')

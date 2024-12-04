@@ -43,14 +43,13 @@ export class TwoFactorService {
 	}
 
 	async verifyOneTimePassword(oneTimePassword: string, userID: number): Promise<boolean> {
-		console.log("oneTimePassword: ", oneTimePassword); // For debugging
 		try {
 			const secretKey = await this.prisma.user.findUnique({
 				where: { ID: userID },
 				select: { secretKey: true },
 			});
 			const verified = speakeasy.totp.verify({
-				secret: secretKey,
+				secret: secretKey.secretKey,
 				encoding: 'ascii',
 				token: oneTimePassword,
 			});

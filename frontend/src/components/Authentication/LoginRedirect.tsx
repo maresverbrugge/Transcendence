@@ -36,20 +36,17 @@ const LoginRedirect = () => {
       .then(response => {
         const user = response.data.user;
         const token = response.data.token;
-        // check if user has 2fa enabled
         localStorage.setItem('tempToken', token.access_token);
         axios.post('http://localhost:3001/two-factor/is-enabled', { intraName: user })
         .then(response => {
+          const twoFactorAuthenticationEnabled = response.data.isEnabled;
+          const userID = response.data.userID;
           // if user has 2fa enabled, redirect to 2fa page
-          if (response.data.isEnabled) {
-            navigate('/login/verify-2fa', { state: { userID: response.data.userID } });
-          }
-          else {
-            localStorage.setItem('authenticationToken', token.access_token);
-            navigate('/main');
+          if (twoFactorAuthenticationEnabled) {
+            navigate('/login/verify-2fa', { state: { userID: userID } });
           }
         })
-        .catch(err => {})
+        .catch(error => {})
         localStorage.removeItem('tempToken');
         localStorage.setItem('authenticationToken', token.access_token);
         axios.post('http://localhost:3001/login/online', { token: token.access_token })
