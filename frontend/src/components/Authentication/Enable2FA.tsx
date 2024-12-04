@@ -48,7 +48,7 @@ const Enable2FA: React.FC<Enable2FAProps> = ({ userID }) => {
 
   return (
     <div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
-      <p>Enter your one-time password:</p>
+      <p>Enter a one-time password to verify that set-up was successful:</p>
 
       <input
         type="text"
@@ -68,7 +68,7 @@ const Enable2FA: React.FC<Enable2FAProps> = ({ userID }) => {
       {errorMessage && <p style={{ color: 'red' }} aria-live="polite">{errorMessage}</p>}
 
       <button
-        style={{ width: '150px', margin: '20px' }}
+        style={{ width: '150px', margin: '10px' }}
         onClick={() => setNavigateToAccount(true)}
         disabled={isLoading}
       >

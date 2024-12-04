@@ -3,13 +3,9 @@ import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { markUserOffline, getUserIDFromToken } from './apiCalls.tsx';
 
-interface LocationState {
-  userID: string;
-}
-
 const LogOut = () => {
 	const navigate = useNavigate();
-	const location = useLocation<LocationState>();
+	const location = useLocation();
 
 	useEffect(() => {
 		

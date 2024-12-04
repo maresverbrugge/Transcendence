@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { getQRCode } from './apiCalls.tsx';
 import Enable2FA from './Enable2FA.tsx';
