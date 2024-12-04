@@ -50,7 +50,7 @@ const Verify2FA = () => {
         value={oneTimePassword}
         onChange={(e) => setOneTimePassword(e.target.value)}
       />
-      <button style={{ width: '100px', margin: '20px' }} onClick={verifyOneTimePassword} disabled={isLoading}>
+      <button style={{ width: '150px', margin: '20px' }} onClick={verifyOneTimePassword} disabled={isLoading}>
         {isLoading ? 'Submitting...' : 'Submit'}
       </button>
       {errorMessage && <p style={{ color: 'red' }} aria-live="polite">{errorMessage}</p>}

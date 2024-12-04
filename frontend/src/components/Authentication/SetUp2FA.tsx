@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SingleHeader from './Pages/SingleHeader.tsx';
-import { getQRCode, enableTwoFactor } from './apiCalls.tsx';
-
-interface LocationState {
-  userID: string;
-}
+import { getQRCode } from './apiCalls.tsx';
+import Enable2FA from './Enable2FA.tsx';
 
 const SetUp2FA = () => {
-	const navigate = useNavigate();
-  const location = useLocation<LocationState>();
+  const location = useLocation();
   const [qrcodeUrl, setQrcodeUrl] = useState<string | null>(null);
   const [errorOccurred, setErrorOccurred] = useState<boolean>(false);
   const [codeIsFetched, setCodeIsFetched] = useState<boolean>(false);
+	const [userScannedQRCode, setUserScannedQRCode] = useState<boolean>(false);
 
   useEffect(() => {
     const userID = location.state?.userID;
@@ -39,22 +36,13 @@ const SetUp2FA = () => {
 		}
   }, [location.state, codeIsFetched]);
 
-  const enable2FA = async (userID: number) => {
-		try {
-			await enableTwoFactor(userID);
-			navigate('/account');
-
-		} catch (error) {
-      console.error('Error while enabling 2FA:', error);
-      setErrorOccurred(true);
-		}
-  };
-
 	if (errorOccurred) {
 		return <SingleHeader text="Error occurred while setting up 2FA" />;
 	} else if (!codeIsFetched) {
     return <SingleHeader text="Loading..." />;
-  } else {
+  } else if (userScannedQRCode) {
+		return <Enable2FA userID={location.state?.userID} />;
+	} else {
     return (
 			<div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
 				<p>Scan the QR code below with Google Authenticator to set up 2FA</p>
@@ -62,12 +50,13 @@ const SetUp2FA = () => {
 				<button
 					style={{ width: '200px', marginTop: '30px' }}
 					className="btn btn-primary btn-sm"
-					onClick={() => enable2FA(location.state?.userID)}>
+					onClick={() => setUserScannedQRCode(true)}
+				>
 					Done
 				</button>
-			</div>
-    );
-  } 
-};
-
-export default SetUp2FA;
+				</div>
+			);
+		} 
+	};
+		
+	export default SetUp2FA;
