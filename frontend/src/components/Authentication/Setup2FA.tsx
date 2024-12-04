@@ -4,9 +4,13 @@ import { useLocation } from 'react-router-dom';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate } from 'react-router-dom';
 
+interface LocationState {
+  userID: string;
+}
+
 const SetUp2FA = () => {
 	const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation<LocationState>();
   const [qrcodeUrl, setQrcodeUrl] = useState(null);
   const [errorOccurred, setErrorOccurred] = useState(false);
   const [isFetched, setIsFetched] = useState(false);

@@ -18,14 +18,14 @@ const App = () => {
 		  <Routes>
 			<Route path="/" element={<Login />} />
 			<Route path="/login/redirect" element={<LoginRedirect />} />
+			<Route path="/login/verify-2fa" element={<Verify2FA />} />
+			<Route path="/login/set-up-2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
+			<Route path="/logout" element={<Logout />} />
 			<Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
 			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-			<Route path="/logout" element={<Logout />} />
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
-			<Route path="/login/set-up-2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
-			<Route path="/login/verify-2fa" element={<ProtectedRoute element={<Verify2FA />} />} />
 		  </Routes>
 		</Router>
 	  );
