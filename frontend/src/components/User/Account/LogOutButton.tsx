@@ -1,11 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function LogOut() {
+interface LogOutButtonProps {
+  userID: number;
+}
+
+const LogOutButton: React.FC<LogOutButtonProps> = ({ userID }) => {
   const navigate = useNavigate();
 
   const logoutUser = () => {
-    navigate('/logout');
+    navigate('/logout', { state: { userID } });
   }
 
   return (
@@ -15,4 +19,4 @@ function LogOut() {
   );
 };
 
-export default LogOut;
+export default LogOutButton;

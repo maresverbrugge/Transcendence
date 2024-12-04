@@ -23,6 +23,13 @@ export class LoginController {
     this.loginService.addUserToDatabase(user);
   }
 
+  @Post('offline')
+  async offline(@Body() body: { userID: number }) {
+    const { userID } = body;
+    this.loginService.setUserStatusToOffline(userID);
+  }
+
+
   @Post('verify-token')
   async verify(@Body() body: { token: string }) {
     const { token } = body;

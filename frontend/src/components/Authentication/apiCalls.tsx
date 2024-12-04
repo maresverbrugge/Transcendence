@@ -19,6 +19,10 @@ export const markUserOnline = (token: string) =>
   axios.post('http://localhost:3001/login/online', { token });
 
 
+export const markUserOffline = (userID: number) =>
+  axios.post('http://localhost:3001/login/offline', { userID });
+
+
 export const isTwoFactorEnabled = (intraName: string) =>
 	axios.post('http://localhost:3001/two-factor/is-enabled', { intraName });
 

@@ -60,6 +60,19 @@ export class LoginService {
     }
   }
 
+  async setUserStatusToOffline(userID: number): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { ID: userID },
+        data: { status: UserStatus.OFFLINE },
+      });
+    }
+    catch (error) {
+      throw new InternalServerErrorException('Error while setting user status to offline');
+    }
+  }
+
+
   async verifyToken(token: string): Promise<boolean> {
     try {
       const response = await axios.get('https://api.intra.42.fr/oauth/token/info', {
