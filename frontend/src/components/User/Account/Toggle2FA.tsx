@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { disableTwoFactor } from '../../Authentication/apiCalls.tsx';
 
 interface TwoFactorAuthenticationProps {
   twoFactorAuthenticationEnabled: boolean;
@@ -21,10 +21,11 @@ const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthentica
 
   const disable2FA = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/two-factor/disable', { userID });
+      await disableTwoFactor(userID);
       setTwoFactorEnabled(false);
-    } catch (err) {
-      console.error('Error while disabling 2FA:', err);
+      alert('Two-factor authentication has been disabled successfully.');
+    } catch (error) {
+      console.error('Error while disabling 2FA:', error);
     }
   };
 

@@ -27,5 +27,9 @@ export const enableTwoFactor = (userID: number) =>
 	axios.post('http://localhost:3001/two-factor/enable', { userID });
 
 
+export const disableTwoFactor = (userID: number) =>
+	axios.post('http://localhost:3001/two-factor/disable', { userID });
+
+
 export const getQRCode = (userID: number) =>
 	axios.post('http://localhost:3001/two-factor/qrcode', { userID });
