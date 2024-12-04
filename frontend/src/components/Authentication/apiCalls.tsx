@@ -1,13 +1,5 @@
 import axios from 'axios';
 
-export const verifyOTP = (userID: string, oneTimePassword: string) =>
-  axios.post('http://localhost:3001/two-factor/verify', {
-    userID,
-    oneTimePassword,
-  });
-
-export const markUserOnline = (token: string) =>
-  axios.post('http://localhost:3001/login/online', { token });
 
 export const getToken = (code: string, state: string) =>
 	axios.post('http://localhost:3001/login/get-token', {
@@ -15,5 +7,25 @@ export const getToken = (code: string, state: string) =>
 		state: state,
 	});
 
+
+export const verifyOTP = (userID: string, oneTimePassword: string) =>
+  axios.post('http://localhost:3001/two-factor/verify', {
+    userID,
+    oneTimePassword,
+  });
+
+
+export const markUserOnline = (token: string) =>
+  axios.post('http://localhost:3001/login/online', { token });
+
+
 export const isTwoFactorEnabled = (intraName: string) =>
 	axios.post('http://localhost:3001/two-factor/is-enabled', { intraName });
+
+
+export const enableTwoFactor = (userID: number) =>
+	axios.post('http://localhost:3001/two-factor/enable', { userID });
+
+
+export const getQRCode = (userID: number) =>
+	axios.post('http://localhost:3001/two-factor/qrcode', { userID });

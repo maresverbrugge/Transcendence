@@ -15,7 +15,7 @@ const LoginRedirect = () => {
     const state = params.get('state');
 
     if (!code || !state || state !== original_state) {
-      console.error('Invalid state');
+      console.error('Invalid code or state');
       setAccessDenied(true);
       return;
     }
