@@ -27,12 +27,14 @@ const LoginRedirect = () => {
         const token = tokenResponse.data.token;
         
         // Redirect to 2FA verification if enabled
-        const isEnabledResponse = await isTwoFactorEnabled(user);
-        if (isEnabledResponse.data.isEnabled) {
-          localStorage.setItem('tempToken', token.access_token);
-          navigate('/login/verify-2fa', { state: { userID: isEnabledResponse.data.userID } });
-          return;
-        }
+        try {
+          const isEnabledResponse = await isTwoFactorEnabled(user);
+          if (isEnabledResponse.data.isEnabled) {
+            localStorage.setItem('tempToken', token.access_token);
+            navigate('/login/verify-2fa', { state: { userID: isEnabledResponse.data.userID } });
+            return;
+          }
+        } catch { }
 
         // If 2FA is not enabled, proceed to main app
         localStorage.setItem('authenticationToken', token.access_token);

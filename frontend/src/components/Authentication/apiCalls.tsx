@@ -37,3 +37,7 @@ export const disableTwoFactor = (userID: number) =>
 
 export const getQRCode = (userID: number) =>
 	axios.post('http://localhost:3001/two-factor/qrcode', { userID });
+
+
+export const getUserIDFromToken = (token: string) =>
+	axios.post('http://localhost:3001/login/user-id', { token });

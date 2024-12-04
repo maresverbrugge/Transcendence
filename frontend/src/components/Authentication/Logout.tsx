@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { markUserOffline } from './apiCalls.tsx';
+import { markUserOffline, getUserIDFromToken } from './apiCalls.tsx';
 
 interface LocationState {
   userID: string;
@@ -14,14 +14,20 @@ const Logout = () => {
 	useEffect(() => {
 		
 		const changeUserStatus = async (userID: number) => {
+			if (!userID) {
+				const token = localStorage.getItem('authenticationToken');
+				if (!token) {
+					navigate('/');
+					return;
+				}
+				const response = await getUserIDFromToken(token);
+				userID = response.data;
+			}
 			await markUserOffline(userID);
 		}
 		
 		try {
 			const userID = location.state?.userID;
-			if (!userID) {
-				throw new Error('User ID required for logging out');
-			}
 			changeUserStatus(userID);
 			localStorage.removeItem('authenticationToken');
 			navigate('/');
