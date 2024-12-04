@@ -11,6 +11,7 @@ const Verify2FA = () => {
 	const [passwordVerified, setPasswordVerified] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	const verifyOneTimePassword = () => {
 		setIsLoading(true);
@@ -41,6 +42,9 @@ const Verify2FA = () => {
 					setErrorOccurred(true);
 				}
 			}
+			else {
+				setErrorMessage('Invalid one-time password. Please try again.');
+			}
 		})
 		.catch(err => {
 			console.error('Error while verifying one time password:', err);
@@ -59,10 +63,11 @@ const Verify2FA = () => {
 					onChange={(e) => setOneTimePassword(e.target.value)}
 				/>
 				<button 
-					style={{ width: '100px', marginTop: '30px' }}
+					style={{ width: '100px', margin: '20px' }}
 					onClick={verifyOneTimePassword}>
 					Submit
 				</button>
+				{errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 			</div>
 		);
 	}
