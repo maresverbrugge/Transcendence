@@ -6,32 +6,29 @@ import { markUserOffline, getUserIDFromToken } from './apiCalls.tsx';
 const LogOut = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const userID = location.state?.userID;
 
 	useEffect(() => {
-		
-		const changeUserStatus = async (userID: number) => {
-			if (!userID) {
-				const token = localStorage.getItem('authenticationToken');
-				if (!token) {
-					navigate('/');
-					return;
+		const logOutUser = async (userID: number) => {
+			try {
+				if (!userID) {
+					const token = localStorage.getItem('authenticationToken');
+					if (!token) {
+						navigate('/');
+						return;
+					}
+					const response = await getUserIDFromToken(token);
+					userID = response.data;
 				}
-				const response = await getUserIDFromToken(token);
-				userID = response.data;
+				await markUserOffline(userID);
+			} catch (error) {
+				console.error('Error while logging out');
+			} finally {
+				navigate('/');
+				localStorage.removeItem('authenticationToken');
 			}
-			await markUserOffline(userID);
 		}
-		
-		try {
-			const userID = location.state?.userID;
-			changeUserStatus(userID);
-			localStorage.removeItem('authenticationToken');
-			navigate('/');
-		} catch (error) {
-			console.error('Error while logging out');
-			navigate('/');
-		}
-	
+		logOutUser(userID);
 	}, [navigate]);
 
 	return <SingleHeader text="Logging out..." />;
