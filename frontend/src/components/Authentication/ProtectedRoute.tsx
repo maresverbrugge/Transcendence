@@ -9,7 +9,7 @@ const ProtectedRoute = ({ element }) => {
   if (isAuthenticated === null) {
     return <SingleHeader text="Loading..." />;
   } else if (!isAuthenticated) {
-    return <Navigate to="/" />;
+    return <Navigate to="/logout" />;
   } else {
     return element;
   }
