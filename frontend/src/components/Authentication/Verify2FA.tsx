@@ -51,14 +51,18 @@ const Verify2FA = () => {
 
 	if (!passwordVerified && !isLoading && !errorOccurred) {
 		return (
-			<div>
+			<div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
 				<p>Enter your one time password:</p>
 				<input 
 					type="text"
 					value={oneTimePassword}
 					onChange={(e) => setOneTimePassword(e.target.value)}
 				/>
-				<button onClick={verifyOneTimePassword}>Submit</button>
+				<button 
+					style={{ width: '100px', marginTop: '30px' }}
+					onClick={verifyOneTimePassword}>
+					Submit
+				</button>
 			</div>
 		);
 	}
