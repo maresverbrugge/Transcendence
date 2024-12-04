@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import isAuthenticatedHook from './Hooks/AuthenticationCheck.tsx';
 import LoginButton from './Pages/LoginButton.tsx';

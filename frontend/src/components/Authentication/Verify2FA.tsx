@@ -8,12 +8,11 @@ interface LocationState {
 }
 
 const Verify2FA = () => {
-	console.log("in verify2fa");
 	const navigate = useNavigate();
   const location = useLocation<LocationState>();
-	const [oneTimePassword, setOneTimePassword] = useState('');
-	const [isLoading, setIsLoading] = useState(false);
-	const [errorMessage, setErrorMessage] = useState('');
+	const [oneTimePassword, setOneTimePassword] = useState<string>('');
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string>('');
 
 	const userID = location.state?.userID;
 	if (!userID) {
@@ -27,7 +26,6 @@ const Verify2FA = () => {
 			const verified = response.data;
 			if (verified) {
         const token = localStorage.getItem('tempToken');
-				console.log("temp token2: ", localStorage.getItem('tempToken'));
         if (!token) throw new Error('Temporary token not found');
         localStorage.setItem('authenticationToken', token);
         localStorage.removeItem('tempToken');

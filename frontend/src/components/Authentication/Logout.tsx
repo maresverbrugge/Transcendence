@@ -7,7 +7,7 @@ interface LocationState {
   userID: string;
 }
 
-const Logout = () => {
+const LogOut = () => {
 	const navigate = useNavigate();
 	const location = useLocation<LocationState>();
 
@@ -41,4 +41,4 @@ const Logout = () => {
 	return <SingleHeader text="Logging out..." />;
 };
 
-export default Logout;
+export default LogOut;

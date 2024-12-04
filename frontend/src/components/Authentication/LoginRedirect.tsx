@@ -5,8 +5,8 @@ import { getToken, isTwoFactorEnabled, markUserOnline } from './apiCalls.tsx';
 
 const LoginRedirect = () => {
   const navigate = useNavigate();
-  const [accessDenied, setAccessDenied] = useState(false);
-  const [errorOccurred, setErrorOccurred] = useState(false);
+  const [accessDenied, setAccessDenied] = useState<boolean>(false);
+  const [errorOccurred, setErrorOccurred] = useState<boolean>(false);
 
   useEffect(() => {
     const original_state = process.env.REACT_APP_LOGIN_STATE;
@@ -26,7 +26,6 @@ const LoginRedirect = () => {
         const user = tokenResponse.data.user;
         const token = tokenResponse.data.token;
         
-        // Redirect to 2FA verification if enabled
         try {
           const isEnabledResponse = await isTwoFactorEnabled(user);
           if (isEnabledResponse.data.isEnabled) {
@@ -36,7 +35,6 @@ const LoginRedirect = () => {
           }
         } catch { }
 
-        // If 2FA is not enabled, proceed to main app
         localStorage.setItem('authenticationToken', token.access_token);
         await markUserOnline(token.access_token);
         navigate('/main');
