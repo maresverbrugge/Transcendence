@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import ChannelMemberList from './ChannelMemberList.tsx';
 import { ChannelData, MemberData } from '../interfaces.tsx';
-import AddMember from './AddMember.tsx';
 
 interface ChannelProps {
   channel: ChannelData;
@@ -38,14 +37,13 @@ const Channel = ({ channel, handleSelectChannel, friends, setAlert, socket, toke
                 <ChannelMemberList
                     channel={channel}
                     handleSelectChannel={handleSelectChannel}
+                    friends={friends}
+                    setAlert={setAlert}
                     token={token}
                     socket={socket}
                 />
             </div>
-            {channel?.isPrivate && ( <>
-                <AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />
-                <button onClick={leaveChannel}>Leave Channel</button>
-                </>)}
+            {channel?.isPrivate && (<button onClick={leaveChannel}>Leave Channel</button>)}
         </div>
     );
 };

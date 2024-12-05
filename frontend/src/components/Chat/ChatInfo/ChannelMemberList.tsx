@@ -2,15 +2,18 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Confirm from '../../Confirm.tsx';
 import { ChannelData, MemberData } from '../interfaces.tsx';
+import AddMember from './AddMember.tsx';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
   handleSelectChannel: (channelID: number | null) => void;
+  friends: MemberData[];
+  setAlert: (message: string) => void;
   token: string;
   socket: any; // Adjust this type if using a specific Socket.IO client library type
 }
 
-const ChannelMemberList = ({ channel, handleSelectChannel, token, socket }: ChannelMemberListProps) => {
+const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, token, socket }: ChannelMemberListProps) => {
     const [members, setMembers] = useState<MemberData[]>([]);
     const [showConfirm, setShowConfirm] = useState<boolean>(false);
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
@@ -114,7 +117,6 @@ const ChannelMemberList = ({ channel, handleSelectChannel, token, socket }: Chan
                             {isCurrentMember
                                 ? `You${roleLabel ? ` (${roleLabel})` : ""}`
                                 : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ""}`}
-
                             <div className="actions">
                                 {currentMember?.isOwner && !member.isOwner && (
                                     <>
@@ -136,6 +138,7 @@ const ChannelMemberList = ({ channel, handleSelectChannel, token, socket }: Chan
                     );
                 })}
             </ul>
+            {currentMember?.isAdmin && (<AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />)}
         </div>
     );
 };
