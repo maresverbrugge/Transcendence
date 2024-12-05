@@ -40,6 +40,10 @@ const Chat = () => {
       setAlert(error.response?.message || 'An error occurred');
     });
 
+    socketIo.on('deselectChannel', () => {
+      handleSelectChannel(null)
+    })
+
     // Set socket instance in state
     setSocket(socketIo);
 

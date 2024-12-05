@@ -214,7 +214,7 @@ export class ChannelMemberService {
                 const socket = server.sockets.get(targetChannelMember.user.websocketID);
                 if (socket) {
                     socket.leave(String(channelID));
-                    socket.emit('updateChannel')
+                    socket.emit('deselectChannel')
                 }
             }
         } catch (error) {
