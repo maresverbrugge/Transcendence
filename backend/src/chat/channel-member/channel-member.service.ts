@@ -5,6 +5,7 @@ import { Namespace, Socket } from 'socket.io';
 import { ChannelService } from '../channel/channel.service';
 import { ChannelMember, User } from '@prisma/client';
 import { MessageService } from '../message/message.service';
+import { ChatGateway } from '../chat.gateway';
 
 type ChannelMemberResponse = ChannelMember & {
     user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -21,6 +22,8 @@ export class ChannelMemberService {
         private readonly userService: UserService,
         @Inject(forwardRef(() => MessageService))
         private readonly messageService: MessageService,
+        @Inject(forwardRef(() => ChatGateway))
+        private readonly chatGateway: ChatGateway
       ) {}
 
     async getChannelMember(channelMemberID: number) :  Promise<ChannelMemberResponse | null> {
@@ -47,7 +50,7 @@ export class ChannelMemberService {
                 },
             },
         });
-    
+        console.log('check members', channel.members)
         const filteredMembers = channel.members
             .filter(member => !member.isBanned && member.channelID === channelID)
         return filteredMembers;
@@ -58,12 +61,13 @@ export class ChannelMemberService {
             where: { websocketID: token }, // Ensures the token is used as an identifier
             include: { 
                 channelMembers: { 
-                    select: { channelID: true } // Fetch only the channel IDs
+                    select: { channelID: true, isBanned: true } // Fetch only the channel IDs
                 } 
             },
         });
     
-        return user?.channelMembers.some(member => member.channelID === channelID) ?? false;
+        const member = user?.channelMembers.find(member => member.channelID === channelID);
+        return member !== undefined && !member.isBanned;
     }
 
     async getChannelMemberBySocketID(token : string, channelID: number) : Promise<ChannelMemberResponse | null> { //later veranderen naar token
@@ -143,12 +147,12 @@ export class ChannelMemberService {
         });
     }
     
-    async updateChannelMemberEmit(server: Namespace, channelID: number, memberID: number, updateData: any) {
+    async updateChannelMemberEmit(channelID: number, memberID: number, updateData: any) {
         await this.updateChannelMember(memberID, updateData)
-        server.to(String(channelID)).emit('updateChannelMember');
+        this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
     }
     
-    async checkBanOrKick(channelMember: ChannelMemberResponse) {
+    async checkBanOrKick(channelMember: ChannelMemberResponse, channelID: number) {
         if (!channelMember.isBanned)
             return
         if (!channelMember.banUntil)
@@ -160,7 +164,7 @@ export class ChannelMemberService {
                 const secondsLeft = Math.floor(timeLeft / 1000);
                 throw new ForbiddenException(`You are kicked from this channel. Try again in ${secondsLeft} seconds.`)
             } else
-                await this.updateChannelMember(channelMember.ID, {isBanned: false, banUntil: null})
+                await this.updateChannelMemberEmit(channelID, channelMember.ID, {isBanned: false, banUntil: null})
         }
     }
 
@@ -203,16 +207,18 @@ export class ChannelMemberService {
             const targetChannelMember = await this.getChannelMember(channelMemberID);
             await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
             const updateData = this.actionGetUpdateData(action)
-            await this.updateChannelMemberEmit(server, channelID, channelMemberID, updateData);
+            await this.updateChannelMemberEmit(channelID, channelMemberID, updateData);
+            this.messageService.sendActionLogMessage(channelID, targetChannelMember.user.username, action)
             if (action === 'ban' || action === 'kick')
             {
                 const socket = server.sockets.get(targetChannelMember.user.websocketID);
-                if (socket)
+                if (socket) {
                     socket.leave(String(channelID));
+                    socket.emit('updateChannel')
+                }
             }
-            this.messageService.sendActionLogMessage(server, channelID, targetChannelMember.user.username, action)
         } catch (error) {
-            server.to(String(channelID)).emit('error', error);
+            this.chatGateway.emitToRoom('error', String(channelID), error)
         }
     }
 

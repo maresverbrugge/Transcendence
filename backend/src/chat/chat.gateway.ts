@@ -35,7 +35,9 @@ export class ChatGateway
     @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
     private readonly userService: UserService,
+    @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
+    @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
   ) {}
 
@@ -47,17 +49,17 @@ export class ChatGateway
   @SubscribeMessage('joinChannel')
   async handleJoinChannel(client: Socket, data: { channelID: number, token:string }) {
     const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID) //change to token later
-    this.channelService.joinChannel(this.server, data.channelID, client, channelMember.user.username, channelMember.isOwner)
+    this.channelService.joinChannel(data.channelID, client, channelMember.user.username, channelMember.isOwner)
   }
 
   @SubscribeMessage('leaveChannel')
   async handleLeaveChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.removeChannelMemberFromChannel(this.server, data.channelID, client, data.token)
+    this.channelService.removeChannelMemberFromChannel(data.channelID, client, data.token)
   }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: { channelID: number, token: string, content: string }) {
-    this.messageService.sendMessage(this.server, client, data)
+    this.messageService.sendMessage(client, data)
   }
 
   @SubscribeMessage('channelAction')
@@ -98,11 +100,18 @@ export class ChatGateway
     const socket = await this.getWebSocketByUserID(userID)
     if (socket) {
       const user = await this.userService.getUserByUserID(userID)
-      this.channelService.joinChannel(this.server, channelID, socket, user.username, false)
+      this.channelService.joinChannel(channelID, socket, user.username, false)
     }
   }
 
   async getWebSocketByUserID(userID: number): Promise<Socket | null> {
     return this.userService.getWebSocketByUserID(this.server, userID)
+  }
+
+  emitToRoom(message: string, room: string, body? :any) {
+    if (body)
+      this.server.to(room).emit(message, body)
+    else
+      this.server.to(room).emit(message);
   }
 }

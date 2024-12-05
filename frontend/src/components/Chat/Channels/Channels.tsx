@@ -34,6 +34,9 @@ const Channels = ({
           `http://localhost:3001/chat/channel/${token}`
         );
         setChannels(response.data);
+        if (selectedChannel && !response.data.some((channel) => channel.ID === selectedChannel.ID)) {
+          handleSelectChannel(null);
+        }
       } catch (error) {
         console.error('Error fetching channels:', error);
       }

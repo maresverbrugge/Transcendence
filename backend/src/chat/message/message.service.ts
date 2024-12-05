@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { User, Message } from '@prisma/client'
+import { ChatGateway } from '../chat.gateway';
 
 type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
 
@@ -14,7 +15,10 @@ export class MessageService {
       private prisma: PrismaService,
       private readonly userService: UserService,
       @Inject(forwardRef(() => ChannelService))
-      private readonly channelService: ChannelService,    ) {}  
+      private readonly channelService: ChannelService,
+      @Inject(forwardRef(() => ChatGateway))
+      private readonly chatGateway: ChatGateway,
+    ) {}  
 
     async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
         
@@ -38,12 +42,12 @@ export class MessageService {
       });
     }
 
-    async sendMessage(server: Namespace, client: Socket, data: { channelID: number, token: string, content: string }) {
+    async sendMessage(client: Socket, data: { channelID: number, token: string, content: string }) {
       try {
         await this.channelService.checkIsMuted(data.channelID, data.token)
         const sender = await this.userService.getUserBySocketID(data.token)
         const newMessage: Message = await this.createMessage(data.channelID, sender.ID, data.content)
-        server.to(String(data.channelID)).emit('newMessage', newMessage)
+        this.chatGateway.emitToRoom('newMessage', String(data.channelID), newMessage)
         // server.emit('newMessageOnChannel', data.channelID)
       } catch (error) {
         client.emit('error', error)
@@ -72,9 +76,8 @@ export class MessageService {
       });
     }
 
-    async sendActionLogMessage(server: Namespace, channelID: number, username: string, action: action) {
-      console.log('check send action')
+    async sendActionLogMessage(channelID: number, username: string, action: action) {
       const message = await this.createActionLogMessage(channelID, username, action)
-      server.to(String(channelID)).emit('newMessage', message)
+      this.chatGateway.emitToRoom('newMessage', String(channelID), message)
     }
 }

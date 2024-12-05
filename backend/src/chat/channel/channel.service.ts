@@ -46,16 +46,16 @@ export class ChannelService {
         return channel;
     }
 
-    addChannelMemberToChannel(server: Namespace, channelID: number, socket: Socket) {
-        server.to(String(channelID)).emit('updateChannelMember')
+    addChannelMemberToChannel(channelID: number, socket: Socket) {
+        this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
         socket.join(String(channelID));
         console.log(`${socket.id} joined channel ${channelID}`) //remove later
     }
     
-    async joinChannel(server: Namespace, channelID: number, socket: Socket, username: string, isOwner: boolean) {
+    async joinChannel(channelID: number, socket: Socket, username: string, isOwner: boolean) {
         try {
-            await this.messageService.sendActionLogMessage(server, channelID, username, 'join')
-            this.addChannelMemberToChannel(server, channelID, socket)
+            await this.messageService.sendActionLogMessage(channelID, username, 'join')
+            this.addChannelMemberToChannel(channelID, socket)
             if (isOwner)
                 return
         } catch (error) {
@@ -63,7 +63,7 @@ export class ChannelService {
         }
     }
 
-    async removeChannelMemberFromChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
+    async removeChannelMemberFromChannel(channelID: number, socket: Socket, token: string) {
         try {
             const userID = await this.userService.getUserIDBySocketID(token) //change to token later
             const channelMember = await this.prisma.channelMember.findFirst({
@@ -74,29 +74,29 @@ export class ChannelService {
                 throw new NotFoundException('ChannelMember not found')
             if (!channelMember.isBanned) {
                 this.channelMemberService.deleteChannelMember(channelMember.ID)
-                this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'leave')
+                this.messageService.sendActionLogMessage(channelID, channelMember.user.username, 'leave')
             }
             socket.leave(String(channelID));
             socket.emit('updateChannel');
-            server.to(String(channelID)).emit('updateChannelMember');
+            this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
             socket.emit('error', error);
         }
     }
 
-    emitNewPrivateChannel(server: Namespace, channel: ChannelWithMembersAndMessages) {
+    emitNewPrivateChannel(channel: ChannelWithMembersAndMessages) {
         channel.members.map(async (member) => {
-            const socket = await this.userService.getWebSocketByUserID(server, member.userID); //error handling toevoegen
+            const socket = await this.chatGateway.getWebSocketByUserID(member.userID)//error handling toevoegen
             if (socket)
-                this.addChannelMemberToChannel(server, channel.ID, socket)
+                this.addChannelMemberToChannel(channel.ID, socket)
             socket.emit('updateChannel');
         });
     }
 
     emitNewChannel(server: Namespace, channel: ChannelWithMembersAndMessages) {
         if (channel.isPrivate)
-            this.emitNewPrivateChannel(server, channel)
+            this.emitNewPrivateChannel(channel)
         else
             server.emit('updateChannel');
     }
@@ -163,16 +163,18 @@ export class ChannelService {
             select: {
                 username: true,
                 channelMembers: {
-                    include: {channel: {
-                        include: {
-                            members: {include: {
-                                user: {select: {
-                                    ID: true, 
-                                    username: true 
+                    select: {
+                        isBanned: true,
+                        channel: {
+                            include: {
+                                members: {include: {
+                                    user: {select: {
+                                        ID: true, 
+                                        username: true 
             }}}}}}}}}
         })
         return user.channelMembers
-            .filter((channelMember) => channelMember.channel.isPrivate)
+            .filter((channelMember) => !channelMember.isBanned && channelMember.channel.isPrivate)
             .map((channelMember) => {
                 if (channelMember.channel.isDM) {
                     channelMember.channel.name = this.getDMName(user.username, channelMember.channel);
@@ -190,7 +192,7 @@ export class ChannelService {
     async getChannelAddMember(channelID: number, token: string): Promise <ChannelWithMembers | null> {
         try {
             const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token
-            await this.channelMemberService.checkBanOrKick(channelMember)
+            await this.channelMemberService.checkBanOrKick(channelMember, channelID)
         } catch (error) {
             if (error?.response?.statusCode == 404) {
                 const userID = await this.userService.getUserIDBySocketID(token) //change to Token later (+ error check?)
