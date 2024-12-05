@@ -54,8 +54,8 @@ export class ChannelService {
     
     async joinChannel(channelID: number, socket: Socket, username: string, isOwner: boolean) {
         try {
-            await this.messageService.sendActionLogMessage(channelID, username, 'join')
             this.addChannelMemberToChannel(channelID, socket)
+            await this.messageService.sendActionLogMessage(channelID, username, 'join')
             if (isOwner)
                 return
         } catch (error) {
@@ -88,9 +88,10 @@ export class ChannelService {
     emitNewPrivateChannel(channel: ChannelWithMembersAndMessages) {
         channel.members.map(async (member) => {
             const socket = await this.chatGateway.getWebSocketByUserID(member.userID)//error handling toevoegen
-            if (socket)
+            if (socket) {
                 this.addChannelMemberToChannel(channel.ID, socket)
-            socket.emit('updateChannel');
+                socket.emit('updateChannel');
+            }
         });
     }
 
@@ -146,7 +147,7 @@ export class ChannelService {
         return newChannel;
     }
 
-    getDMName(username: string, channel: ChannelWithMembers): string {
+    getDMName(username: string, channel: ChannelWithMembers | ChannelWithMembersAndMessages): string {
         const channelMember = channel.members.find(member => member.user.username !== username);
         return channelMember ? channelMember.user.username : '';
     }
@@ -201,7 +202,10 @@ export class ChannelService {
             else
                 throw error
         }
-        const channel = this.getChannelByID(channelID);
+        const channel = await this.getChannelByID(channelID);
+        const user = await this.userService.getUserBySocketID(token) //change to token later
+        if ((await channel).isDM)
+            channel.name = this.getDMName(user.username, channel)
             
         return channel;
     }

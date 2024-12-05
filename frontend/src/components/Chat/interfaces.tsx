@@ -1,3 +1,5 @@
+ import { UserStatus } from '@prisma/client'
+
 export interface ChannelData {
     ID: number;
     name?: string;
@@ -24,4 +26,14 @@ export interface ChannelData {
     senderID: number;
     channelID: number;
     content: string;
+  }
+
+  export interface UserData {
+    ID: number;
+    username: string;
+    intraUsername: string;
+    websocketID: string;
+    Enabled2FA: boolean;
+    statis: UserStatus;
+    avatarURL: string;
   }

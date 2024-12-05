@@ -50,7 +50,6 @@ export class ChannelMemberService {
                 },
             },
         });
-        console.log('check members', channel.members)
         const filteredMembers = channel.members
             .filter(member => !member.isBanned && member.channelID === channelID)
         return filteredMembers;

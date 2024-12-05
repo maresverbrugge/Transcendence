@@ -59,12 +59,6 @@ export class UserService {
           data: { websocketID: null },
         });
     }
-    
-
-    async getUsers(client: Socket) {
-        const users: User[] = await this.prisma.user.findMany(); // Fetch all users from the User model
-        client.emit('users', users);
-      }
 
     async getUserByUserID(userID: number): Promise<User | null> {
       const user = await this.prisma.user.findUnique({
@@ -73,18 +67,6 @@ export class UserService {
       if (!user)
         throw new NotFoundException(`User with ID ${userID} not found.`);
       return (user)
-    }
-
-    async createUser(socketID: string): Promise<User> {
-        return this.prisma.user.create({
-            data: {
-                username: socketID,
-                intraUsername: socketID,
-                websocketID: socketID,
-                Enabled2FA: true,
-                status: UserStatus.ONLINE,
-                },
-        });
     }
 
     async getWebSocketByUserID(server: Namespace, userID: number) : Promise<Socket | null> {
@@ -113,16 +95,5 @@ export class UserService {
             websocketID: socketID,
           }
         });
-      }
-
-      async deleteUserBySocketID(socketID: string): Promise<User | null> {
-        const userID = await this.getUserIDBySocketID(socketID);
-    
-        if (userID)
-          return this.prisma.user.delete({
-            where: {
-              ID: userID,
-            },
-          });
       }
 }

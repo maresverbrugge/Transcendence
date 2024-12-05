@@ -32,7 +32,7 @@ const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMP
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
         socket.emit('newChannel', response.data);
         resetForm();
-        handleSelectChannel(response.data)
+        handleSelectChannel(response.data.ID)
     };
 
     const resetForm = () => {

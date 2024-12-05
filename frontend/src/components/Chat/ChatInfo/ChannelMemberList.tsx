@@ -138,7 +138,7 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
                     );
                 })}
             </ul>
-            {currentMember?.isAdmin && (<AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />)}
+            {currentMember?.isAdmin && channel.isPrivate && (<AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />)}
         </div>
     );
 };

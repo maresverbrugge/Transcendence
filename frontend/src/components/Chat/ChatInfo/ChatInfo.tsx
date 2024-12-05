@@ -3,6 +3,7 @@ import Friends from './Friends.tsx';
 import './ChatInfo.css';
 import { ChannelData, MemberData } from '../interfaces.tsx' 
 import Channel from './Channel.tsx';
+import DM from './DM.tsx';
 
 interface ChannelInfoProps {
     channel: ChannelData;
@@ -27,8 +28,7 @@ interface ChannelInfoProps {
 const ChannelInfo = ({ channel, handleSelectChannel, friends, setAlert, token, socket }: ChannelInfoProps) => {
     return (
         <div className="channel-info">
-            {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} handleSelectChannel={handleSelectChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
-            <Channel channel={channel} handleSelectChannel={handleSelectChannel} friends={friends} setAlert={setAlert} socket={socket} token={token} />
+            {channel.isDM ? <DM channel={channel} token={token} /> : <Channel channel={channel} handleSelectChannel={handleSelectChannel} friends={friends} setAlert={setAlert} socket={socket} token={token} />}
         </div>
     );
 };
