@@ -27,6 +27,7 @@ export class ChannelService {
         private prisma: PrismaService,
         private readonly userService: UserService,
         private readonly messageService: MessageService,
+        @Inject(forwardRef(() => ChannelMemberService))
         private readonly channelMemberService: ChannelMemberService,
         @Inject(forwardRef(() => ChatGateway))
         private readonly chatGateway: ChatGateway
@@ -117,7 +118,6 @@ export class ChannelService {
         });
         return !!DM; // Return true if a matching DM exists, otherwise false
     }
-    
 
     async newChannel(data: { name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[] }): Promise<ChannelWithMembersAndMessages> {
         const ownerID = await this.userService.getUserIDBySocketID(data.token)
@@ -284,5 +284,15 @@ export class ChannelService {
         const socket = await this.chatGateway.getWebSocketByUserID(userID)
         if (socket)
             socket.emit('updateChannel')
+    }
+
+    async isPrivateChannel(channelID: number): Promise<boolean> {
+        const channel = await this.prisma.channel.findUnique({
+            where: {ID: channelID},
+            select: {isPrivate: true}
+        })
+        if (channel?.isPrivate)
+            return true
+        return false
     }
 }

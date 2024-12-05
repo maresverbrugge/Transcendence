@@ -6,6 +6,7 @@ import { ChannelService } from '../channel/channel.service';
 import { ChannelMember, User } from '@prisma/client';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
+import { privateDecrypt } from 'crypto';
 
 type ChannelMemberResponse = ChannelMember & {
     user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -23,7 +24,9 @@ export class ChannelMemberService {
         @Inject(forwardRef(() => MessageService))
         private readonly messageService: MessageService,
         @Inject(forwardRef(() => ChatGateway))
-        private readonly chatGateway: ChatGateway
+        private readonly chatGateway: ChatGateway,
+        @Inject(forwardRef(() => ChannelService))
+        private readonly channelService: ChannelService
       ) {}
 
     async getChannelMember(channelMemberID: number) :  Promise<ChannelMemberResponse | null> {
@@ -207,6 +210,9 @@ export class ChannelMemberService {
             await this.updateChannelMember(channelMemberID, updateData);
             if (action === 'ban' || action === 'kick')
                 {
+                    if (await this.channelService.isPrivateChannel(channelID)) {
+                        await this.deleteChannelMember(targetChannelMember.ID)
+                    }
                     const socket = server.sockets.get(targetChannelMember.user.websocketID);
                     if (socket) {
                         socket.leave(String(channelID));
