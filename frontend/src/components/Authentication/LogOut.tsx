@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { markUserOffline, getUserIDFromToken } from './apiCalls.tsx';
+import { markUserOffline, getUserIDFromToken } from '../Utils/apiCalls.tsx';
 
 const LogOut = () => {
 	const navigate = useNavigate();

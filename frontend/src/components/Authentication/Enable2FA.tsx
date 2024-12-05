@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate } from 'react-router-dom';
-import { verifyOTP, enableTwoFactor } from './apiCalls.tsx';
+import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls.tsx';
 
 interface Enable2FAProps {
   userID: number;

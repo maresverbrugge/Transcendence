@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { verifyOTP, markUserOnline } from './apiCalls.tsx';
+import { verifyOTP, markUserOnline } from '../Utils/apiCalls.tsx';
 
 interface LocationState {
   userID: string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SingleHeader from './Pages/SingleHeader.tsx';
 import { useNavigate } from 'react-router-dom';
-import { getToken, isTwoFactorEnabled, markUserOnline } from './apiCalls.tsx';
+import { getToken, isTwoFactorEnabled, markUserOnline } from '../Utils/apiCalls.tsx';
 
 const LoginRedirect = () => {
   const navigate = useNavigate();
