@@ -205,6 +205,11 @@ export class ChannelService {
     }
 
     async newChannelMember(newMemberData: {channelID: number, memberID: number, token: string}) {
+        const existingChannelMember = await this.prisma.channelMember.findFirst({
+            where: {channelID: newMemberData.channelID, userID: newMemberData.memberID}
+        })
+        if (existingChannelMember)
+            throw new ForbiddenException('This user is already a member of the channel')
         const userID = await this.userService.getUserIDBySocketID(newMemberData.token) //chanhge to token later
         const channelMember = await this.prisma.channelMember.findFirst({
             where: {

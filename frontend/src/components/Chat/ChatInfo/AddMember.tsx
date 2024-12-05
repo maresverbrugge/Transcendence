@@ -30,6 +30,8 @@ const AddMember = ({channel, friends, socket, token, setAlert }: AddMemberProps)
             await axios.post('http://localhost:3001/chat/channel/newMember', {newMemberData})
             socket.emit('updateChannel', selectedFriend.ID);
         } catch (error) {
+            if (error?.response?.data?.message)
+                setAlert(error.response.data.message)
             console.error(error)
         }
         resetForm();
