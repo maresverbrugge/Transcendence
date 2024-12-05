@@ -21,7 +21,7 @@ export interface ChannelData {
   export interface MessageData {
     ID: number;
     senderName?: string;
-    senderID: string;
-    channelID: string;
+    senderID: number;
+    channelID: number;
     content: string;
   }

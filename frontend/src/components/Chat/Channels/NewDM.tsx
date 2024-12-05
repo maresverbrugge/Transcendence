@@ -5,7 +5,7 @@ import axios from 'axios';
 
 interface NewDMProps {
     friends: MemberData[];
-    handleSelectChannel: (channelID: string) => void;
+    handleSelectChannel: (channelID: number) => void;
     socket: any;
     token: string;
     setAlert: (message: string) => void;

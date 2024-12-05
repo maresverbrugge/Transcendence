@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import axios from 'axios';
 import Channels from '../components/Chat/Channels/Channels.tsx';
 import AlertMessage from '../components/AlertMessage.tsx';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo.tsx';
@@ -47,6 +48,26 @@ const Chat = () => {
     };
   }, []);
 
+  const handleSelectChannel = async (channelID: number | null) => {
+    if (channelID === null || channelID === channel?.ID) {
+      setChannel(null);
+      return;
+    }
+    try {
+      const response = await axios.get<ChannelData>(
+        `http://localhost:3001/chat/channel/${channelID}/${tempToken}` //later veranderen naar token uit localstorage
+      );
+      setChannel(response.data);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        setAlert(error.response.data.message);
+      } else {
+        console.error('Error fetching channel:', error);
+      }
+      setChannel(null);
+    }
+  };
+
   if (!socket || !tempToken) return null;
 
   return (
@@ -59,7 +80,7 @@ const Chat = () => {
       )}
       <Channels
         selectedChannel={channel}
-        setSelectedChannel={setChannel}
+        handleSelectChannel={handleSelectChannel}
         friends={friends}
         socket={socket}
         token={tempToken}
@@ -68,7 +89,7 @@ const Chat = () => {
       <Messenger channel={channel} socket={socket} token={tempToken} />
       <ChatInfo
         channel={channel}
-        setChannel={setChannel}
+        handleSelectChannel={handleSelectChannel}
         friends={friends}
         setFriends={setFriends}
         setAlert={setAlert}

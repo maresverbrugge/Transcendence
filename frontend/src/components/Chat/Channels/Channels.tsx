@@ -8,7 +8,7 @@ import { ChannelData, MemberData, MessageData } from '../interfaces.tsx'
 
 interface ChannelsProps {
   selectedChannel: ChannelData | null;
-  setSelectedChannel: (channel: ChannelData | null) => void;
+  handleSelectChannel: (channelID: number | null) => void;
   friends: MemberData[];
   socket: any; // Adjust this type if using a specific Socket.IO client library type
   token: string;
@@ -17,14 +17,14 @@ interface ChannelsProps {
 
 const Channels = ({
   selectedChannel,
-  setSelectedChannel,
+  handleSelectChannel,
   friends,
   socket,
   token,
   setAlert,
 }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,7 +45,14 @@ const Channels = ({
     socket.on('updateChannel', () => {
       fetchChannels()
     });
-  
+
+    setUnreadCounts((prevCounts) => {
+      if (!selectedChannel) return prevCounts; // No changes if no channel is selected
+      return {
+        ...prevCounts,
+        [selectedChannel.ID]: 0,
+      };
+    });
 
     socket.on('newMessage', (message: MessageData) => {
       if (message.channelID !== selectedChannel?.ID) {
@@ -62,29 +69,29 @@ const Channels = ({
     };
   }, [selectedChannel, socket, token]);
 
-  const handleSelectChannel = async (channelID: string) => {
-    if (channelID === selectedChannel?.ID) {
-      setSelectedChannel(null);
-      return;
-    }
-    try {
-      const response = await axios.get<ChannelData>(
-        `http://localhost:3001/chat/channel/${channelID}/${token}`
-      );
-      setSelectedChannel(response.data);
-      setUnreadCounts((prevCounts) => ({
-        ...prevCounts,
-        [channelID]: 0,
-      }));
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        setShowBannedAlert(error.response.data.message);
-      } else {
-        console.error('Error fetching channel:', error);
-      }
-      setSelectedChannel(null);
-    }
-  };
+  // const handleSelectChannel = async (channelID: number) => {
+  //   if (channelID === selectedChannel?.ID) {
+  //     setSelectedChannel(null);
+  //     return;
+  //   }
+  //   try {
+  //     const response = await axios.get<ChannelData>(
+  //       `http://localhost:3001/chat/channel/${channelID}/${token}`
+  //     );
+  //     setSelectedChannel(response.data);
+  //     setUnreadCounts((prevCounts) => ({
+  //       ...prevCounts,
+  //       [channelID]: 0,
+  //     }));
+  //   } catch (error: any) {
+  //     if (error.response?.status === 403) {
+  //       setShowBannedAlert(error.response.data.message);
+  //     } else {
+  //       console.error('Error fetching channel:', error);
+  //     }
+  //     setSelectedChannel(null);
+  //   }
+  // };
 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 

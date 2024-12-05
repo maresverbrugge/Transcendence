@@ -5,14 +5,14 @@ import AddMember from './AddMember.tsx';
 
 interface ChannelProps {
   channel: ChannelData;
-  setChannel: (channel: ChannelData | null) => void;
+  handleSelectChannel: (channelID: number | null) => void;
   friends: MemberData[],
   setAlert: (message: string) => void;
   socket: any;
   token: string;
 }
 
-const Channel = ({ channel, setChannel, friends, setAlert, socket, token }: ChannelProps) => {
+const Channel = ({ channel, handleSelectChannel, friends, setAlert, socket, token }: ChannelProps) => {
 
     useEffect(() => {
         if (channel && !channel.isPrivate) {
@@ -28,7 +28,7 @@ const Channel = ({ channel, setChannel, friends, setAlert, socket, token }: Chan
 
     const leaveChannel = () => {
         socket.emit('leaveChannel', { channelID: channel.ID, token });
-        setChannel(null);
+        handleSelectChannel(null);
     };
 
     return (
@@ -37,7 +37,7 @@ const Channel = ({ channel, setChannel, friends, setAlert, socket, token }: Chan
                 <h2>Channel: {channel?.name}</h2>
                 <ChannelMemberList
                     channel={channel}
-                    setChannel={setChannel}
+                    handleSelectChannel={handleSelectChannel}
                     token={token}
                     socket={socket}
                 />

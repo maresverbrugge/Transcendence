@@ -6,7 +6,7 @@ import Channel from './Channel.tsx';
 
 interface ChannelInfoProps {
     channel: ChannelData;
-    setChannel: (channel: ChannelData | null) => void;
+    handleSelectChannel: (channel: number | null) => void;
     friends: MemberData[]
     setAlert: (message: string) => void;
     token: string;
@@ -15,7 +15,7 @@ interface ChannelInfoProps {
   
   interface ChatInfoProps {
     channel: ChannelData | null;
-    setChannel: (channel: ChannelData | null) => void;
+    handleSelectChannel: (channel: number | null) => void;
     friends: MemberData[];
     setFriends: (friends: MemberData[]) => void;
     setAlert: (message: string) => void;
@@ -24,21 +24,21 @@ interface ChannelInfoProps {
   }
   
 
-const ChannelInfo = ({ channel, setChannel, friends, setAlert, token, socket }: ChannelInfoProps) => {
+const ChannelInfo = ({ channel, handleSelectChannel, friends, setAlert, token, socket }: ChannelInfoProps) => {
     return (
         <div className="channel-info">
             {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} handleSelectChannel={handleSelectChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
-            <Channel channel={channel} setChannel={setChannel} friends={friends} setAlert={setAlert} socket={socket} token={token} />
+            <Channel channel={channel} handleSelectChannel={handleSelectChannel} friends={friends} setAlert={setAlert} socket={socket} token={token} />
         </div>
     );
 };
 
-const ChatInfo = ({ channel, setChannel, friends, setFriends, setAlert, socket, token }: ChatInfoProps) => {
+const ChatInfo = ({ channel, handleSelectChannel, friends, setFriends, setAlert, socket, token }: ChatInfoProps) => {
     return (
         <div className="chat-info-container">
             {channel === null
                 ? <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
-                : <ChannelInfo channel={channel} setChannel={setChannel} friends={friends} setAlert={setAlert} token={token} socket={socket} />}
+                : <ChannelInfo channel={channel} handleSelectChannel={handleSelectChannel} friends={friends} setAlert={setAlert} token={token} socket={socket} />}
         </div>
     );
 };

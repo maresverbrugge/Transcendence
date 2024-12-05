@@ -5,12 +5,12 @@ import { ChannelData, MemberData } from '../interfaces.tsx';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
-  setChannel: (channel: ChannelData | null) => void;
+  handleSelectChannel: (channelID: number | null) => void;
   token: string;
   socket: any; // Adjust this type if using a specific Socket.IO client library type
 }
 
-const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMemberListProps) => {
+const ChannelMemberList = ({ channel, handleSelectChannel, token, socket }: ChannelMemberListProps) => {
     const [members, setMembers] = useState<MemberData[]>([]);
     const [showConfirm, setShowConfirm] = useState<boolean>(false);
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
@@ -49,7 +49,7 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
     }, [channel]);
 
     const currentMember = members.find(member => member.ID === memberID);
-    if (currentMember?.isBanned) setChannel(null);
+    if (currentMember?.isBanned) handleSelectChannel(null);
 
     // Sort members based on their roles
     const sortedMembers = members.sort((a, b) => {

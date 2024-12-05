@@ -5,7 +5,7 @@ import axios from 'axios';
 
 interface NewChannelProps {
     friends: MemberData[];
-    handleSelectChannel: (channelID: string) => void;
+    handleSelectChannel: (channelID: number) => void;
     socket: any;
     token: string;
 }
@@ -16,9 +16,9 @@ const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelP
     const [isPrivate, setIsPrivate] = useState<boolean>(false);  // Default to public
     const [passwordEnabled, setPasswordEnabled] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
-    const [selectedMemberIDs, setSelectedMemberIDs] = useState<string[]>([]);
+    const [selectedMemberIDs, setSelectedMemberIDs] = useState<number[]>([]);
 
-    const toggleMember = (userID: string) => {
+    const toggleMember = (userID: number) => {
         setSelectedMemberIDs((prev) =>
             prev.includes(userID)
                 ? prev.filter(id => id !== userID)
