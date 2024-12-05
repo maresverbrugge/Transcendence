@@ -147,11 +147,6 @@ export class ChannelMemberService {
         });
     }
     
-    async updateChannelMemberEmit(channelID: number, memberID: number, updateData: any) {
-        await this.updateChannelMember(memberID, updateData)
-        this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
-    }
-    
     async checkBanOrKick(channelMember: ChannelMemberResponse, channelID: number) {
         if (!channelMember.isBanned)
             return
@@ -163,8 +158,10 @@ export class ChannelMemberService {
             if (timeLeft > 0) {
                 const secondsLeft = Math.floor(timeLeft / 1000);
                 throw new ForbiddenException(`You are kicked from this channel. Try again in ${secondsLeft} seconds.`)
-            } else
-                await this.updateChannelMemberEmit(channelID, channelMember.ID, {isBanned: false, banUntil: null})
+            } else {
+                await this.updateChannelMember(channelMember.ID, {isBanned: false, banUntil: null})
+                this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
+            }
         }
     }
 
@@ -207,16 +204,18 @@ export class ChannelMemberService {
             const targetChannelMember = await this.getChannelMember(channelMemberID);
             await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
             const updateData = this.actionGetUpdateData(action)
-            await this.updateChannelMemberEmit(channelID, channelMemberID, updateData);
             this.messageService.sendActionLogMessage(channelID, targetChannelMember.user.username, action)
+            await this.updateChannelMember(channelMemberID, updateData);
             if (action === 'ban' || action === 'kick')
-            {
-                const socket = server.sockets.get(targetChannelMember.user.websocketID);
-                if (socket) {
-                    socket.leave(String(channelID));
-                    socket.emit('deselectChannel')
+                {
+                    const socket = server.sockets.get(targetChannelMember.user.websocketID);
+                    if (socket) {
+                        socket.leave(String(channelID));
+                        socket.emit('deselectChannel')
+                        socket.emit('updateChannel')
+                    }
                 }
-            }
+            this.chatGateway.emitToRoom('updateChannelMember', String(channelID))
         } catch (error) {
             this.chatGateway.emitToRoom('error', String(channelID), error)
         }

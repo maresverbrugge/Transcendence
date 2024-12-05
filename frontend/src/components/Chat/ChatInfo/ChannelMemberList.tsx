@@ -90,7 +90,7 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
         <>
             <button onClick={() => handleActionClick("mute", memberId)}>Mute</button>
             <button onClick={() => handleActionClick("kick", memberId)}>Kick</button>
-            <button onClick={() => handleActionClick("ban", memberId)}>Ban</button>
+            {!channel.isPrivate && (<button onClick={() => handleActionClick("ban", memberId)}>Ban</button>)}
         </>
     );
 
