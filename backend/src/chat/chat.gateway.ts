@@ -1,4 +1,5 @@
 import {WebSocketServer, SubscribeMessage, MessageBody, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {Inject, forwardRef } from '@nestjs/common'
 import { Socket, Namespace } from 'socket.io';
 import { UserService } from './user/user.service';
 import { ChannelService } from './channel/channel.service'
@@ -31,6 +32,7 @@ export class ChatGateway
   @WebSocketServer() server: Namespace;
 
   constructor(
+    @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
@@ -44,7 +46,8 @@ export class ChatGateway
 
   @SubscribeMessage('joinChannel')
   async handleJoinChannel(client: Socket, data: { channelID: number, token:string }) {
-    this.channelService.joinChannel(this.server, data.channelID, client, data.token)
+    const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID) //change to token later
+    this.channelService.joinChannel(this.server, data.channelID, client, channelMember.user.username, channelMember.isOwner)
   }
 
   @SubscribeMessage('leaveChannel')
@@ -62,6 +65,11 @@ export class ChatGateway
   const { action, channelMemberID, token, channelID } = data;
   await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
 }
+
+  @SubscribeMessage('updateChannel')
+  async handleAddMember(@MessageBody() userID: number) {
+    this.channelService.updateChannel(userID)
+  }
 
   afterInit(server: Namespace) {
     console.log('Chat Gateway Initialized');
@@ -84,5 +92,17 @@ export class ChatGateway
     await this.userService.removeWebsocketIDFromUser(client.id)
     if (user)
       this.server.emit('userStatusChange', user.ID, 'OFFLINE') //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+  }
+
+  async addSocketToRoom(userID: number, channelID: number) {
+    const socket = await this.getWebSocketByUserID(userID)
+    if (socket) {
+      const user = await this.userService.getUserByUserID(userID)
+      this.channelService.joinChannel(this.server, channelID, socket, user.username, false)
+    }
+  }
+
+  async getWebSocketByUserID(userID: number): Promise<Socket | null> {
+    return this.userService.getWebSocketByUserID(this.server, userID)
   }
 }

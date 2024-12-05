@@ -42,7 +42,7 @@ const Channels = ({
     fetchChannels();
 
     // Listen for new channels and messages
-    socket.on('refreshChannels', () => {
+    socket.on('updateChannel', () => {
       fetchChannels()
     });
   
@@ -57,7 +57,7 @@ const Channels = ({
     });
 
     return () => {
-      socket.off('refreshChannels');
+      socket.off('updateChannel');
       socket.off('newMessage');
     };
   }, [selectedChannel, socket, token]);

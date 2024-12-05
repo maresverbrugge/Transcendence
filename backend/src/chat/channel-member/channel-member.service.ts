@@ -21,27 +21,49 @@ export class ChannelMemberService {
         private readonly userService: UserService,
         @Inject(forwardRef(() => MessageService))
         private readonly messageService: MessageService,
-        @Inject(forwardRef(() => ChannelService))
-        private readonly channelService: ChannelService,
       ) {}
 
     async getChannelMember(channelMemberID: number) :  Promise<ChannelMemberResponse | null> {
         return this.prisma.channelMember.findUnique({
             where: { ID: channelMemberID },
-            select: {
-                ID : true,
-                websocketID : true,
-                isAdmin : true,
-                isBanned : true,
-                isMuted : true,
-                isOwner : true,
-                banUntil : true,
-                muteUntil : true,
-                userID : true,
-                channelID : true,
+            include: {
                 user: { select: {ID: true, websocketID : true, username: true } }
-            },
+            }
         })
+    }
+
+    async getChannelMembers(channelID: number, token: string): Promise<ChannelMemberResponse[]> {
+
+        if (! await this.isChannelMember(channelID, token)) {
+            throw new ForbiddenException('You are not a member of this channel');
+        }
+        const channel = await this.prisma.channel.findUnique({
+            where: { ID: channelID }, // Use token as the identifier
+            include: { 
+                members: { 
+                    include: { 
+                        user: { select: {ID: true, username: true, websocketID: true } }
+                    },
+                },
+            },
+        });
+    
+        const filteredMembers = channel.members
+            .filter(member => !member.isBanned && member.channelID === channelID)
+        return filteredMembers;
+    }
+    
+    async isChannelMember(channelID: number, token: string): Promise<boolean> {
+        const user = await this.prisma.user.findUnique({
+            where: { websocketID: token }, // Ensures the token is used as an identifier
+            include: { 
+                channelMembers: { 
+                    select: { channelID: true } // Fetch only the channel IDs
+                } 
+            },
+        });
+    
+        return user?.channelMembers.some(member => member.channelID === channelID) ?? false;
     }
 
     async getChannelMemberBySocketID(token : string, channelID: number) : Promise<ChannelMemberResponse | null> { //later veranderen naar token
@@ -70,30 +92,15 @@ export class ChannelMemberService {
         return channelMember
     }
 
-    async createChannelMember(token: string, channelID: number) : Promise<ChannelMemberResponse | null> {
-        const userID = await this.userService.getUserIDBySocketID(token) //change to Token later (+ error check?)
-        const channelMember = await this.prisma.channelMember.create({
+    async createChannelMember(userID: number, channelID: number) {
+        await this.prisma.channelMember.create({
             data: {
                 userID : userID,
                 channelID : channelID
-            },
-            select: {
-                ID : true,
-                websocketID: true,
-                isAdmin : true,
-                isBanned : true,
-                isMuted : true,
-                isOwner : true,
-                banUntil : true,
-                muteUntil : true,
-                userID: true,
-                channelID: true,
-                user: { select: {ID: true, websocketID : true, username: true } }
-            },
+            }
         })
-        if (!channelMember)
-            throw new InternalServerErrorException('Error creating channelMember')
-        return channelMember
+        // if (!channelMember) #Prisma can throw an exception, such as PrismaClientKnownRequestError or PrismaClientValidationError
+        //     throw new InternalServerErrorException('Error creating channelMember')
     }
 
     async deleteChannelMember(channelMemberID: number): Promise<ChannelMember> {
@@ -116,8 +123,8 @@ export class ChannelMemberService {
         return channelMember.isOwner
     }
     
-    async updateChannelMember(memberID: number, updateData: any) : Promise<ChannelMemberResponse> {
-        return await this.prisma.channelMember.update({
+    async updateChannelMember(memberID: number, updateData: any) {
+        await this.prisma.channelMember.update({
             where: { ID: memberID },
             data: updateData,
             select: {
@@ -137,8 +144,8 @@ export class ChannelMemberService {
     }
     
     async updateChannelMemberEmit(server: Namespace, channelID: number, memberID: number, updateData: any) {
-        const updatedChannelMember = await this.updateChannelMember(memberID, updateData)
-        server.to(String(channelID)).emit('channelMember', updatedChannelMember);
+        await this.updateChannelMember(memberID, updateData)
+        server.to(String(channelID)).emit('updateChannelMember');
     }
     
     async checkBanOrKick(channelMember: ChannelMemberResponse) {

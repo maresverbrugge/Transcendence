@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client'
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
-import { channel } from 'diagnostics_channel';
+import { ChatGateway } from '../chat.gateway';
 
 type ChannelWithMembersAndMessages = Channel & {
     members: (ChannelMember & {
@@ -20,10 +20,6 @@ type ChannelWithMembers = Channel & {
     })[];
 };
 
-type ChannelMemberResponse = ChannelMember & {
-    user: Pick<User, 'ID' | 'username'>;
-}
-
 @Injectable()
 export class ChannelService {
 
@@ -31,8 +27,9 @@ export class ChannelService {
         private prisma: PrismaService,
         private readonly userService: UserService,
         private readonly messageService: MessageService,
-        @Inject(forwardRef(() => ChannelMemberService))
-        private readonly channelMemberService: ChannelMemberService
+        private readonly channelMemberService: ChannelMemberService,
+        @Inject(forwardRef(() => ChatGateway))
+        private readonly chatGateway: ChatGateway
     ) {}
 
     async getChannelByID(channelID: number) : Promise<ChannelWithMembersAndMessages | null> {
@@ -49,19 +46,18 @@ export class ChannelService {
         return channel;
     }
 
-    addChannelMemberToChannel(server: Namespace, channelID: number, socket: Socket, channelMember: ChannelMemberResponse) {
-        server.to(String(channelID)).emit('channelMember', channelMember)
+    addChannelMemberToChannel(server: Namespace, channelID: number, socket: Socket) {
+        server.to(String(channelID)).emit('updateChannelMember')
         socket.join(String(channelID));
         console.log(`${socket.id} joined channel ${channelID}`) //remove later
     }
     
-    async joinChannel(server: Namespace, channelID: number, socket: Socket, token: string) {
+    async joinChannel(server: Namespace, channelID: number, socket: Socket, username: string, isOwner: boolean) {
         try {
-            const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID) //change to token later
-            this.addChannelMemberToChannel(server, channelID, socket, channelMember)
-            if (channelMember.isOwner)
+            await this.messageService.sendActionLogMessage(server, channelID, username, 'join')
+            this.addChannelMemberToChannel(server, channelID, socket)
+            if (isOwner)
                 return
-            this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'join')
         } catch (error) {
             socket.emit('error', error)
         }
@@ -81,8 +77,8 @@ export class ChannelService {
                 this.messageService.sendActionLogMessage(server, channelID, channelMember.user.username, 'leave')
             }
             socket.leave(String(channelID));
-            socket.emit('refreshChannels');
-            server.to(String(channelID)).emit('removeChannelMember', channelMember);
+            socket.emit('updateChannel');
+            server.to(String(channelID)).emit('updateChannelMember');
             console.log(`${socket.id} left channel ${channelID}`) //remove later
         } catch (error) {
             socket.emit('error', error);
@@ -93,8 +89,8 @@ export class ChannelService {
         channel.members.map(async (member) => {
             const socket = await this.userService.getWebSocketByUserID(server, member.userID); //error handling toevoegen
             if (socket)
-                this.addChannelMemberToChannel(server, channel.ID, socket, member)
-            socket.emit('refreshChannels');
+                this.addChannelMemberToChannel(server, channel.ID, socket)
+            socket.emit('updateChannel');
         });
     }
 
@@ -102,7 +98,7 @@ export class ChannelService {
         if (channel.isPrivate)
             this.emitNewPrivateChannel(server, channel)
         else
-            server.emit('refreshChannels');
+            server.emit('updateChannel');
     }
 
     async DMExists(ownerID: number, memberIDs: number[]): Promise<boolean> {
@@ -197,7 +193,8 @@ export class ChannelService {
             await this.channelMemberService.checkBanOrKick(channelMember)
         } catch (error) {
             if (error?.response?.statusCode == 404) {
-                await this.channelMemberService.createChannelMember(token ,channelID)
+                const userID = await this.userService.getUserIDBySocketID(token) //change to Token later (+ error check?)
+                await this.channelMemberService.createChannelMember(userID ,channelID)
             }
             else
                 throw error
@@ -206,6 +203,23 @@ export class ChannelService {
             
         return channel;
     }
+
+    async newChannelMember(newMemberData: {channelID: number, memberID: number, token: string}) {
+        const userID = await this.userService.getUserIDBySocketID(newMemberData.token) //chanhge to token later
+        const channelMember = await this.prisma.channelMember.findFirst({
+            where: {
+                channelID: newMemberData.channelID,
+                userID: userID
+            },
+            select: {isAdmin: true}
+        })
+        if (!channelMember?.isAdmin)
+            throw new ForbiddenException('You dont have Admin rights')
+        await this.chatGateway.addSocketToRoom(newMemberData.memberID, newMemberData.channelID)
+        await this.channelMemberService.createChannelMember(newMemberData.memberID, newMemberData.channelID)
+    }
+
+
 
     async getChannelMemberID(channelID: number, token: string): Promise <number | null> {
         const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
@@ -253,5 +267,11 @@ export class ChannelService {
                 data: { isMuted: false, muteUntil: null },
             });
         }
+    }
+
+    async updateChannel(userID) {
+        const socket = await this.chatGateway.getWebSocketByUserID(userID)
+        if (socket)
+            socket.emit('updateChannel')
     }
 }

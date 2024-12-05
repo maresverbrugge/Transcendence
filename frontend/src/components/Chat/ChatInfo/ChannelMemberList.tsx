@@ -18,9 +18,8 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
     const [memberID, setMemberID] = useState<string | null>(null);
     
     useEffect(() => {
-        setMembers(channel.members);
 
-        const fetchCurrentMemberID = async (channelID: string, token: string) => {
+        const fetchCurrentMemberID = async (channelID: number, token: string) => {
             try {
                 const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channelID}/${token}`);
                 setMemberID(response.data);
@@ -29,37 +28,23 @@ const ChannelMemberList = ({ channel, setChannel, token, socket }: ChannelMember
             }
             
         };
+
+        const fetchChannelMembers = async (channelID: number, token: string) => {
+            try {
+                const response = await axios.get(`http://localhost:3001/chat/channel/members/${channelID}/${token}`);
+                setMembers(response.data)
+            } catch (error) {
+                console.error('Error fetching channel members:', error);
+            }
+        }
         
         fetchCurrentMemberID(channel.ID, token);
-
-        const handleIncomingMember = (incomingMember: MemberData) => {
-            if (incomingMember.channelID !== channel.ID)
-                return
-            setMembers((prevMembers) => {
-                const memberExists = prevMembers.some(member => member.ID === incomingMember.ID);
-                if (memberExists) {
-                    return prevMembers.map((member) =>
-                        member.ID === incomingMember.ID ? incomingMember : member
-                    );
-                }
-                return [...prevMembers, incomingMember];
-            });
-        };
-
-        const handleRemoveChannelMember = (channelMember: MemberData) => {
-            if (channelMember.channelID !== channel.ID)
-                return
-            setMembers((prevMembers) => {
-                return prevMembers.filter((member) => member.ID !== channelMember.ID);
-            });
-        };
+        fetchChannelMembers(channel.ID, token)
     
-        socket.on('channelMember', handleIncomingMember);
-        socket.on('removeChannelMember', handleRemoveChannelMember);
+        socket.on('updateChannelMember', () => fetchChannelMembers(channel.ID, token));
     
         return () => {
-            socket.off('channelMember', handleIncomingMember);
-            socket.off('removeChannelMember', handleRemoveChannelMember);
+            socket.off('updateChannelMember');
         };
     }, [channel]);
 

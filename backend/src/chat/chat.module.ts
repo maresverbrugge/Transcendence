@@ -19,7 +19,7 @@ import { MessageService } from './message/message.service';
     MessageService,
     ChatGateway,
   ],
-  exports: [ChannelService, ChannelMemberService],
+  exports: [],
   imports: [
     forwardRef(() => ChatModule), // Handle circular dependencies if these services use each other
   ],

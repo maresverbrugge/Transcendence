@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, NotFoundException, InternalServerErrorExce
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChannelService } from './channel.service';
 import { Channel, User, Message, ChannelMember } from '@prisma/client'
+import { ChannelMemberService } from '../channel-member/channel-member.service';
 
 type ChannelWithMembersAndMessages = Channel & {
   members: (ChannelMember & {
@@ -15,12 +16,18 @@ export class ChannelController {
 
     constructor(
       private readonly prisma: PrismaService,
-      private readonly channelService: ChannelService
+      private readonly channelService: ChannelService,
+      private readonly channelMemberService: ChannelMemberService
     ) {}
 
     @Post()
     async newChannel(@Body() body: {newChannelData: {name: string, isPrivate: boolean, isDM: boolean, password?: string, token: string, memberIDs: number[]}}): Promise<ChannelWithMembersAndMessages> {
       return this.channelService.newChannel(body.newChannelData)
+    }
+
+    @Post('/newMember')
+    async newMember(@Body() body: {newMemberData: {channelID: number, memberID: number, token: string}}) {
+      await this.channelService.newChannelMember(body.newMemberData)
     }
 
     @Get('/:token')
@@ -34,7 +41,12 @@ export class ChannelController {
     }
 
     @Get('/memberID/:channelID/:token')
-    async getChannelMember(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
+    async getChannelMemberID(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
       return this.channelService.getChannelMemberID(channelID, token)
     }
+
+    @Get('/members/:channelID/:token')
+      async getChannelMembers(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
+        return this.channelMemberService.getChannelMembers(channelID, token)
+      }
 }

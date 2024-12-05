@@ -1,5 +1,5 @@
 export interface ChannelData {
-    ID: string;
+    ID: number;
     name?: string;
     isPrivate: boolean;
     isDM?: boolean;
@@ -8,7 +8,7 @@ export interface ChannelData {
   }
   
   export interface MemberData {
-    ID: string;
+    ID: number;
     username: string;
     isOwner: boolean;
     isAdmin: boolean;
@@ -19,8 +19,9 @@ export interface ChannelData {
   }
   
   export interface MessageData {
-    ID: string;
+    ID: number;
     senderName?: string;
+    senderID: string;
     channelID: string;
     content: string;
   }

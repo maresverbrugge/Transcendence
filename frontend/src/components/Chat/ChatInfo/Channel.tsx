@@ -1,15 +1,18 @@
 import React, { useEffect } from 'react';
 import ChannelMemberList from './ChannelMemberList.tsx';
-import { ChannelData } from '../interfaces.tsx';
+import { ChannelData, MemberData } from '../interfaces.tsx';
+import AddMember from './AddMember.tsx';
 
 interface ChannelProps {
   channel: ChannelData;
   setChannel: (channel: ChannelData | null) => void;
+  friends: MemberData[],
+  setAlert: (message: string) => void;
   socket: any;
   token: string;
 }
 
-const Channel = ({ channel, setChannel, socket, token }: ChannelProps) => {
+const Channel = ({ channel, setChannel, friends, setAlert, socket, token }: ChannelProps) => {
 
     useEffect(() => {
         if (channel && !channel.isPrivate) {
@@ -24,10 +27,8 @@ const Channel = ({ channel, setChannel, socket, token }: ChannelProps) => {
     }, [channel, socket, token]);
 
     const leaveChannel = () => {
-        if (channel) {
-            socket.emit('leaveChannel', { channelID: channel.ID, token });
-            setChannel(null);
-        }
+        socket.emit('leaveChannel', { channelID: channel.ID, token });
+        setChannel(null);
     };
 
     return (
@@ -41,7 +42,10 @@ const Channel = ({ channel, setChannel, socket, token }: ChannelProps) => {
                     socket={socket}
                 />
             </div>
-            {channel?.isPrivate && (<button onClick={leaveChannel}>Leave Channel</button>)}
+            {channel?.isPrivate && ( <>
+                <AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />
+                <button onClick={leaveChannel}>Leave Channel</button>
+                </>)}
         </div>
     );
 };

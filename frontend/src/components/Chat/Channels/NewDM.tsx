@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MemberData, ChannelData } from '../interfaces.tsx'
+import { MemberData } from '../interfaces.tsx'
 import './NewChannel.css'; // Update the CSS file name if necessary
 import axios from 'axios';
 

@@ -71,6 +71,7 @@ const Chat = () => {
         setChannel={setChannel}
         friends={friends}
         setFriends={setFriends}
+        setAlert={setAlert}
         socket={socket}
         token={tempToken}
       />

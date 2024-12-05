@@ -73,6 +73,7 @@ export class MessageService {
     }
 
     async sendActionLogMessage(server: Namespace, channelID: number, username: string, action: action) {
+      console.log('check send action')
       const message = await this.createActionLogMessage(channelID, username, action)
       server.to(String(channelID)).emit('newMessage', message)
     }
