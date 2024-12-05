@@ -30,11 +30,14 @@ const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthentica
   };
 
   return (
-    <button
-      className="btn btn-outline-primary btn-sm mb-2"
-      onClick={twoFactorEnabled ? disable2FA : enable2FA}>
-      {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-    </button>
+    <div>
+      <p>Two-factor authentication is currently {twoFactorEnabled ? 'enabled' : 'disabled'}.</p>
+      <button
+        className="btn btn-outline-primary btn-sm mb-2"
+        onClick={twoFactorEnabled ? disable2FA : enable2FA}>
+        {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+      </button>
+    </div>    
   );
 };
 

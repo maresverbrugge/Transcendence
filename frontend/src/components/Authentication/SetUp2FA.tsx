@@ -45,7 +45,11 @@ const SetUp2FA = () => {
 	} else {
     return (
 			<div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
-				<p>Scan the QR code below with Google Authenticator to set up 2FA</p>
+				<h2>Set up 2FA</h2>
+				<ol>
+					<li>1. Install the Google Authenticator app on your phone.</li>
+					<li>2. Scan the QR code below with the Google Authenticator app.</li>
+				</ol>
 				<img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
 				<button
 					style={{ width: '200px', marginTop: '30px' }}
