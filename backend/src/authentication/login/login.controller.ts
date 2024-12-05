@@ -1,10 +1,9 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { LoginService } from './login.service'; 
-import { UserService } from 'src/user/user.service';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly loginService: LoginService, private readonly userService: UserService) {}
+  constructor(private readonly loginService: LoginService) {}
 
   @Post('get-token')
   async getToken(@Body() body: { code: string; state: string }) {
@@ -13,8 +12,7 @@ export class LoginController {
       throw new BadRequestException('Invalid state');
     }
     const token = await this.loginService.getToken(code);
-    const user = await this.loginService.getIntraName(token.access_token);
-    return { token, user };
+    return token;
   }
 
   @Post('online')
@@ -25,9 +23,10 @@ export class LoginController {
   }
 
   @Post('offline')
-  async offline(@Body() body: { userID: number }) {
-    const { userID } = body;
-    this.loginService.setUserStatusToOffline(userID);
+  async offline(@Body() body: { token: string }) {
+    const { token } = body;
+    const user = await this.loginService.getIntraName(token);
+    this.loginService.setUserStatusToOffline(user);
   }
 
 
@@ -43,13 +42,5 @@ export class LoginController {
     const { token } = body;
     const login = await this.loginService.getIntraName(token);
     return login;
-  }
-
-  @Post('user-id')
-  async getUserIDFromToken(@Body() body: { token: string }) {
-    const { token } = body;
-    const intraName = await this.loginService.getIntraName(token);
-    const userID = await this.userService.getUserIDByIntraUsername(intraName);
-    return userID;
   }
 }

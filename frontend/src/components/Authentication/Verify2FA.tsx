@@ -1,32 +1,22 @@
 import React, { useState } from 'react';
-import SingleHeader from './Pages/SingleHeader.tsx';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { verifyOTP, markUserOnline } from '../Utils/apiCalls.tsx';
 
-interface LocationState {
-  userID: string;
-}
 
 const Verify2FA = () => {
 	const navigate = useNavigate();
-  const location = useLocation<LocationState>();
 	const [oneTimePassword, setOneTimePassword] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 
-	const userID = location.state?.userID;
-	if (!userID) {
-		return <SingleHeader text="User ID not found. Please retry." />;
-	}
-
 	const verifyOneTimePassword = async () => {
 		setIsLoading(true);
 		try {
-			const response = await verifyOTP(userID, oneTimePassword);
+			const token = localStorage.getItem('tempToken');
+      if (!token) throw new Error('Authentication token not found');
+			const response = await verifyOTP(token, oneTimePassword);
 			const verified = response.data;
 			if (verified) {
-        const token = localStorage.getItem('tempToken');
-        if (!token) throw new Error('Temporary token not found');
         localStorage.setItem('authenticationToken', token);
         localStorage.removeItem('tempToken');
         await markUserOnline(token);
