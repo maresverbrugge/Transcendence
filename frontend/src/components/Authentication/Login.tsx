@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import isAuthenticatedHook from './something/AuthenticationCheck.tsx';
+import isAuthenticatedHook from './Hooks/AuthenticationCheck.tsx';
 import SingleHeader from './Pages/SingleHeader.tsx';
 
 
