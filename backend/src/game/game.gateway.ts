@@ -76,12 +76,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	@SubscribeMessage('key')
 	async handleKey(@MessageBody() data: { move: string; gameID: number; socketID: string }) {
 		const playerID: number = await this.userService.getUserIDBySocketID(data[2]);
-		const game = await this.prisma.match.findUnique({
-			where: { matchID: parseInt(data[1]) },
-			select: {
-                players: { select: { ID: true } },
-            },
-		});
+		const game = await this.gameService.getPlayers(parseInt(data[1]))
 		if (game.players[0].ID === playerID)
 		{
 			if (data[0] === "up")

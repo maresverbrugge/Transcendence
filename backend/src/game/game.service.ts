@@ -21,4 +21,13 @@ export class GameService {
 		});
 		return newGame
 	}
+	async getPlayers(gameID: number) {
+		const game = await this.prisma.match.findUnique({
+			where: { matchID: gameID },
+			select: {
+                players: { select: { ID: true } },
+            },
+		});
+		return game;
+	}
 }

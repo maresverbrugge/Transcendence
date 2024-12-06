@@ -212,7 +212,12 @@ const GameLogic = ({ gameID, socket }) => {
     }, []);
 
     return (
-		<canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>
+		<div>
+			<canvas ref={canvas} height="500" width="500" style={{ border: "1px solid black" }}/>
+			<button onClick={() => createNewGame(socket)}>
+				{`add an image to your paddle`}
+			</button>
+		</div>
 	);
 };
 
