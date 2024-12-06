@@ -3,7 +3,7 @@ import axios from 'axios';
 import Username from '../components/User/Account/Username.tsx';
 import Avatar from '../components/User/Account/Avatar.tsx';
 import Toggle2FA from '../components/User/Account/Toggle2FA.tsx';
-import LogOut from '../components/User/Account/LogOut.tsx';
+import LogOutButton from '../components/User/Account/LogOutButton.tsx';
 // import Achievements from '../components/User/Shared/Achievements.tsx';
 // import LeaderBoard from '../components/User/Shared/LeaderBoard.tsx';
 // import MatchHistory from '../components/User/Shared/MatchHistory.tsx';
@@ -48,27 +48,27 @@ function UserAccount() {
     <div className="container my-5">
       <div className="row g-4">
         {/* Left Column */}
-        <div className="col-lg-3">
-          <div className="d-flex flex-column gap-3">
-            <div className="card shadow">
-              <div className="card-body text-center">
-                <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
+        <div className="col-md-3">
+          <div className="card shadow mb-4">
+            <div className="card-body text-center">
+              <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
+            </div>
+          </div>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <Username currentUsername={userData.username} />
+            </div>
+          </div>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <div className="d-flex justify-content-center align-items-center">
+              <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} userID={userData.ID} />
               </div>
             </div>
-            <div className="card shadow">
-              <div className="card-body">
-                <Username currentUsername={userData.username} />
-              </div>
-            </div>
-            <div className="card shadow">
-              <div className="card-body d-flex justify-content-center align-items-center">
-                <Toggle2FA />
-              </div>
-            </div>
-            <div className="card shadow">
-              <div className="card-body">
-                <LogOut />
-              </div>
+          </div>
+          <div className="card shadow mb-4">
+            <div className="card-body">
+              <LogOutButton userID={userData.ID}/>
             </div>
           </div>
         </div>
