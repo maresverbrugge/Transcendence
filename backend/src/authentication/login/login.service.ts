@@ -17,8 +17,6 @@ export class LoginService {
     const redirectUri = 'http://localhost:3000/login/redirect';
 
     try {
-      console.log("clientId = ", clientId);
-      console.log("clientSecret = ", clientSecret);
       // Request the token from the 42 API
       const response = await axios.post('https://api.intra.42.fr/oauth/token', {
         grant_type: 'authorization_code',
@@ -30,9 +28,7 @@ export class LoginService {
       // Return the token to the controller
       return response.data;
     } catch (error) {
-      var message = error.response ? error.response.data : error.message;
-      console.error('Error during token exchange:', message);
-      throw new InternalServerErrorException('Error during token exchange');
+      throw new InternalServerErrorException('Error getting authentication token');
     }
   }
 
@@ -60,11 +56,22 @@ export class LoginService {
       }
     }
     catch (error) {
-      var message = error.response ? error.response.data : error.message;
-      console.error('Error while verifying token:', message);
       throw new InternalServerErrorException('Error while adding user to database');
     }
   }
+
+  async setUserStatusToOffline(userID: number): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { ID: userID },
+        data: { status: UserStatus.OFFLINE },
+      });
+    }
+    catch (error) {
+      throw new InternalServerErrorException('Error while setting user status to offline');
+    }
+  }
+
 
   async verifyToken(token: string): Promise<boolean> {
     try {
@@ -73,20 +80,17 @@ export class LoginService {
           Authorization: `Bearer ${token}`,
         },
       })
+
       if (!response.data || !response.data["expires_in_seconds"]) {
         return false
-      }
-      else if (response.data["expires_in_seconds"] <= 0) {
+      } else if (response.data["expires_in_seconds"] <= 0) {
         return false;
-      }
-      else {
+      } else {
         return true;
       }
     }
     catch (error) {
-      var message = error.response ? error.response.data : error.message;
-      console.error('Error while verifying token:', message);
-      throw new InternalServerErrorException('Error while verifying token');
+      throw new InternalServerErrorException('Error while verifying authentication token');
     };
   }
 
@@ -100,8 +104,6 @@ export class LoginService {
       return response.data.login;
     }
     catch (error) {
-      var message = error.response ? error.response.data : error.message;
-      console.error('Error while getting intra name:', message);
       throw new InternalServerErrorException('Error while getting intra name');
     };
   }
