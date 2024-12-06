@@ -41,7 +41,8 @@ model User {
 
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
-  matchHistory      Match[]
+  matchHistory      Match[]       @relation("played")
+  watchHistory      Match[]       @relation("watched")
   statistics        Statistics?
   channelsOwned     Channel[]
   channelMembers    ChannelMember[]
@@ -58,7 +59,8 @@ model Match {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  players           User[]
+  players           User[]        @relation("played")
+  spectators        User[]        @relation("watched")
 }
 
 model Statistics {
