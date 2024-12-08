@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"moduleDetection": "force",
+		"resolveJsonModule": true,
+		"allowJs": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+        "jsx": "react-jsx",
+	},
+}
