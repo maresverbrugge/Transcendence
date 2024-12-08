@@ -8,6 +8,11 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*\"",
+    "format-user": "prettier --write \"src/user/**/*\"",
+    "format-authentication": "prettier --write \"src/authentication/**/*\"",
+    "format-chat": "prettier --write \"src/chat/**/*\"",
+    "format-game": "prettier --write \"src/game/**/*\"",
+    "format-prisma": "prettier --write \"src/prisma/**/*\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
