@@ -74,7 +74,7 @@ re:		down all
 # careful with this one!
 # the (|| true) is used so the Makefile doesn't exit when there's an error:
 # if there are no containers running to prevent the make command from stopping.
-clean: 
+clean:
 		@rm -rf ./backend/dist
 		@rm -rf ./backend/node_modules
 		@rm -rf ./frontend/node_modules

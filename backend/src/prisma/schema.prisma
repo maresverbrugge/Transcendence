@@ -63,13 +63,13 @@ model Match {
 
 model Statistics {
   ID                Int           @id @default(autoincrement())
-  matchesPlayed     Int           @default(0)
+  gamesPlayed       Int           @default(0)
   wins              Int           @default(0)
   losses            Int           @default(0)
   totalScores       Int           @default(0)
-  rank              Int           @default(0)
-  //level             Int           @default(0)
-  //achievements      Achievements?
+  ladderRank        Int           @default(0)
+  //level           Int           @default(0)
+  //achievements    Achievements?
 
   userID            Int           @unique
   user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)

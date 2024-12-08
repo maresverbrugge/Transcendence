@@ -8,6 +8,16 @@ interface UserProfile extends User {
   avatarURL: string;
 }
 
+interface Statistics {
+  ID: number;
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  totalScores: number;
+  ladderRank: number;
+  userID: number;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -193,4 +203,39 @@ export class UserService {
           });
         }
       }
+
+    async getUserStats(token: string): Promise<Statistics | null> {
+      const intraName = await this.loginService.getIntraName(token);
+      console.log("intraName = ", intraName);
+
+      if (!intraName)
+        throw new NotFoundException('intraUsername not found');
+
+      const user = await this.prisma.user.findUnique({
+        where: { intraUsername: intraName },
+        include: { statistics: true }
+      });
+      console.log("user = ", user);
+
+      if (!user)
+        throw new NotFoundException("User not found!");
+
+      // Check if statistics exist for the user
+      const statistics = user.statistics;
+      if (!statistics) {
+        console.log("No statistics found for user");
+        return null;
+      }
+
+      return {
+        ID: statistics.ID,
+        gamesPlayed: statistics.gamesPlayed,
+        wins: statistics.wins,
+        losses: statistics.losses,
+        totalScores: statistics.totalScores,
+        ladderRank: statistics.ladderRank,
+        userID: statistics.userID,
+        // achievements: statistics.achievements,
+      };
+    }
 }

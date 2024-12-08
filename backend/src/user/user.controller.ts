@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { User } from '@prisma/client';
+import { Statistics } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
@@ -12,7 +13,7 @@ export class UserController {
   async getUserProfileByUserID(@Param('token') token: string): Promise<User | null> {
     return this.userService.getUserProfileByUserID(token);
   }
-  
+
   @Post()
   async createUser(@Body() body: { username: string }): Promise<User> {
     return this.userService.createUser(body.username);
@@ -26,7 +27,7 @@ export class UserController {
       const fileBuffer = file.buffer;
       return this.userService.updateAvatar(token, fileBuffer);
   }
-  
+
   @Patch(':token')
   async changeUsername(
     @Param('token') token: string,
@@ -39,5 +40,10 @@ export class UserController {
     @Param('token') token: string,
     @Body() { enable }: { enable: boolean } ) {
       return this.userService.toggle2FA(token, enable);
+  }
+
+  @Get(':token/stats')
+  async getUserStats(@Param('token') token: string): Promise<Statistics | null> {
+    return this.userService.getUserStats(token);
   }
 }
