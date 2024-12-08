@@ -1,15 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface LogOutButtonProps {
-  userID: number;
-}
 
-const LogOutButton: React.FC<LogOutButtonProps> = ({ userID }) => {
+const LogOutButton = () => {
   const navigate = useNavigate();
 
   const logoutUser = () => {
-    navigate('/logout', { state: { userID } });
+    navigate('/logout');
   }
 
   return (

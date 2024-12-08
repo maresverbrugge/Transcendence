@@ -22,15 +22,15 @@ const LoginRedirect = () => {
 
     const handleLoginRedirect = async () => {
       try {
+      
         const tokenResponse = await getToken(code, state);
-        const user = tokenResponse.data.user;
-        const token = tokenResponse.data.token;
-        
+        const token = tokenResponse.data;
+
         try {
-          const isEnabledResponse = await isTwoFactorEnabled(user);
-          if (isEnabledResponse.data.isEnabled) {
+          const isEnabledResponse = await isTwoFactorEnabled(token.access_token);
+          if (isEnabledResponse.data) {
             localStorage.setItem('tempToken', token.access_token);
-            navigate('/login/verify-2fa', { state: { userID: isEnabledResponse.data.userID } });
+            navigate('/login/verify-2fa');
             return;
           }
         } catch { }

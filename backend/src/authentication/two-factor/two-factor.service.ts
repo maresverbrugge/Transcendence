@@ -8,14 +8,14 @@ export class TwoFactorService {
 
 	constructor(private prisma: PrismaService) {}
 
-	async getQRCode(userID: number): Promise<any> {
+	async getQRCode(intraUsername: string): Promise<any> {
 		try {
 			var secret = speakeasy.generateSecret({
 				name: "Transcendancing Queens"
 			});
 			const dataURL = await qrcode.toDataURL(secret.otpauth_url);
 			await this.prisma.user.update({
-				where: { ID: userID },
+				where: { intraUsername: intraUsername },
 				data: { secretKey: secret.ascii },
 			});
 			return dataURL
@@ -25,10 +25,10 @@ export class TwoFactorService {
 		}
 	}
 
-	async isTwoFactorEnabled(userID: number): Promise<boolean> {
+	async isTwoFactorEnabled(intraUsername: string): Promise<boolean> {
 		try {
 			const isEnabled = await this.prisma.user.findUnique({
-				where: { ID: userID },
+				where: { intraUsername: intraUsername },
 				select: { Enabled2FA: true },
 			});
 			if (isEnabled === null) {
@@ -42,10 +42,10 @@ export class TwoFactorService {
 		}
 	}
 
-	async verifyOneTimePassword(oneTimePassword: string, userID: number): Promise<boolean> {
+	async verifyOneTimePassword(oneTimePassword: string, intraUsername: string): Promise<boolean> {
 		try {
 			const secretKey = await this.prisma.user.findUnique({
-				where: { ID: userID },
+				where: { intraUsername: intraUsername },
 				select: { secretKey: true },
 			});
 			const verified = speakeasy.totp.verify({
@@ -60,10 +60,10 @@ export class TwoFactorService {
 		}
 	}
 
-	async enableTwoFactor(userID: number): Promise<void> {
+	async enableTwoFactor(intraUsername: string): Promise<void> {
 		try {
 			await this.prisma.user.update({
-				where: { ID: userID },
+				where: { intraUsername: intraUsername },
 				data: { Enabled2FA: true },
 			});
 		}
@@ -72,10 +72,10 @@ export class TwoFactorService {
 		}
 	}
 
-	async disableTwoFactor(userID: number): Promise<void> {
+	async disableTwoFactor(intraUsername: string): Promise<void> {
 		try {
 			await this.prisma.user.update({
-				where: { ID: userID },
+				where: { intraUsername: intraUsername },
 				data: { 
 					secretKey: null,
 					Enabled2FA: false,

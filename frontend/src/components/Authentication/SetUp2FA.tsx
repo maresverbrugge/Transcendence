@@ -12,16 +12,12 @@ const SetUp2FA = () => {
 	const [userScannedQRCode, setUserScannedQRCode] = useState<boolean>(false);
 
   useEffect(() => {
-    const userID = location.state?.userID;
-    if (!userID) {
-      console.error('Error getting userID from location');
-      setErrorOccurred(true);
-      return;
-    }
 
-		const displayQRCode = async (userID: number) => {
+		const displayQRCode = async () => {
 			try {
-				const response = await getQRCode(userID);
+				const token = localStorage.getItem('authenticationToken');
+      	if (!token) throw new Error('Authentication token not found');
+				const response = await getQRCode(token);
 				setQrcodeUrl(response.data);
 				setCodeIsFetched(true);
 			} catch (error) {
@@ -32,16 +28,16 @@ const SetUp2FA = () => {
 		}
 
     if (!codeIsFetched) {
-			displayQRCode(userID);
+			displayQRCode();
 		}
-  }, [location.state, codeIsFetched]);
+  }, [codeIsFetched]);
 
 	if (errorOccurred) {
 		return <SingleHeader text="Error occurred while setting up 2FA" />;
 	} else if (!codeIsFetched) {
     return <SingleHeader text="Loading..." />;
   } else if (userScannedQRCode) {
-		return <Enable2FA userID={location.state?.userID} />;
+		return <Enable2FA />;
 	} else {
     return (
 			<div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
