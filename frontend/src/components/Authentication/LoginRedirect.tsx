@@ -22,7 +22,6 @@ const LoginRedirect = () => {
 
     const handleLoginRedirect = async () => {
       try {
-      
         const tokenResponse = await getToken(code, state);
         const token = tokenResponse.data;
 
@@ -33,7 +32,7 @@ const LoginRedirect = () => {
             navigate('/login/verify-2fa');
             return;
           }
-        } catch { }
+        } catch {}
 
         localStorage.setItem('authenticationToken', token.access_token);
         await markUserOnline(token.access_token);
