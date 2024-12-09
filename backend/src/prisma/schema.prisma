@@ -37,7 +37,8 @@ model User {
   token             String?
   websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
-  
+  secretKey         String?       @unique // We use the key to verify one time passwords
+
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
   matchHistory      Match[]
@@ -80,7 +81,7 @@ model Channel {
   isPrivate         Boolean       @default(false)
   isDM              Boolean       @default(false)
   password          String?       // Optional password field
-  
+
   ownerID           Int
   owner             User          @relation(fields: [ownerID], references: [ID], onDelete: Cascade) // when user is deleted, channel should not be deleted but a new admin should be assigned
   messages          Message[]

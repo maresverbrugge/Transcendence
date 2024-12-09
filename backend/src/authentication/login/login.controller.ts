@@ -1,12 +1,12 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
-import { LoginService } from './login.service';
+import { LoginService } from './login.service'; 
 
 @Controller('login')
 export class LoginController {
   constructor(private readonly loginService: LoginService) {}
 
-  @Post('callback')
-  async callback(@Body() body: { code: string; state: string }) {
+  @Post('get-token')
+  async getToken(@Body() body: { code: string; state: string }) {
     const { code, state } = body;
     if (state !== process.env.REACT_APP_LOGIN_STATE) {
       throw new BadRequestException('Invalid state');
@@ -14,6 +14,21 @@ export class LoginController {
     const token = await this.loginService.getToken(code);
     return token;
   }
+
+  @Post('online')
+  async online(@Body() body: { token: string }) {
+    const { token } = body;
+    const user = await this.loginService.getIntraName(token);
+    this.loginService.addUserToDatabase(user);
+  }
+
+  @Post('offline')
+  async offline(@Body() body: { token: string }) {
+    const { token } = body;
+    const user = await this.loginService.getIntraName(token);
+    this.loginService.setUserStatusToOffline(user);
+  }
+
 
   @Post('verify-token')
   async verify(@Body() body: { token: string }) {
