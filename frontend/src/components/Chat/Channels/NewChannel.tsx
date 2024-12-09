@@ -13,7 +13,7 @@ interface NewChannelProps {
 const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [channelName, setChannelName] = useState<string>('');
-    const [isPrivate, setIsPrivate] = useState<boolean>(false);  // Default to public
+    const [isPrivate, setIsPrivate] = useState<boolean>(false);
     const [passwordEnabled, setPasswordEnabled] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [selectedMemberIDs, setSelectedMemberIDs] = useState<number[]>([]);
@@ -31,9 +31,9 @@ const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelP
             name: channelName,
             isPrivate,
             isDM: false,
-            password: isPrivate && passwordEnabled ? password : null,  // Set password only for private channels if enabled
+            password: isPrivate && passwordEnabled ? password : null,
             token,
-            memberIDs: isPrivate ? selectedMemberIDs : [],  // Only include members if private
+            memberIDs: isPrivate ? selectedMemberIDs : [],
         };
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
         socket.emit('newChannel', response.data);
@@ -44,7 +44,7 @@ const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelP
     const resetForm = () => {
         setIsCreating(false);
         setChannelName('');
-        setIsPrivate(false);  // Reset to public
+        setIsPrivate(false);
         setPasswordEnabled(false);
         setPassword('');
         setSelectedMemberIDs([]);
@@ -52,12 +52,9 @@ const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelP
 
     return (
         <>
-            {/* Always-visible button */}
             <button className="new-channel-button" onClick={() => setIsCreating(true)}>
                 Create New Channel
             </button>
-
-            {/* Overlay and form */}
             {isCreating && (
                 <div className="new-channel-overlay">
                     <div className="new-channel-form">

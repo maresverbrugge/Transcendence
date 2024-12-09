@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MemberData, ChannelData } from '../interfaces.tsx'
-import './AddMember.css'; // Update the CSS file name if necessary
+import './AddMember.css';
 import axios from 'axios';
 
 interface AddMemberProps {
@@ -44,12 +44,10 @@ const AddMember = ({channel, friends, socket, token, setAlert }: AddMemberProps)
 
     return (
         <>
-            {/* Always-visible button */}
             <button className="new-member-button" onClick={() => setIsAdding(true)}>
                 Add Member
             </button>
 
-            {/* Overlay and form */}
             {isAdding && (
                 <div className="new-member-overlay">
                     <div className="new-member-form">

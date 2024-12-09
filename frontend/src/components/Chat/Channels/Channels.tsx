@@ -44,13 +44,12 @@ const Channels = ({
 
     fetchChannels();
 
-    // Listen for new channels and messages
     socket.on('updateChannel', () => {
       fetchChannels()
     });
 
     setUnreadCounts((prevCounts) => {
-      if (!selectedChannel) return prevCounts; // No changes if no channel is selected
+      if (!selectedChannel) return prevCounts;
       return {
         ...prevCounts,
         [selectedChannel.ID]: 0,
@@ -71,30 +70,6 @@ const Channels = ({
       socket.off('newMessage');
     };
   }, [selectedChannel, socket, token]);
-
-  // const handleSelectChannel = async (channelID: number) => {
-  //   if (channelID === selectedChannel?.ID) {
-  //     setSelectedChannel(null);
-  //     return;
-  //   }
-  //   try {
-  //     const response = await axios.get<ChannelData>(
-  //       `http://localhost:3001/chat/channel/${channelID}/${token}`
-  //     );
-  //     setSelectedChannel(response.data);
-  //     setUnreadCounts((prevCounts) => ({
-  //       ...prevCounts,
-  //       [channelID]: 0,
-  //     }));
-  //   } catch (error: any) {
-  //     if (error.response?.status === 403) {
-  //       setShowBannedAlert(error.response.data.message);
-  //     } else {
-  //       console.error('Error fetching channel:', error);
-  //     }
-  //     setSelectedChannel(null);
-  //   }
-  // };
 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 

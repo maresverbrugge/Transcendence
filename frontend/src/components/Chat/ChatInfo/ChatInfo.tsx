@@ -11,7 +11,7 @@ interface ChannelInfoProps {
     friends: MemberData[]
     setAlert: (message: string) => void;
     token: string;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
+    socket: any;
   }
   
   interface ChatInfoProps {
@@ -20,7 +20,7 @@ interface ChannelInfoProps {
     friends: MemberData[];
     setFriends: (friends: MemberData[]) => void;
     setAlert: (message: string) => void;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
+    socket: any;
     token: string;
   }
   

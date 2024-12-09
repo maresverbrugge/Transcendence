@@ -4,7 +4,7 @@ import './Friends.css';
 import { MemberData } from '../interfaces';
 
 interface FriendProps {
-    key: string;
+    key: number;
     friend: MemberData;
     socket: any;
   }
@@ -35,7 +35,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
       }
     };
 
-    socket.on('userStatusChange', (userID: string, userStatus: string) => {
+    socket.on('userStatusChange', (userID: number, userStatus: string) => {
       if (friend.ID === userID) setStatus(getStatusClass(userStatus));
     });
 

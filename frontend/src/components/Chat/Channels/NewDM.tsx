@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MemberData } from '../interfaces.tsx'
-import './NewChannel.css'; // Update the CSS file name if necessary
+import './NewChannel.css';
 import axios from 'axios';
 
 interface NewDMProps {
@@ -13,7 +13,7 @@ interface NewDMProps {
 
 const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
-    const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null); // For selecting a single friend
+    const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
 
     const handleCreateDM = async () => {
         if (!selectedFriend) {
@@ -37,17 +37,15 @@ const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMP
 
     const resetForm = () => {
         setIsCreating(false);
-        setSelectedFriend(null);  // Reset selected friend
+        setSelectedFriend(null);
     };
 
     return (
         <>
-            {/* Always-visible button */}
             <button className="new-dm-button" onClick={() => setIsCreating(true)}>
                 Create New DM
             </button>
 
-            {/* Overlay and form */}
             {isCreating && (
                 <div className="new-channel-overlay">
                     <div className="new-channel-form">
@@ -58,8 +56,8 @@ const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMP
                                     <input
                                         type="radio"
                                         name="friendSelection"
-                                        checked={selectedFriend?.ID === friend.ID} // Safely check selectedFriend
-                                        onChange={() => setSelectedFriend(friend)} // Select a friend
+                                        checked={selectedFriend?.ID === friend.ID}
+                                        onChange={() => setSelectedFriend(friend)}
                                     />
                                     {friend.username}
                                 </label>

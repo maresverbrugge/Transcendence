@@ -10,7 +10,7 @@ interface ChannelMemberListProps {
   friends: MemberData[];
   setAlert: (message: string) => void;
   token: string;
-  socket: any; // Adjust this type if using a specific Socket.IO client library type
+  socket: any;
 }
 
 const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, token, socket }: ChannelMemberListProps) => {
@@ -54,7 +54,6 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
     const currentMember = members.find(member => member.ID === memberID);
     if (currentMember?.isBanned) handleSelectChannel(null);
 
-    // Sort members based on their roles
     const sortedMembers = members.sort((a, b) => {
         if (a.isOwner) return -1;
         if (b.isOwner) return 1;

@@ -19,7 +19,7 @@ type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave
 @WebSocketGateway({
   namespace: 'chat',
   cors: {
-    origin: 'http://localhost:3000', // Update with your client's origin
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true,
   },

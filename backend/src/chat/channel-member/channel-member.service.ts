@@ -105,8 +105,6 @@ export class ChannelMemberService {
                 channelID : channelID
             }
         })
-        // if (!channelMember) #Prisma can throw an exception, such as PrismaClientKnownRequestError or PrismaClientValidationError
-        //     throw new InternalServerErrorException('Error creating channelMember')
     }
 
     async deleteChannelMember(channelMemberID: number): Promise<ChannelMember> {
