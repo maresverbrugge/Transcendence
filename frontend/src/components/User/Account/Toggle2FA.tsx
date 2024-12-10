@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { disableTwoFactor } from '../../Utils/apiCalls.tsx';
 
-interface TwoFactorAuthenticationProps {
-  twoFactorAuthenticationEnabled: boolean;
-}
-
-const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthenticationEnabled }) => {
+const Toggle2FA = ({ twoFactorAuthenticationEnabled }: {twoFactorAuthenticationEnabled: boolean }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(twoFactorAuthenticationEnabled);
   const navigate = useNavigate();
 

@@ -1,12 +1,17 @@
 import React, { useState, ChangeEvent, FormEvent, useRef, useEffect } from 'react';
 import axios from 'axios';
 
-function Avatar({ username, currentAvatarURL }: { username: string; currentAvatarURL: string }) {
+interface AvatarProps {
+  username: string;
+  currentAvatarURL: string;
+}
+
+const Avatar = ({ username, currentAvatarURL }: AvatarProps) => {
   const [avatarURL, setAvatarURL] = useState<string>(currentAvatarURL);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const [buttonVisible, setButtonVisible] = useState<boolean>(true); // State to manage button visibility
+  const [buttonVisible, setButtonVisible] = useState<boolean>(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {

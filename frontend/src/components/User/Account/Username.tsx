@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
 
-function Username({ currentUsername }: { currentUsername: string }) {
+const Username = ({currentUsername}: {currentUsername: string} ) => {
   const [username, setUsername] = useState<string>(currentUsername);
   const [tempUsername, setTempUsername] = useState<string>(currentUsername);
   const [previousUsername, setPreviousUsername] = useState<string>(currentUsername);

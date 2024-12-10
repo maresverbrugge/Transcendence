@@ -11,7 +11,7 @@ interface StatisticsData {
   // achievements: Achievements;
 }
 
-const UserInfoAccordion = (userID: number ) => {
+const UserInfoAccordion = () => {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -30,7 +30,7 @@ const UserInfoAccordion = (userID: number ) => {
     };
 
     fetchStatistics();
-  }, [userID]);
+  }, []);
 
   return (
     <div className="accordion" id="userAccordion">

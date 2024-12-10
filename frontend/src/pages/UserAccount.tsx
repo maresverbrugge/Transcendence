@@ -75,7 +75,7 @@ const UserAccount = () => {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <UserInfoAccordion userID={userData.ID} />
+              <UserInfoAccordion />
             </div>
           </div>
         </div>
