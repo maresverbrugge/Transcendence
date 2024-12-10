@@ -11,11 +11,7 @@ interface StatisticsData {
   // achievements: Achievements;
 }
 
-interface UserInfoAccordionProps {
-  userID: number;
-}
-
-function UserInfoAccordion({ userID }: UserInfoAccordionProps) {
+const UserInfoAccordion = (userID: number ) => {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 

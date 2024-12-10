@@ -9,7 +9,7 @@ interface StatisticsData {
   // achievements: Achievements;
 }
 
-function Statistics({ StatisticsData }: {StatisticsData: StatisticsData}) {
+const Statistics = ({ StatisticsData }: {StatisticsData: StatisticsData}) => {
   const { gamesPlayed, wins, losses, ladderRank } = StatisticsData;
 
   return (

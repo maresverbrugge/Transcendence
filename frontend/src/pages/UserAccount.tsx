@@ -13,7 +13,7 @@ interface UserData {
   Enabled2FA: boolean;
 }
 
-function UserAccount() {
+const UserAccount = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
