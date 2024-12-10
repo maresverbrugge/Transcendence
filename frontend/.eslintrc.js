@@ -6,7 +6,7 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true, // Enable JSX parsing
+      jsx: true,
     },
   },
   plugins: [
@@ -14,6 +14,7 @@ module.exports = {
     'react',
     'react-hooks',
     'prettier',
+    'import',
   ],
   extends: [
     'eslint:recommended',
@@ -31,7 +32,7 @@ module.exports = {
   },
   settings: {
     react: {
-      version: 'detect', // Automatically detect the React version
+      version: 'detect',
     },
   },
   ignorePatterns: ['.eslintrc.js'],
@@ -41,5 +42,12 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'prettier/prettier': 'warn',
+    'import/order': [
+      'warn',
+      {
+        'groups': [['builtin', 'external', 'internal']],
+        'newlines-between': 'always',
+      },
+    ],
   },
 };
