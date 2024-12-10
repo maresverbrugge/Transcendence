@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyOTP, markUserOnline } from '../Utils/apiCalls.tsx';
+import { verifyOTP, markUserOnline } from '../Utils/apiCalls';
 
 const Verify2FA = () => {
   const navigate = useNavigate();

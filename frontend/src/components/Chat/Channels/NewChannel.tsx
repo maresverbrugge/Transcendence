@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './NewChannel.css';
-import { MemberData } from '../interfaces.tsx'
+import { MemberData } from '../interfaces'
 
 interface NewChannelProps {
     friends: MemberData[];

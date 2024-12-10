@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import isAuthenticatedHook from './Hooks/AuthenticationCheck.tsx';
-import SingleHeader from './Pages/SingleHeader.tsx';
+import isAuthenticatedHook from './Hooks/AuthenticationCheck';
+import SingleHeader from './Pages/SingleHeader';
 
 // API credentials can be found on https://profile.intra.42.fr/oauth/applications/68291
 const client_id = process.env.REACT_APP_LOGIN_CLIENT_ID;

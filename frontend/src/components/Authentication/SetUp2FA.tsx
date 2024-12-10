@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import SingleHeader from './Pages/SingleHeader.tsx';
-import { getQRCode } from '../Utils/apiCalls.tsx';
-import Enable2FA from './Enable2FA.tsx';
+import SingleHeader from './Pages/SingleHeader';
+import { getQRCode } from '../Utils/apiCalls';
+import Enable2FA from './Enable2FA';
 
 const SetUp2FA = () => {
   const location = useLocation();
