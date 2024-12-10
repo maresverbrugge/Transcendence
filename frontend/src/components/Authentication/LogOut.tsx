@@ -10,8 +10,8 @@ const LogOut = () => {
 		const logOutUser = async () => {
 			try {
 				const token = localStorage.getItem('authenticationToken');
-      	if (!token) throw new Error('Authentication token not found');
-				await markUserOffline(token);
+      			if (!token) throw new Error('Authentication token not found');
+					await markUserOffline(token);
 			} catch (error) {
 				console.error('Error while logging out');
 			} finally {

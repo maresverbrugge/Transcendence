@@ -9,8 +9,7 @@ interface StatisticsData {
   // achievements: Achievements;
 }
 
-const Statistics = ({ StatisticsData }: {StatisticsData: StatisticsData}) => {
-  const { gamesPlayed, wins, losses, ladderRank } = StatisticsData;
+const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
 
   return (
     <div className="card shadow mb-4">
@@ -19,23 +18,27 @@ const Statistics = ({ StatisticsData }: {StatisticsData: StatisticsData}) => {
         <ul className="list-group list-group-flush">
           <li className="list-group-item d-flex justify-content-between">
             <span>Games Played:</span>
-            <span>{gamesPlayed}</span>
+            <span>{statisticsData.gamesPlayed}</span>
           </li>
           <li className="list-group-item d-flex justify-content-between">
             <span>Wins:</span>
-            <span>{wins}</span>
+            <span>{statisticsData.wins}</span>
           </li>
           <li className="list-group-item d-flex justify-content-between">
             <span>Losses:</span>
-            <span>{losses}</span>
+            <span>{statisticsData.losses}</span>
+          </li>
+          <li className="list-group-item d-flex justify-content-between">
+            <span>Total Scores:</span>
+            <span>{statisticsData.totalScores}</span>
           </li>
           <li className="list-group-item d-flex justify-content-between">
             <span>Ladder Rank:</span>
-            <span>{ladderRank}</span>
+            <span>{statisticsData.ladderRank}</span>
           </li>
           <li className="list-group-item d-flex justify-content-between">
             <span>Achievements:</span>
-            {/* <span>{achievements}</span> */}
+            {/* <span>{statisticsData.achievements}</span> */}
           </li>
         </ul>
       </div>

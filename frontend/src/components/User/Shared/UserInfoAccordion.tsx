@@ -19,6 +19,8 @@ const UserInfoAccordion = () => {
     const fetchStatistics = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
+        if (!token) throw new Error('Authentication token not found');
+        console.log('token:', token);
         const response = await axios.get(`http://localhost:3001/user/${token}/stats`);
         console.log('Statistics data fetched:', response.data);
         setStatisticsData(response.data);
@@ -56,7 +58,7 @@ const UserInfoAccordion = () => {
             {loading ? (
               <p>Loading statistics...</p>
             ) : statisticsData ? (
-              <Statistics StatisticsData={statisticsData} />
+              <Statistics statisticsData={statisticsData} />
             ) : (
               <p>No statistics available.</p>
             )}
