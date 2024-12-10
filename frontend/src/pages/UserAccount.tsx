@@ -60,13 +60,13 @@ const UserAccount = () => {
           <div className="card shadow mb-4">
             <div className="card-body">
               <div className="d-flex justify-content-center align-items-center">
-                <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} userID={userData.ID} />
+              <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} />
               </div>
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <LogOutButton userID={userData.ID} />
+              <LogOutButton />
             </div>
           </div>
         </div>
