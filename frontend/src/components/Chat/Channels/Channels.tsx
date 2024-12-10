@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Channels.css'; // Import the CSS file
-import AlertMessage from '../../AlertMessage.tsx';
-import NewChannel from './NewChannel.tsx';
-import NewDM from './NewDM.tsx';
-import { ChannelData, MemberData, MessageData } from '../interfaces.tsx'
+import AlertMessage from '../../AlertMessage';
+import NewChannel from './NewChannel';
+import NewDM from './NewDM';
+import { ChannelData, MemberData, MessageData } from '../interfaces'
 
 interface ChannelsProps {
   selectedChannel: ChannelData | null;

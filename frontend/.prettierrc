@@ -9,7 +9,7 @@
   "arrowParens": "always",
   "overrides": [
     {
-      "files": "*.ts",
+      "files": "*.tsx",
       "options": {
         "parser": "typescript"
       }

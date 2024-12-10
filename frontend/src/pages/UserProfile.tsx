@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL
 import axios from 'axios';
-// import BlockActions from '../components/User/Profile/BlockActions.tsx';
-// import FriendActions from '../components/User/Profile/FriendActions.tsx';
-import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus.tsx';
-// import Achievements from '../components/User/Shared/Achievements.tsx';
-// import LeaderBoard from '../components/User/Shared/LeaderBoard.tsx';
-// import MatchHistory from '../components/User/Shared/MatchHistory.tsx';
-// import Statistics from '../components/User/Shared/Statistics.tsx';
+// import BlockActions from '../components/User/Profile/BlockActions';
+// import FriendActions from '../components/User/Profile/FriendActions';
+import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus';
+// import Achievements from '../components/User/Shared/Achievements';
+// import LeaderBoard from '../components/User/Shared/LeaderBoard';
+// import MatchHistory from '../components/User/Shared/MatchHistory';
+// import Statistics from '../components/User/Shared/Statistics';
 
 interface UserData {
   username: string;

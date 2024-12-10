@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls.tsx';
+import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls';
 
 const Enable2FA = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Enable2FA = () => {
     setErrorMessage('');
 
     try {
-			const token = localStorage.getItem('authenticationToken');
+      const token = localStorage.getItem('authenticationToken');
       if (!token) throw new Error('Authentication token not found');
       const response = await verifyOTP(token, oneTimePassword);
       const verified = response.data;
@@ -46,15 +46,15 @@ const Enable2FA = () => {
         placeholder="Enter OTP"
       />
 
-      <button
-        style={{ width: '150px', margin: '20px' }}
-        onClick={handleVerifyAndEnable}
-        disabled={isLoading}
-      >
+      <button style={{ width: '150px', margin: '20px' }} onClick={handleVerifyAndEnable} disabled={isLoading}>
         {isLoading ? 'Submitting...' : 'Submit'}
       </button>
 
-      {errorMessage && <p style={{ color: 'red' }} aria-live="polite">{errorMessage}</p>}
+      {errorMessage && (
+        <p style={{ color: 'red' }} aria-live="polite">
+          {errorMessage}
+        </p>
+      )}
 
       <button
         style={{ width: '150px', margin: '10px' }}

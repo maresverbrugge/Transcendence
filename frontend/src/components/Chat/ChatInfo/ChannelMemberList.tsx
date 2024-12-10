@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Confirm from '../../Confirm.tsx';
-import { ChannelData, MemberData } from '../interfaces.tsx';
+import Confirm from '../../Confirm';
+import { ChannelData, MemberData } from '../interfaces';
 
 interface ChannelMemberListProps {
   channel: ChannelData;

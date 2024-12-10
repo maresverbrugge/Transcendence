@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import ChannelMemberList from './ChannelMemberList.tsx';
-import { ChannelData } from '../interfaces.tsx';
+import ChannelMemberList from './ChannelMemberList';
+import { ChannelData } from '../interfaces';
 
 interface ChannelProps {
   channel: ChannelData;

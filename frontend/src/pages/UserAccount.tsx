@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Username from '../components/User/Account/Username.tsx';
-import Avatar from '../components/User/Account/Avatar.tsx';
-import Toggle2FA from '../components/User/Account/Toggle2FA.tsx';
-import LogOutButton from '../components/User/Account/LogOutButton.tsx';
-// import Achievements from '../components/User/Shared/Achievements.tsx';
-// import LeaderBoard from '../components/User/Shared/LeaderBoard.tsx';
-// import MatchHistory from '../components/User/Shared/MatchHistory.tsx';
-// import Statistics from '../components/User/Shared/Statistics.tsx';
+import Username from '../components/User/Account/Username';
+import Avatar from '../components/User/Account/Avatar';
+import Toggle2FA from '../components/User/Account/Toggle2FA';
+import LogOutButton from '../components/User/Account/LogOutButton';
+// import Achievements from '../components/User/Shared/Achievements';
+// import LeaderBoard from '../components/User/Shared/LeaderBoard';
+// import MatchHistory from '../components/User/Shared/MatchHistory';
+// import Statistics from '../components/User/Shared/Statistics';
 
 interface UserData {
   username: string;
   avatarURL: string;
+  Enabled2FA: boolean;
 }
 
 function UserAccount() {

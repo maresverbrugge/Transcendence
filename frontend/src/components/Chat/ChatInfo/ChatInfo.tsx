@@ -1,8 +1,8 @@
 import React from 'react';
-import Friends from './Friends.tsx';
+import Friends from './Friends';
 import './ChatInfo.css';
-import { ChannelData, MemberData } from '../interfaces.tsx' 
-import Channel from './Channel.tsx';
+import { ChannelData, MemberData } from '../interfaces' 
+import Channel from './Channel';
 
 interface ChannelInfoProps {
     channel: ChannelData;
