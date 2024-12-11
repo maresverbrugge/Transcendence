@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
-import { Namespace, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../blockedUser/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { User, Message } from '@prisma/client'
 import { ChatGateway } from '../chat.gateway';
+import { BlockedUserService } from '../blockedUser/blockedUser.service';
 
 type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
 
@@ -14,11 +15,28 @@ export class MessageService {
     constructor(
       private prisma: PrismaService,
       private readonly userService: UserService,
+      private readonly blockedUserService: BlockedUserService,
       @Inject(forwardRef(() => ChannelService))
       private readonly channelService: ChannelService,
       @Inject(forwardRef(() => ChatGateway))
       private readonly chatGateway: ChatGateway,
-    ) {}  
+    ) {}
+
+    async getMessage(messageID: number, token:string): Promise<Message | null> {
+      const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByWebsocketID(token) //change to token later
+      const message = await this.prisma.message.findUnique({where: {
+        ID: messageID,
+      }
+      })
+      return blockedUserIDs.includes(message.senderID) ? null : message
+    }
+
+    async getMessages(channelID: number, token: string): Promise<Message[]> {
+      const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByWebsocketID(token) //change to token later
+      const channel = await this.channelService.getChannelByID(channelID)
+      const messages = channel.messages.filter((message) => !blockedUserIDs.includes(message.senderID));
+      return messages;
+    }
 
     async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
         
@@ -46,9 +64,8 @@ export class MessageService {
       try {
         await this.channelService.checkIsMuted(data.channelID, data.token)
         const sender = await this.userService.getUserBySocketID(data.token)
-        const newMessage: Message = await this.createMessage(data.channelID, sender.ID, data.content)
-        this.chatGateway.emitToRoom('newMessage', String(data.channelID), newMessage)
-        // server.emit('newMessageOnChannel', data.channelID)
+        const message = await this.createMessage(data.channelID, sender.ID, data.content)
+        this.chatGateway.emitToRoom('newMessage', String(data.channelID), {channelID: data.channelID, messageID: message.ID})
       } catch (error) {
         client.emit('error', error)
       }
@@ -78,6 +95,6 @@ export class MessageService {
 
     async sendActionLogMessage(channelID: number, username: string, action: action) {
       const message = await this.createActionLogMessage(channelID, username, action)
-      this.chatGateway.emitToRoom('newMessage', String(channelID), message)
+      this.chatGateway.emitToRoom('newMessage', String(channelID), {channelID: channelID, messageID: message.ID})
     }
 }

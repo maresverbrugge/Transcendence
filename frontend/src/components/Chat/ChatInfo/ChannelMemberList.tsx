@@ -3,28 +3,31 @@ import axios from 'axios';
 import Confirm from '../../Confirm.tsx';
 import { ChannelData, MemberData } from '../interfaces.tsx';
 import AddMember from './AddMember.tsx';
+import BlockButton from './BlockButton.tsx';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
-  handleSelectChannel: (channelID: number | null) => void;
+  selectChannel: (channelID: number | null) => void;
   friends: MemberData[];
   setAlert: (message: string) => void;
   token: string;
   socket: any;
 }
 
-const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, token, socket }: ChannelMemberListProps) => {
+const ChannelMemberList = ({ channel, selectChannel, friends, setAlert, token, socket }: ChannelMemberListProps) => {
     const [members, setMembers] = useState<MemberData[]>([]);
     const [showConfirm, setShowConfirm] = useState<boolean>(false);
     const [confirmAction, setConfirmAction] = useState<string | null>(null);
     const [selectedMemberID, setSelectedMemberID] = useState<string | null>(null);
     const [memberID, setMemberID] = useState<string | null>(null);
+    const [blockedUserIDs, setBlockedUserIDs] = useState<number[]>([]);
+
     
     useEffect(() => {
 
-        const fetchCurrentMemberID = async (channelID: number, token: string) => {
+        const fetchCurrentMemberID = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channelID}/${token}`);
+                const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channel.ID}/${token}`);
                 setMemberID(response.data);
             } catch (error) {
                 console.error('Error fetching current channelMemberID:', error);
@@ -32,19 +35,30 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
             
         };
 
-        const fetchChannelMembers = async (channelID: number, token: string) => {
+        const fetchChannelMembers = async () => {
             try {
-                const response = await axios.get(`http://localhost:3001/chat/channel/members/${channelID}/${token}`);
+                const response = await axios.get(`http://localhost:3001/chat/channel/members/${channel.ID}/${token}`);
                 setMembers(response.data)
             } catch (error) {
                 console.error('Error fetching channel members:', error);
             }
         }
+
+        const fetchBlockedUserIDs = async () => {
+            try {
+                const response = await axios.get<number[]>(`http://localhost:3001/chat/blockedUser/IDs/${token}`)
+                setBlockedUserIDs(response.data)
+            } catch (error) {
+                console.error('Error fetching blocked user IDs', error);
+            }
+        }
+
         
-        fetchCurrentMemberID(channel.ID, token);
-        fetchChannelMembers(channel.ID, token)
+        fetchCurrentMemberID();
+        fetchChannelMembers()
+        fetchBlockedUserIDs();
     
-        socket.on('updateChannelMember', () => fetchChannelMembers(channel.ID, token));
+        socket.on('updateChannelMember', () => fetchChannelMembers());
     
         return () => {
             socket.off('updateChannelMember');
@@ -52,7 +66,7 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
     }, [channel]);
 
     const currentMember = members.find(member => member.ID === memberID);
-    if (currentMember?.isBanned) handleSelectChannel(null);
+    if (currentMember?.isBanned) selectChannel(null);
 
     const sortedMembers = members.sort((a, b) => {
         if (a.isOwner) return -1;
@@ -116,6 +130,7 @@ const ChannelMemberList = ({ channel, handleSelectChannel, friends, setAlert, to
                             {isCurrentMember
                                 ? `You${roleLabel ? ` (${roleLabel})` : ""}`
                                 : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ""}`}
+                            {!isCurrentMember && (<BlockButton memberID={member.user.ID} blockedUserIDs={blockedUserIDs} selectChannel={selectChannel} channelID={channel.ID} token={token}/>)}
                             <div className="actions">
                                 {currentMember?.isOwner && !member.isOwner && (
                                     <>

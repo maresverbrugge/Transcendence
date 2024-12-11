@@ -5,12 +5,12 @@ import axios from 'axios';
 
 interface NewChannelProps {
     friends: MemberData[];
-    handleSelectChannel: (channelID: number) => void;
+    selectChannel: (channelID: number) => void;
     socket: any;
     token: string;
 }
 
-const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelProps) => {
+const NewChannel = ({ friends, selectChannel, socket, token }: NewChannelProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [channelName, setChannelName] = useState<string>('');
     const [isPrivate, setIsPrivate] = useState<boolean>(false);
@@ -38,7 +38,7 @@ const NewChannel = ({ friends, handleSelectChannel, socket, token }: NewChannelP
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
         socket.emit('newChannel', response.data);
         resetForm();
-        handleSelectChannel(response.data.ID)
+        selectChannel(response.data.ID)
     };
 
     const resetForm = () => {

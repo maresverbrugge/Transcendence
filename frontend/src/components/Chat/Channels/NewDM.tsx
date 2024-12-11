@@ -5,13 +5,13 @@ import axios from 'axios';
 
 interface NewDMProps {
     friends: MemberData[];
-    handleSelectChannel: (channelID: number) => void;
+    selectChannel: (channelID: number) => void;
     socket: any;
     token: string;
     setAlert: (message: string) => void;
 }
 
-const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMProps) => {
+const NewDM = ({ friends, selectChannel, socket, token, setAlert }: NewDMProps) => {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
 
@@ -32,7 +32,7 @@ const NewDM = ({ friends, handleSelectChannel, socket, token, setAlert }: NewDMP
         const response = await axios.post('http://localhost:3001/chat/channel', {newChannelData})
         socket.emit('newChannel', response.data);
         resetForm();
-        handleSelectChannel(response.data.ID)
+        selectChannel(response.data.ID)
     };
 
     const resetForm = () => {

@@ -1,7 +1,7 @@
 import {WebSocketServer, SubscribeMessage, MessageBody, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import {Inject, forwardRef } from '@nestjs/common'
 import { Socket, Namespace } from 'socket.io';
-import { UserService } from './user/user.service';
+import { UserService } from './blockedUser/user.service';
 import { ChannelService } from './channel/channel.service'
 import { MessageService } from './message/message.service'
 import { ChannelMemberService } from './channel-member/channel-member.service';

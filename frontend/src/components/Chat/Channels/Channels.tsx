@@ -4,11 +4,11 @@ import './Channels.css'; // Import the CSS file
 import AlertMessage from '../../AlertMessage.tsx';
 import NewChannel from './NewChannel.tsx';
 import NewDM from './NewDM.tsx';
-import { ChannelData, MemberData, MessageData } from '../interfaces.tsx'
+import { ChannelData, MemberData, MessageData } from '../interfaces.tsx';
 
 interface ChannelsProps {
   selectedChannel: ChannelData | null;
-  handleSelectChannel: (channelID: number | null) => void;
+  selectChannel: (channelID: number | null) => void;
   friends: MemberData[];
   socket: any; // Adjust this type if using a specific Socket.IO client library type
   token: string;
@@ -17,7 +17,7 @@ interface ChannelsProps {
 
 const Channels = ({
   selectedChannel,
-  handleSelectChannel,
+  selectChannel,
   friends,
   socket,
   token,
@@ -35,7 +35,7 @@ const Channels = ({
         );
         setChannels(response.data);
         if (selectedChannel && !response.data.some((channel) => channel.ID === selectedChannel.ID)) {
-          handleSelectChannel(null);
+          selectChannel(null);
         }
       } catch (error) {
         console.error('Error fetching channels:', error);
@@ -44,9 +44,7 @@ const Channels = ({
 
     fetchChannels();
 
-    socket.on('updateChannel', () => {
-      fetchChannels()
-    });
+    socket.on('updateChannel', fetchChannels);
 
     setUnreadCounts((prevCounts) => {
       if (!selectedChannel) return prevCounts;
@@ -56,22 +54,30 @@ const Channels = ({
       };
     });
 
-    socket.on('newMessage', (message: MessageData) => {
-      if (message.channelID !== selectedChannel?.ID) {
+    socket.on('newMessage', ({ channelID }: { channelID: number }) => {
+      if (channelID !== selectedChannel?.ID) {
         setUnreadCounts((prevCounts) => ({
           ...prevCounts,
-          [message.channelID]: (prevCounts[message.channelID] || 0) + 1,
+          [channelID]: (prevCounts[channelID] || 0) + 1,
         }));
       }
     });
 
+    // Cleanup function
     return () => {
-      socket.off('updateChannel');
+      socket.off('updateChannel', fetchChannels);
       socket.off('newMessage');
     };
   }, [selectedChannel, socket, token]);
 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
+
+  const handleClickChannel = (channelID: number) => {
+    if (channelID === selectedChannel?.ID)
+      selectChannel(null)
+    else
+      selectChannel(channelID)
+  }
 
   return (
     <div className="channels-container">
@@ -90,7 +96,7 @@ const Channels = ({
                 .filter((channel) => !channel.isPrivate)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel.ID)}>
+                    <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
                       {unreadCounts[channel.ID] > 0 &&
                         ` (${unreadCounts[channel.ID]} unread messages)`}
@@ -109,7 +115,7 @@ const Channels = ({
                 .filter((channel) => channel.isPrivate && !channel.isDM)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel.ID)}>
+                    <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
                       {unreadCounts[channel.ID] > 0 &&
                         ` (${unreadCounts[channel.ID]} unread messages)`}
@@ -120,7 +126,12 @@ const Channels = ({
           </>
         )}
 
-        <NewChannel friends={friends} handleSelectChannel={handleSelectChannel} socket={socket} token={token} />
+        <NewChannel
+          friends={friends}
+          selectChannel={selectChannel}
+          socket={socket}
+          token={token}
+        />
       </div>
 
       <div className="direct-messages">
@@ -130,7 +141,7 @@ const Channels = ({
             .filter((channel) => channel.isDM)
             .map((channel) => (
               <li key={channel.ID}>
-                <button onClick={() => handleSelectChannel(channel.ID)}>
+                <button onClick={() => handleClickChannel(channel.ID)}>
                   {channel.name || `Channel ${channel.ID}`}
                   {unreadCounts[channel.ID] > 0 &&
                     ` (${unreadCounts[channel.ID]} unread messages)`}
@@ -138,7 +149,13 @@ const Channels = ({
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} handleSelectChannel={handleSelectChannel} socket={socket} token={token} setAlert={setAlert} />
+        <NewDM
+          friends={friends}
+          selectChannel={selectChannel}
+          socket={socket}
+          token={token}
+          setAlert={setAlert}
+        />
       </div>
     </div>
   );

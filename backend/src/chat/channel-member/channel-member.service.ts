@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+import { UserService } from '../blockedUser/user.service';
 import { Namespace, Socket } from 'socket.io';
 import { ChannelService } from '../channel/channel.service';
 import { ChannelMember, User } from '@prisma/client';

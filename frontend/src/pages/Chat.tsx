@@ -41,7 +41,7 @@ const Chat = () => {
     });
 
     socketIo.on('deselectChannel', () => {
-      handleSelectChannel(null)
+      selectChannel(null)
     })
 
     // Set socket instance in state
@@ -52,8 +52,8 @@ const Chat = () => {
     };
   }, []);
 
-  const handleSelectChannel = async (channelID: number | null) => {
-    if (channelID === null || channelID === channel?.ID) {
+  const selectChannel = async (channelID: number | null) => {
+    if (channelID === null) {
       setChannel(null);
       return;
     }
@@ -84,7 +84,7 @@ const Chat = () => {
       )}
       <Channels
         selectedChannel={channel}
-        handleSelectChannel={handleSelectChannel}
+        selectChannel={selectChannel}
         friends={friends}
         socket={socket}
         token={tempToken}
@@ -93,7 +93,7 @@ const Chat = () => {
       <Messenger channel={channel} socket={socket} token={tempToken} />
       <ChatInfo
         channel={channel}
-        handleSelectChannel={handleSelectChannel}
+        selectChannel={selectChannel}
         friends={friends}
         setFriends={setFriends}
         setAlert={setAlert}
