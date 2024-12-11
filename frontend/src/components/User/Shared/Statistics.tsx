@@ -4,38 +4,36 @@ import { StatisticsData } from '../interfaces.tsx'
 const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
 
   return (
-    <div className="card shadow mb-4">
-      <div className="card-body">
-        <h4 className="card-title text-center mb-4">Statistics</h4>
-        <ul className="list-group list-group-flush">
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Games Played:</span>
-            <span>{statisticsData.gamesPlayed}</span>
-          </li>
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Wins:</span>
-            <span>{statisticsData.wins}</span>
-          </li>
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Losses:</span>
-            <span>{statisticsData.losses}</span>
-          </li>
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Total Scores:</span>
-            <span>{statisticsData.totalScores}</span>
-          </li>
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Ladder Rank:</span>
-            <span>{statisticsData.ladderRank}</span>
-          </li>
-          <li className="list-group-item d-flex justify-content-between">
-            <span>Achievements:</span>
-            {/* <span>{statisticsData.achievements}</span> */}
-          </li>
-        </ul>
-      </div>
+    <div className="p-4">
+      <h5 className="text-center mb-2 ">Statistics</h5>
+
+      <table className="table table-sm table-striped">
+        <tbody>
+          <tr>
+            <td><strong>Games Played:</strong></td>
+            <td className="text-end">{statisticsData.gamesPlayed}</td>
+          </tr>
+          <tr>
+            <td><strong>Wins:</strong></td>
+            <td className="text-end">{statisticsData.wins}</td>
+          </tr>
+          <tr>
+            <td><strong>Losses:</strong></td>
+            <td className="text-end">{statisticsData.losses}</td>
+          </tr>
+          <tr>
+            <td><strong>Total Scores:</strong></td>
+            <td className="text-end">{statisticsData.totalScores}</td>
+          </tr>
+          <tr>
+            <td><strong>Ladder Rank:</strong></td>
+            <td className="text-end">{statisticsData.ladderRank}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
+  
 }
 
 export default Statistics;
