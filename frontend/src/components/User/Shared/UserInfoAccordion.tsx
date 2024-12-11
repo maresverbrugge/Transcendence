@@ -1,27 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Statistics from './Statistics.tsx';
+import { StatisticsData } from '../interfaces.tsx'
 
-interface StatisticsData {
-  gamesPlayed: number;
-  wins: number;
-  losses: number;
-  totalScores: number;
-  ladderRank: number;
-  // achievements: Achievements;
-}
-
-const UserInfoAccordion = () => {
+const UserInfoAccordion = ({userID}: {userID: number} ) => {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const token = localStorage.getItem('authenticationToken');
-        if (!token) throw new Error('Authentication token not found');
-        console.log('token:', token);
-        const response = await axios.get(`http://localhost:3001/user/${token}/stats`);
+        const response = await axios.get(`http://localhost:3001/user/${userID}/stats`);
         console.log('Statistics data fetched:', response.data);
         setStatisticsData(response.data);
       } catch (error) {

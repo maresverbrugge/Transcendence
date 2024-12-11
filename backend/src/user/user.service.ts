@@ -1,21 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, UserStatus } from '@prisma/client'
+import { User, UserStatus, Statistics } from '@prisma/client'
 import { LoginService } from '../authentication//login/login.service';
 
 interface UserProfile extends User {
   avatarURL: string;
-}
-
-interface Statistics {
-  ID: number;
-  gamesPlayed: number;
-  wins: number;
-  losses: number;
-  totalScores: number;
-  ladderRank: number;
-  userID: number;
 }
 
 @Injectable()
@@ -204,38 +194,15 @@ export class UserService {
         }
       }
 
-    async getUserStats(token: string): Promise<Statistics | null> {
-      const intraName = await this.loginService.getIntraName(token);
-      console.log("intraName = ", intraName);
-
-      if (!intraName)
-        throw new NotFoundException('intraUsername not found');
-
-      const user = await this.prisma.user.findUnique({
-        where: { intraUsername: intraName },
-        include: { statistics: true }
+    async getUserStats(userID: number): Promise<Statistics | null> {
+      const statistics = await this.prisma.statistics.findUnique({
+        where: { userID: userID },
       });
-      console.log("user = ", user);
+      console.log("statistics = ", statistics);
 
-      if (!user)
-        throw new NotFoundException("User not found!");
+      if (!statistics)
+        throw new NotFoundException("Statistics not found!");
 
-      // Check if statistics exist for the user
-      const statistics = user.statistics;
-      if (!statistics) {
-        console.log("No statistics found for user");
-        return null;
-      }
-
-      return {
-        ID: statistics.ID,
-        gamesPlayed: statistics.gamesPlayed,
-        wins: statistics.wins,
-        losses: statistics.losses,
-        totalScores: statistics.totalScores,
-        ladderRank: statistics.ladderRank,
-        userID: statistics.userID,
-        // achievements: statistics.achievements,
-      };
+      return statistics;
     }
 }

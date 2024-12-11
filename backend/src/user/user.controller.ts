@@ -2,8 +2,7 @@ import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, 
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-import { User } from '@prisma/client';
-import { Statistics } from '@prisma/client';
+import { User, Statistics } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
@@ -42,8 +41,8 @@ export class UserController {
       return this.userService.toggle2FA(token, enable);
   }
 
-  @Get(':token/stats')
-  async getUserStats(@Param('token') token: string): Promise<Statistics | null> {
-    return this.userService.getUserStats(token);
+  @Get(':userID/stats')
+  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<Statistics | null> {
+    return this.userService.getUserStats(userID);
   }
 }

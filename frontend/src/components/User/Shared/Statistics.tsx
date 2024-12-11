@@ -1,13 +1,5 @@
 import React from 'react';
-
-interface StatisticsData {
-  gamesPlayed: number;
-  wins: number;
-  losses: number;
-  totalScores: number;
-  ladderRank: number;
-  // achievements: Achievements;
-}
+import { StatisticsData } from '../interfaces.tsx'
 
 const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
 
