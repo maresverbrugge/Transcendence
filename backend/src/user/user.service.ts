@@ -7,6 +7,10 @@ interface UserProfile extends User {
   avatarURL: string;
 }
 
+interface fullStatistics extends Statistics {
+  winRate: number;
+}
+
 @Injectable()
 export class UserService {
   constructor(
@@ -85,7 +89,7 @@ export class UserService {
     });
   }
 
-  async getUserStats(userID: number): Promise<Statistics | null> {
+  async getUserStats(userID: number): Promise<fullStatistics> {
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID: userID },
     });
@@ -94,6 +98,59 @@ export class UserService {
     if (!statistics)
       throw new NotFoundException("Statistics not found!");
 
-    return statistics;
+    const winRate = statistics.gamesPlayed
+      ? statistics.wins / statistics.gamesPlayed
+      : 0;
+    const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
+
+    await this.prisma.statistics.update({
+      where: { userID },
+      data: { ladderRank: playerRating },
+    });
+
+    return {
+      ...statistics,
+      winRate,
+      ladderRank: playerRating,
+    };
+  }
+
+  // FOR LATER: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION
+  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
+  // IN FUNCTION LOOKING SOMEWHAT LIKE THIS:
+  async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<fullStatistics> {
+    // Fetch the current statistics
+    const statistics = await this.prisma.statistics.findUnique({
+      where: { userID },
+    });
+  
+    if (!statistics) {
+      throw new NotFoundException('Statistics not found.');
+    }
+  
+    // Update gamesPlayed, wins, and totalScores based on the game result
+    const updatedStats = {
+      gamesPlayed: statistics.gamesPlayed + 1,
+      wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
+      totalScores: statistics.totalScores + gameResult.score,
+    };
+  
+    // Calculate the new ladderRank (playerRating)
+    const winRate = updatedStats.gamesPlayed
+      ? updatedStats.wins / updatedStats.gamesPlayed
+      : 0;
+    const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
+  
+    // Update the statistics in the database
+    const updatedStatistics = await this.prisma.statistics.update({
+      where: { userID },
+      data: { ...updatedStats, ladderRank: playerRating },
+    });
+  
+    return {
+      ...updatedStatistics,
+      winRate,
+      ladderRank: playerRating,
+    };
   }
 }

@@ -21,7 +21,7 @@ const UserInfoAccordion = ({userID}: {userID: number} ) => {
     };
 
     fetchStatistics();
-  }, []);
+  }, [userID]);
 
 return (
   <div className="accordion" id="userAccordion">

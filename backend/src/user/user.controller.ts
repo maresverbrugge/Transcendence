@@ -8,7 +8,7 @@ import { User, Statistics } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('ID/:token')
+  @Get('userID/:token')
   async getUserIDByToken(@Param('token') token: string): Promise<number> {
     return this.userService.getUserIDByToken(token);
   }
@@ -42,7 +42,7 @@ export class UserController {
   }
 
   @Get(':userID/stats')
-  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<Statistics | null> {
+  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<Statistics> {
     return this.userService.getUserStats(userID);
   }
 }

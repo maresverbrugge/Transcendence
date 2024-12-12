@@ -3,6 +3,7 @@ export interface StatisticsData {
   wins: number;
   losses: number;
   totalScores: number;
+  winRate: number;
   ladderRank: number;
   // achievements: Achievements;
 }

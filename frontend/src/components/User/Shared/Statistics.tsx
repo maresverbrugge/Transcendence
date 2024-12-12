@@ -26,8 +26,12 @@ const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
             <td className="text-end">{statisticsData.totalScores}</td>
           </tr>
           <tr>
-            <td><strong>Ladder Rank:</strong></td>
-            <td className="text-end">{statisticsData.ladderRank}</td>
+            <td><strong>Win Rate:</strong></td>
+            <td className="text-end">{(statisticsData.winRate * 100).toFixed(0)} %</td>
+          </tr>
+          <tr>
+            <td><strong>Player Rating:</strong></td>
+            <td className="text-end">{statisticsData.ladderRank} XP</td>
           </tr>
         </tbody>
       </table>
