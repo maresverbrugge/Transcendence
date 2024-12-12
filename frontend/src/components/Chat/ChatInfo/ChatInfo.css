@@ -11,6 +11,7 @@
     background-color: #c9f2ff;
     overflow-y: auto; /* Scrollable if content exceeds the height */
     z-index: 1;
+    color: black;
 }
 
 .chat-info-container ul {

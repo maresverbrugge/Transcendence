@@ -1,43 +1,66 @@
 import React from 'react';
+
 import Friends from './Friends';
 import './ChatInfo.css';
-import { ChannelData, MemberData } from '../interfaces' 
+import { ChannelData, MemberData } from '../interfaces';
 import Channel from './Channel';
+import DM from './DM';
 
 interface ChannelInfoProps {
-    channel: ChannelData;
-    setChannel: (channel: ChannelData | null) => void;
-    token: string;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
-  }
-  
-  interface ChatInfoProps {
-    channel: ChannelData | null;
-    setChannel: (channel: ChannelData | null) => void;
-    friends: MemberData[];
-    setFriends: (friends: MemberData[]) => void;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
-    token: string;
-  }
-  
+  channel: ChannelData;
+  selectChannel: (channel: number | null) => void;
+  friends: MemberData[];
+  setAlert: (message: string) => void;
+  token: string;
+  socket: any;
+}
 
-const ChannelInfo = ({ channel, setChannel, token, socket }: ChannelInfoProps) => {
-    return (
-        <div className="channel-info">
-            {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} setChannel={setSelectedChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
-            <Channel channel={channel} setChannel={setChannel} socket={socket} token={token} />
-        </div>
-    );
+interface ChatInfoProps {
+  channel: ChannelData | null;
+  selectChannel: (channel: number | null) => void;
+  friends: MemberData[];
+  setFriends: (friends: MemberData[]) => void;
+  setAlert: (message: string) => void;
+  socket: any;
+  token: string;
+}
+
+const ChannelInfo = ({ channel, selectChannel, friends, setAlert, token, socket }: ChannelInfoProps) => {
+  return (
+    <div className="channel-info">
+      {channel.isDM ? (
+        <DM channel={channel} token={token} />
+      ) : (
+        <Channel
+          channel={channel}
+          selectChannel={selectChannel}
+          friends={friends}
+          setAlert={setAlert}
+          socket={socket}
+          token={token}
+        />
+      )}
+    </div>
+  );
 };
 
-const ChatInfo = ({ channel, setChannel, friends, setFriends, socket, token }: ChatInfoProps) => {
-    return (
-        <div className="chat-info-container">
-            {channel === null
-                ? <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
-                : <ChannelInfo channel={channel} setChannel={setChannel} token={token} socket={socket} />}
-        </div>
-    );
+const ChatInfo = ({ channel, selectChannel, friends, setFriends, setAlert, socket, token }: ChatInfoProps) => {
+  return (
+    <div className="chat-info-container">
+      {channel === null ? (
+        <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
+      ) : (
+        <ChannelInfo
+          channel={channel}
+          selectChannel={selectChannel}
+          friends={friends}
+          setAlert={setAlert}
+          token={token}
+          socket={socket}
+        />
+      )}
+    </div>
+  );
 };
 
 export default ChatInfo;

@@ -1,39 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 import './Channels.css'; // Import the CSS file
 import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
-import { ChannelData, MemberData, MessageData } from '../interfaces'
+import { ChannelData, MemberData } from '../interfaces';
 
 interface ChannelsProps {
   selectedChannel: ChannelData | null;
-  setSelectedChannel: (channel: ChannelData | null) => void;
+  selectChannel: (channelID: number | null) => void;
   friends: MemberData[];
   socket: any; // Adjust this type if using a specific Socket.IO client library type
   token: string;
   setAlert: (message: string | null) => void;
 }
 
-const Channels = ({
-  selectedChannel,
-  setSelectedChannel,
-  friends,
-  socket,
-  token,
-  setAlert,
-}: ChannelsProps) => {
+const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setAlert }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await axios.get<ChannelData[]>(
-          `http://localhost:3001/chat/channel/${token}`
-        );
+        const response = await axios.get<ChannelData[]>(`http://localhost:3001/chat/channel/${token}`);
         setChannels(response.data);
+        if (selectedChannel && !response.data.some((channel) => channel.ID === selectedChannel.ID)) {
+          selectChannel(null);
+        }
       } catch (error) {
         console.error('Error fetching channels:', error);
       }
@@ -41,58 +36,42 @@ const Channels = ({
 
     fetchChannels();
 
-    // Listen for new channels and messages
-    socket.on('newChannel', (channel: ChannelData) => {
-      setChannels((prevChannels) => prevChannels.concat(channel));
+    socket.on('updateChannel', fetchChannels);
+
+    setUnreadCounts((prevCounts) => {
+      if (!selectedChannel) return prevCounts;
+      return {
+        ...prevCounts,
+        [selectedChannel.ID]: 0,
+      };
     });
 
-    socket.on('newMessage', (message: MessageData) => {
-      if (message.channelID !== selectedChannel?.ID) {
+    socket.on('newMessage', ({ channelID }: { channelID: number }) => {
+      if (channelID !== selectedChannel?.ID) {
         setUnreadCounts((prevCounts) => ({
           ...prevCounts,
-          [message.channelID]: (prevCounts[message.channelID] || 0) + 1,
+          [channelID]: (prevCounts[channelID] || 0) + 1,
         }));
       }
     });
 
+    // Cleanup function
     return () => {
-      socket.off('newChannel');
+      socket.off('updateChannel', fetchChannels);
       socket.off('newMessage');
     };
   }, [selectedChannel, socket, token]);
 
-  const handleSelectChannel = async (channel: ChannelData) => {
-    if (channel?.ID === selectedChannel?.ID) {
-      setSelectedChannel(null);
-      return;
-    }
-    try {
-      const response = await axios.get<ChannelData>(
-        `http://localhost:3001/chat/channel/${channel.ID}/${token}`
-      );
-      setSelectedChannel(response.data);
-      setUnreadCounts((prevCounts) => ({
-        ...prevCounts,
-        [channel.ID]: 0,
-      }));
-    } catch (error: any) {
-      console.error('Error fetching channel:', error);
-      if (error.response && error.response.status === 403) {
-        setShowBannedAlert(error.response.data.message);
-      } else {
-        console.error('Error fetching channel:', error);
-      }
-      setSelectedChannel(null);
-    }
-  };
-
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
+
+  const handleClickChannel = (channelID: number) => {
+    if (channelID === selectedChannel?.ID) selectChannel(null);
+    else selectChannel(channelID);
+  };
 
   return (
     <div className="channels-container">
-      {showBannedAlert && (
-        <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />
-      )}
+      {showBannedAlert && <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />}
 
       <div className="channels-list">
         <h2>Available Channels</h2>
@@ -105,10 +84,9 @@ const Channels = ({
                 .filter((channel) => !channel.isPrivate)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel)}>
+                    <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 &&
-                        ` (${unreadCounts[channel.ID]} unread messages)`}
+                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                     </button>
                   </li>
                 ))}
@@ -124,10 +102,9 @@ const Channels = ({
                 .filter((channel) => channel.isPrivate && !channel.isDM)
                 .map((channel) => (
                   <li key={channel.ID}>
-                    <button onClick={() => handleSelectChannel(channel)}>
+                    <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 &&
-                        ` (${unreadCounts[channel.ID]} unread messages)`}
+                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                     </button>
                   </li>
                 ))}
@@ -135,7 +112,7 @@ const Channels = ({
           </>
         )}
 
-        <NewChannel friends={friends} socket={socket} token={token} />
+        <NewChannel friends={friends} selectChannel={selectChannel} socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -145,15 +122,14 @@ const Channels = ({
             .filter((channel) => channel.isDM)
             .map((channel) => (
               <li key={channel.ID}>
-                <button onClick={() => handleSelectChannel(channel)}>
+                <button onClick={() => handleClickChannel(channel.ID)}>
                   {channel.name || `Channel ${channel.ID}`}
-                  {unreadCounts[channel.ID] > 0 &&
-                    ` (${unreadCounts[channel.ID]} unread messages)`}
+                  {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                 </button>
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} socket={socket} token={token} setAlert={setAlert} />
+        <NewDM friends={friends} selectChannel={selectChannel} socket={socket} token={token} setAlert={setAlert} />
       </div>
     </div>
   );
