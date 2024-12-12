@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import Channels from '../components/Chat/Channels/Channels';
+import AlertMessage from '../components/AlertMessage';
+import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
+import Messenger from '../components/Chat/Messenger/Messenger';
+import { ChannelData, MemberData } from '../components/Chat/interfaces';
 import axios from 'axios';
-import Channels from '../components/Chat/Channels/Channels.tsx';
-import AlertMessage from '../components/AlertMessage.tsx';
-import ChatInfo from '../components/Chat/ChatInfo/ChatInfo.tsx';
-import Messenger from '../components/Chat/Messenger/Messenger.tsx';
-import { ChannelData, MemberData } from '../components/Chat/interfaces.tsx';
 import './Chat.css'
 
 const Chat = () => {
@@ -31,7 +31,7 @@ const Chat = () => {
       console.log('Replaced token with websocketID: ', websocketID);
     });
 
-    socketIo.on('connect_error', (error) => {
+    socketIo.on('connect_error', (error: any) => {
       console.error('Connection Error:', error.message);
     });
 

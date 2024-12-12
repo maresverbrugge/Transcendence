@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 import './Channels.css'; // Import the CSS file
-import AlertMessage from '../../AlertMessage.tsx';
-import NewChannel from './NewChannel.tsx';
-import NewDM from './NewDM.tsx';
-import { ChannelData, MemberData, MessageData } from '../interfaces.tsx';
+import AlertMessage from '../../AlertMessage';
+import NewChannel from './NewChannel';
+import NewDM from './NewDM';
+import { ChannelData, MemberData } from '../interfaces';
 
 interface ChannelsProps {
   selectedChannel: ChannelData | null;
@@ -15,14 +16,7 @@ interface ChannelsProps {
   setAlert: (message: string | null) => void;
 }
 
-const Channels = ({
-  selectedChannel,
-  selectChannel,
-  friends,
-  socket,
-  token,
-  setAlert,
-}: ChannelsProps) => {
+const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setAlert }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
@@ -30,9 +24,7 @@ const Channels = ({
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await axios.get<ChannelData[]>(
-          `http://localhost:3001/chat/channel/${token}`
-        );
+        const response = await axios.get<ChannelData[]>(`http://localhost:3001/chat/channel/${token}`);
         setChannels(response.data);
         if (selectedChannel && !response.data.some((channel) => channel.ID === selectedChannel.ID)) {
           selectChannel(null);
@@ -73,17 +65,13 @@ const Channels = ({
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 
   const handleClickChannel = (channelID: number) => {
-    if (channelID === selectedChannel?.ID)
-      selectChannel(null)
-    else
-      selectChannel(channelID)
-  }
+    if (channelID === selectedChannel?.ID) selectChannel(null);
+    else selectChannel(channelID);
+  };
 
   return (
     <div className="channels-container">
-      {showBannedAlert && (
-        <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />
-      )}
+      {showBannedAlert && <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />}
 
       <div className="channels-list">
         <h2>Available Channels</h2>
@@ -98,8 +86,7 @@ const Channels = ({
                   <li key={channel.ID}>
                     <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 &&
-                        ` (${unreadCounts[channel.ID]} unread messages)`}
+                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                     </button>
                   </li>
                 ))}
@@ -117,8 +104,7 @@ const Channels = ({
                   <li key={channel.ID}>
                     <button onClick={() => handleClickChannel(channel.ID)}>
                       {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 &&
-                        ` (${unreadCounts[channel.ID]} unread messages)`}
+                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                     </button>
                   </li>
                 ))}
@@ -126,12 +112,7 @@ const Channels = ({
           </>
         )}
 
-        <NewChannel
-          friends={friends}
-          selectChannel={selectChannel}
-          socket={socket}
-          token={token}
-        />
+        <NewChannel friends={friends} selectChannel={selectChannel} socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -143,19 +124,12 @@ const Channels = ({
               <li key={channel.ID}>
                 <button onClick={() => handleClickChannel(channel.ID)}>
                   {channel.name || `Channel ${channel.ID}`}
-                  {unreadCounts[channel.ID] > 0 &&
-                    ` (${unreadCounts[channel.ID]} unread messages)`}
+                  {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
                 </button>
               </li>
             ))}
         </ul>
-        <NewDM
-          friends={friends}
-          selectChannel={selectChannel}
-          socket={socket}
-          token={token}
-          setAlert={setAlert}
-        />
+        <NewDM friends={friends} selectChannel={selectChannel} socket={socket} token={token} setAlert={setAlert} />
       </div>
     </div>
   );

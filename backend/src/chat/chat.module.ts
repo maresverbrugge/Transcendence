@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { FriendsController } from './friends/friends.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
+
+import { FriendsController } from './friends/friends.controller';
 import { ChannelController } from './channel/channel.controller';
 import { ChannelService } from './channel/channel.service';
 import { UserService } from './blockedUser/user.service';
@@ -14,9 +15,9 @@ import { BlockedUserService } from './blockedUser/blockedUser.service';
 @Module({
   controllers: [FriendsController, ChannelController, UserController, MessageController],
   providers: [
-    PrismaService, 
-    ChannelService, 
-    UserService, 
+    PrismaService,
+    ChannelService,
+    UserService,
     ChannelMemberService,
     MessageService,
     ChatGateway,
@@ -28,4 +29,3 @@ import { BlockedUserService } from './blockedUser/blockedUser.service';
   ],
 })
 export class ChatModule {}
-

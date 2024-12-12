@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 import './Friends.css';
 import { MemberData } from '../interfaces';
 
 interface FriendProps {
-    key: number;
-    friend: MemberData;
-    socket: any;
-  }
+  key: number;
+  friend: MemberData;
+  socket: any;
+}
 
 interface FriendsProps {
   friends: MemberData[];
@@ -56,8 +57,7 @@ const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
         const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 404)
-          console.error('User not found');
+        if (error.response && error.response.status === 404) console.error('User not found');
         else console.error('An error occurred', error);
       }
     };

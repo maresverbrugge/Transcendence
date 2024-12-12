@@ -22,7 +22,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(
     @Param('token') token: string,
-    @UploadedFile() file: Multer.File) {
+    @UploadedFile() file: Express.Multer.File) {
       const fileBuffer = file.buffer;
       return this.userService.updateAvatar(token, fileBuffer);
   }
