@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { disableTwoFactor } from '../../Utils/apiCalls.tsx';
+import { disableTwoFactor } from '../../Utils/apiCalls';
 
 interface TwoFactorAuthenticationProps {
   twoFactorAuthenticationEnabled: boolean;
