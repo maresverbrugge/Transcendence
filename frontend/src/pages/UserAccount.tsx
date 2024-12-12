@@ -21,7 +21,7 @@ const UserAccount = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`http://localhost:3001/user/${token}`);
+        const response = await axios.get(`http://localhost:3001/user/profile/${token}`);
         console.log('User data fetched:', response.data);
         setUserData(response.data);
         setLoading(false);
