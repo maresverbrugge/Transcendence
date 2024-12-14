@@ -1,43 +1,26 @@
 import axios from 'axios';
 
-
 export const getToken = (code: string, state: string) =>
-	axios.post('http://localhost:3001/login/get-token', {
-		code: code,
-		state: state,
-	});
-
-
-export const verifyOTP = (userID: string, oneTimePassword: string) =>
-  axios.post('http://localhost:3001/two-factor/verify', {
-    userID,
-    oneTimePassword,
+  axios.post('http://localhost:3001/login/get-token', {
+    code: code,
+    state: state,
   });
 
+export const verifyOTP = (token: string, oneTimePassword: string) =>
+  axios.post('http://localhost:3001/two-factor/verify', {
+    oneTimePassword: oneTimePassword,
+    token: token,
+  });
 
-export const markUserOnline = (token: string) =>
-  axios.post('http://localhost:3001/login/online', { token });
+export const markUserOnline = (token: string) => axios.post('http://localhost:3001/login/online', { token });
 
+export const markUserOffline = (token: string) => axios.post('http://localhost:3001/login/offline', { token });
 
-export const markUserOffline = (userID: number) =>
-  axios.post('http://localhost:3001/login/offline', { userID });
+export const isTwoFactorEnabled = (token: string) =>
+  axios.post('http://localhost:3001/two-factor/is-enabled', { token });
 
+export const enableTwoFactor = (token: string) => axios.post('http://localhost:3001/two-factor/enable', { token });
 
-export const isTwoFactorEnabled = (intraName: string) =>
-	axios.post('http://localhost:3001/two-factor/is-enabled', { intraName });
+export const disableTwoFactor = (token: string) => axios.post('http://localhost:3001/two-factor/disable', { token });
 
-
-export const enableTwoFactor = (userID: number) =>
-	axios.post('http://localhost:3001/two-factor/enable', { userID });
-
-
-export const disableTwoFactor = (userID: number) =>
-	axios.post('http://localhost:3001/two-factor/disable', { userID });
-
-
-export const getQRCode = (userID: number) =>
-	axios.post('http://localhost:3001/two-factor/qrcode', { userID });
-
-
-export const getUserIDFromToken = (token: string) =>
-	axios.post('http://localhost:3001/login/user-id', { token });
+export const getQRCode = (token: string) => axios.post('http://localhost:3001/two-factor/qrcode', { token });

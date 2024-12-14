@@ -7,7 +7,6 @@ import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class LoginService {
-
   constructor(private prisma: PrismaService) {}
 
   async getToken(response_code: string): Promise<any> {
@@ -37,41 +36,37 @@ export class LoginService {
       const existingUser = await this.prisma.user.findUnique({
         where: { intraUsername: user },
       });
-      
+
       if (!existingUser) {
         await this.prisma.user.create({
-          data: { 
+          data: {
             username: user,
-            intraUsername: user, 
+            intraUsername: user,
             Enabled2FA: false,
             status: UserStatus.ONLINE,
           },
         });
-      }
-      else {
+      } else {
         await this.prisma.user.update({
           where: { ID: existingUser.ID },
           data: { status: UserStatus.ONLINE },
         });
       }
-    }
-    catch (error) {
+    } catch (error) {
       throw new InternalServerErrorException('Error while adding user to database');
     }
   }
 
-  async setUserStatusToOffline(userID: number): Promise<void> {
+  async setUserStatusToOffline(intraUsername: string): Promise<void> {
     try {
       await this.prisma.user.update({
-        where: { ID: userID },
+        where: { intraUsername: intraUsername },
         data: { status: UserStatus.OFFLINE },
       });
-    }
-    catch (error) {
+    } catch (error) {
       throw new InternalServerErrorException('Error while setting user status to offline');
     }
   }
-
 
   async verifyToken(token: string): Promise<boolean> {
     try {
@@ -79,19 +74,18 @@ export class LoginService {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      if (!response.data || !response.data["expires_in_seconds"]) {
-        return false
-      } else if (response.data["expires_in_seconds"] <= 0) {
+      if (!response.data || !response.data['expires_in_seconds']) {
+        return false;
+      } else if (response.data['expires_in_seconds'] <= 0) {
         return false;
       } else {
         return true;
       }
-    }
-    catch (error) {
+    } catch (error) {
       throw new InternalServerErrorException('Error while verifying authentication token');
-    };
+    }
   }
 
   async getIntraName(token: string): Promise<string> {
@@ -100,12 +94,10 @@ export class LoginService {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
       return response.data.login;
-    }
-    catch (error) {
+    } catch (error) {
       throw new InternalServerErrorException('Error while getting intra name');
-    };
+    }
   }
 }
-

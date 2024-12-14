@@ -1,5 +1,5 @@
 import React from 'react';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';

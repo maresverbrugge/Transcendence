@@ -1,37 +1,28 @@
 import React, { useEffect } from 'react';
-import SingleHeader from './Pages/SingleHeader.tsx';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { markUserOffline, getUserIDFromToken } from '../Utils/apiCalls.tsx';
+import SingleHeader from './Pages/SingleHeader';
+import { useNavigate } from 'react-router-dom';
+import { markUserOffline } from '../Utils/apiCalls';
 
 const LogOut = () => {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const userID = location.state?.userID;
+  const navigate = useNavigate();
 
-	useEffect(() => {
-		const logOutUser = async (userID: number) => {
-			try {
-				if (!userID) {
-					const token = localStorage.getItem('authenticationToken');
-					if (!token) {
-						navigate('/');
-						return;
-					}
-					const response = await getUserIDFromToken(token);
-					userID = response.data;
-				}
-				await markUserOffline(userID);
-			} catch (error) {
-				console.error('Error while logging out');
-			} finally {
-				navigate('/');
-				localStorage.removeItem('authenticationToken');
-			}
-		}
-		logOutUser(userID);
-	}, [navigate]);
+  useEffect(() => {
+    const logOutUser = async () => {
+      try {
+        const token = localStorage.getItem('authenticationToken');
+        if (!token) throw new Error('Authentication token not found');
+        await markUserOffline(token);
+      } catch (error) {
+        console.error('Error while logging out');
+      } finally {
+        localStorage.removeItem('authenticationToken');
+        navigate('/');
+      }
+    };
+    logOutUser();
+  }, [navigate]);
 
-	return <SingleHeader text="Logging out..." />;
+  return <SingleHeader text="Logging out..." />;
 };
 
 export default LogOut;

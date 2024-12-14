@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import SingleHeader from './Pages/SingleHeader.tsx';
+import SingleHeader from './Pages/SingleHeader';
 import { useNavigate } from 'react-router-dom';
-import { getToken, isTwoFactorEnabled, markUserOnline } from '../Utils/apiCalls.tsx';
+import { getToken, isTwoFactorEnabled, markUserOnline } from '../Utils/apiCalls';
 
 const LoginRedirect = () => {
   const navigate = useNavigate();
@@ -23,17 +23,16 @@ const LoginRedirect = () => {
     const handleLoginRedirect = async () => {
       try {
         const tokenResponse = await getToken(code, state);
-        const user = tokenResponse.data.user;
-        const token = tokenResponse.data.token;
-        
+        const token = tokenResponse.data;
+
         try {
-          const isEnabledResponse = await isTwoFactorEnabled(user);
-          if (isEnabledResponse.data.isEnabled) {
+          const isEnabledResponse = await isTwoFactorEnabled(token.access_token);
+          if (isEnabledResponse.data) {
             localStorage.setItem('tempToken', token.access_token);
-            navigate('/login/verify-2fa', { state: { userID: isEnabledResponse.data.userID } });
+            navigate('/login/verify-2fa');
             return;
           }
-        } catch { }
+        } catch {}
 
         localStorage.setItem('authenticationToken', token.access_token);
         await markUserOnline(token.access_token);

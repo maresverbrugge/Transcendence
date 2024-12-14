@@ -9,20 +9,21 @@ const isAuthenticatedHook = () => {
     if (!token) {
       setIsAuthenticated(false);
     } else {
-      axios.post('http://localhost:3001/login/verify-token', { 
-        token: token, 
-      })
-      .then((response) => {
-        const authenticated = response.data;
-        if (!authenticated) {
-          localStorage.removeItem('authenticationToken');
-        }
-        setIsAuthenticated(authenticated);
-      })
-      .catch((err) => {
-        console.error('Error verifying token:', err);
-        setIsAuthenticated(false);
-      });
+      axios
+        .post('http://localhost:3001/login/verify-token', {
+          token: token,
+        })
+        .then((response) => {
+          const authenticated = response.data;
+          if (!authenticated) {
+            localStorage.removeItem('authenticationToken');
+          }
+          setIsAuthenticated(authenticated);
+        })
+        .catch((err) => {
+          console.error('Error verifying token:', err);
+          setIsAuthenticated(false);
+        });
     }
   }, []);
 

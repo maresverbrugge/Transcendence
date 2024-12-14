@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { disableTwoFactor } from '../../Utils/apiCalls.tsx';
+import { disableTwoFactor } from '../../Utils/apiCalls';
 
 interface TwoFactorAuthenticationProps {
   twoFactorAuthenticationEnabled: boolean;
-  userID: number;
 }
 
-const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthenticationEnabled, userID }) => {
+const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthenticationEnabled }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(twoFactorAuthenticationEnabled);
   const navigate = useNavigate();
 
@@ -16,12 +15,14 @@ const Toggle2FA: React.FC<TwoFactorAuthenticationProps> = ({ twoFactorAuthentica
   }, [twoFactorAuthenticationEnabled]);
 
   const enable2FA = async () => {
-    navigate('/login/set-up-2fa', { state: { userID } });
+    navigate('/login/set-up-2fa');
   };
 
   const disable2FA = async () => {
     try {
-      await disableTwoFactor(userID);
+      const token = localStorage.getItem('authenticationToken');
+      if (!token) throw new Error('Authentication token not found');
+      await disableTwoFactor(token);
       setTwoFactorEnabled(false);
       alert('Two-factor authentication has been disabled successfully.');
     } catch (error) {
