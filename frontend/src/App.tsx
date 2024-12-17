@@ -1,16 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import MainPage from './pages/landingPage.tsx';
-import Login from './components/Authentication/Login.tsx';
-import SetUp2FA from './components/Authentication/SetUp2FA.tsx';
-import Verify2FA from './components/Authentication/Verify2FA.tsx';
-import LoginRedirect from './components/Authentication/LoginRedirect.tsx';
-import ProtectedRoute from './components/Authentication/ProtectedRoute.tsx';
-import LogOut from './components/Authentication/LogOut.tsx';
-import UserAccount from './pages/UserAccount.tsx';
-import UserProfile from './pages/UserProfile.tsx';
-import Chat from './pages/Chat.tsx';
-import Game from './pages/game.tsx';
+import MainPage from './pages/landingPage';
+import Login from './components/Authentication/Login';
+import SetUp2FA from './components/Authentication/SetUp2FA';
+import Verify2FA from './components/Authentication/Verify2FA';
+import LoginRedirect from './components/Authentication/LoginRedirect';
+import ProtectedRoute from './components/Authentication/ProtectedRoute';
+import LogOut from './components/Authentication/LogOut';
+import UserAccount from './pages/UserAccount';
+import UserProfile from './pages/UserProfile';
+import Chat from './pages/Chat';
+import Game from './pages/game';
 
 const App = () => {
 	return (
@@ -25,7 +25,7 @@ const App = () => {
 			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-			<Route path="/game" element={<ProtectedRoute element={<Game />} />} />
+			<Route path="/game" element={<Game />} />
 		  </Routes>
 		</Router>
 	  );

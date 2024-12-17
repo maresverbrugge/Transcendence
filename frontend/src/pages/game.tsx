@@ -1,112 +1,72 @@
 // Game page that is shown when the user goes to localhost:3000/game
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
-import GameControl from '../components/Game/GameControl.tsx';
+import { io, Socket } from 'socket.io-client';
+import PaddleSelect from '../components/Game/PaddleSelect';
 
 const Game = () => {
-	const [socket, setSocket] = useState<Socket | null>(null);
-	const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
-	const [games, setGames] = useState<Match[] | null>([]);
-	const [selectedGame, setSelectedGame] = useState<number | null>(null);
-    
-    useEffect(() => {
-        //because dev mode sometimes didnt disconnect old sockets
-        if (socket) {
-			socket.disconnect(); // Disconnect existing socket if any
-            console.log('Previous socket disconnected');
-        }
-        
-        // Initialize socket connection
-		const token: string = localStorage.getItem('token');
-        const socketIo: Socket = io('http://localhost:3001/game', {
-			transports: ['websocket', 'polling'],
-            query: { token: token } // Hier de token uit localstorage halen
-        });
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
+  const [selectedGame, setSelectedGame] = useState<number | null>(null);
 
-		//temporary replacing token for websocketID for testing
-        socketIo.on('token', (websocketID: string) => {
-            setTempToken(websocketID);
-            console.log('replaced token with websocketID')
-        })
-		
-        // Set socket instance in state
-        setSocket(socketIo);
+  useEffect(() => {
+    //because dev mode sometimes didnt disconnect old sockets
+    if (socket) {
+      socket.disconnect(); // Disconnect existing socket if any
+      console.log('Previous socket disconnected');
+    }
 
-		const fetchGames = async () => {
-            try {
-                const response: AxiosResponse<Match[]> = await axios.get(`http://localhost:3001/game/matches`);
-                setGames(response.data);
-            } catch (error) {
-                console.error('Error fetching games:', error);
-            }
-        };
-    
-        fetchGames();
-		
-		socketIo.on('newGame', (data: any) => {
-			setGames((prevGames) => prevGames.concat(data.game));
-			if (confirm(`game ${data.game.matchID} is looking for another player, join?`)) {
-				setSelectedGame(data.game.matchID);
-			} else {
-				// sent inviteDecline en dan pop up op andere frontend?
-			}
-		});
+    // Initialize socket connection
+    const token: string = localStorage.getItem('token');
+    const socketIo: Socket = io('http://localhost:3001/game', {
+      transports: ['websocket', 'polling'],
+      query: { token: token }, // Hier de token uit localstorage halen
+    });
 
-        return () => {
-			socketIo.off('newGame');
-			socketIo.off('token');
-            socketIo.disconnect(); // Disconnect the socket when the component unmounts
-        };
-    }, [])
+    //temporary replacing token for websocketID for testing
+    socketIo.on('token', (websocketID: string) => {
+      setTempToken(websocketID);
+      console.log('replaced token with websocketID');
+    });
 
-	const handleSelectGame = (gameID: number) => {
-		socket.emit('acceptGame', gameID, socket.id);
-		setSelectedGame(gameID);
-	}
+    // Set socket instance in state
+    setSocket(socketIo);
 
-	const createNewGame = (socket: Socket) => {
-		socket.emit('createNewGame', socket.id);
-	}
-    
-    if (!socket) { return }
+    return () => {
+      socketIo.off('newGame');
+      socketIo.off('token');
+      socketIo.disconnect(); // Disconnect the socket when the component unmounts
+    };
+  }, []);
 
-    return (
-        <div className="games-startup">
-			{/* List of games */}
-			<div className="games-list">
-			{selectedGame ? (
-				<p></p>
-				) : (
-					<div className="games-container">
-						<h2>Available games</h2>
-						<ul>
-							{games.map((game) => (
-								<li key={game.matchID}>
-									<button onClick={() => handleSelectGame(game.matchID)}>
-										{`game ${game.matchID}`} {/* Display game id */}
-									</button>
-								</li>
-							))}
-						</ul>
-						<button onClick={() => createNewGame(socket)}>
-							{`create a new game`}
-						</button>
-					</div>
-				)}
-			</div>
+  const handleSelectGame = (gameID: number) => {
+    socket.emit('acceptGame', gameID, socket.id);
+    setSelectedGame(gameID);
+  };
 
-			{/* Display selected game */}
-			<div className="game-details">
-				{selectedGame ? (
-					<GameControl gameID={selectedGame} socket={socket}/>
-				) : (
-					<p>Select or create a game to play.</p>
-				)}
-			</div>
-		</div>
-    )
-}
+  const async joinQueue = (socket: Socket) => {
+    const response: AxiosResponse<Match[]> = await axios.post(`http://localhost:3001/game/matches`, {
+		socketID: socket.id
+	  });
+  };
+
+  if (!socket) {
+    return;
+  }
+
+  return (
+    <div className="games-startup">
+	  <div className="games-list">
+		<button onClick={() => joinQueue(socket)}>{`Wanna play?`}</button>
+      </div>
+
+      {/* Display assigned game */}
+      <div className="game-details">
+        {selectedGame ? <PaddleSelect gameID={selectedGame} socket={socket} /> : <p>Join the queue to play.</p>}
+      </div>
+    </div>
+  );
+};
 
 export default Game;

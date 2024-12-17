@@ -12,7 +12,6 @@ import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { User, Match } from '@prisma/client';
-
 import { GameService } from './game.service';
 
 @WebSocketGateway({
@@ -28,6 +27,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   // private paddleRightY: number = 250;
   // private paddleLeftY: number = 250;
   constructor(
+	private ballx: number;
+	private bally: number;
+	private ballspeedx: number;
+	private ballspeedy: number;
+	private paddlerightspeedy: number;
+	private paddleleftspeedy: number;
     private prisma: PrismaService,
     private readonly userService: UserService,
     private readonly gameService: GameService
@@ -53,7 +58,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('acceptGame')
   async handleNewGameAccept(client: any, gameID: string, socketID: string) {
     const member: User = await this.userService.getUserBySocketID(socketID);
-    Match = await this.prisma.match.update({
+    await this.prisma.match.update({
       where: {
         matchID: parseInt(gameID),
       },
@@ -69,7 +74,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('start')
   handleGameStart() {
-    this.server.emit('ballSpeedY', Math.floor(Math.random() * 6 - 3));
+	this.ballspeedy = Math.floor(Math.random() * 6 - 3)
+    this.server.emit('ballSpeedY', this.ballspeedy);
   }
 
   @SubscribeMessage('key')
