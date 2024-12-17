@@ -11,6 +11,7 @@ import { ChatGateway } from './chat.gateway';
 import { MessageService } from './message/message.service';
 import { MessageController } from './message/message.controller';
 import { BlockedUserService } from './blockedUser/blockedUser.service';
+import { HashingService } from './hashing/hashing.service';
 
 @Module({
   controllers: [FriendsController, ChannelController, UserController, MessageController],
@@ -22,6 +23,7 @@ import { BlockedUserService } from './blockedUser/blockedUser.service';
     MessageService,
     ChatGateway,
     BlockedUserService,
+    HashingService,
   ],
   exports: [],
   imports: [

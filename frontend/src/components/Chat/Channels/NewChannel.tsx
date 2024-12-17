@@ -28,7 +28,7 @@ const NewChannel = ({ friends, selectChannel, socket, token }: NewChannelProps) 
       name: channelName,
       isPrivate,
       isDM: false,
-      password: isPrivate && passwordEnabled ? password : null,
+      password: passwordEnabled ? password : null,
       token,
       memberIDs: isPrivate ? selectedMemberIDs : [],
     };
