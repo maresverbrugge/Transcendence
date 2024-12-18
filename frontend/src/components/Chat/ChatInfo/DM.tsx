@@ -8,9 +8,8 @@ interface DMProps {
   token: string;
 }
 
-const DM = ({ channel, token }: DMProps) => {
+const DM = ({ channel }: DMProps) => {
   // const [DMInfo, setDMInfo] = useState<UserData | null>(null);
-  void token;
   useEffect(() => {
     const fetchDMInfo = async (channelID: number) => {
       try {

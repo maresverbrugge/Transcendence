@@ -5,17 +5,16 @@ import Confirm from '../../Confirm';
 import { ChannelData, MemberData } from '../interfaces';
 import AddMember from './AddMember';
 import BlockButton from './BlockButton';
+import { emitter } from '../emitter';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
-  selectChannel: (channelID: number | null) => void;
   friends: MemberData[];
-  setAlert: (message: string) => void;
-  token: string;
   socket: any;
+  token: string;
 }
 
-const ChannelMemberList = ({ channel, selectChannel, friends, setAlert, token, socket }: ChannelMemberListProps) => {
+const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberListProps) => {
   const [members, setMembers] = useState<MemberData[]>([]);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
@@ -60,10 +59,10 @@ const ChannelMemberList = ({ channel, selectChannel, friends, setAlert, token, s
     return () => {
       socket.off('updateChannelMember');
     };
-  }, [channel, socket, token]);
+  }, [channel, socket]);
 
   const currentMember = members.find((member) => member.ID === memberID);
-  if (currentMember?.isBanned) selectChannel(null);
+  if (currentMember?.isBanned) emitter.emit('selectChannel', null);
 
   const sortedMembers = members.sort((a, b) => {
     if (a.isOwner) return -1;
@@ -128,8 +127,6 @@ const ChannelMemberList = ({ channel, selectChannel, friends, setAlert, token, s
                 <BlockButton
                   memberID={member.user.ID}
                   blockedUserIDs={blockedUserIDs}
-                  selectChannel={selectChannel}
-                  channelID={channel.ID}
                   token={token}
                 />
               )}
@@ -157,7 +154,7 @@ const ChannelMemberList = ({ channel, selectChannel, friends, setAlert, token, s
         })}
       </ul>
       {currentMember?.isAdmin && channel.isPrivate && (
-        <AddMember channel={channel} friends={friends} socket={socket} token={token} setAlert={setAlert} />
+        <AddMember channel={channel} friends={friends} socket={socket} token={token} />
       )}
     </div>
   );

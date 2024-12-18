@@ -5,10 +5,7 @@ import { BlockedUserService } from './blockedUser.service';
 
 @Controller('chat/blockeduser')
 export class UserController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly blockedUserService: BlockedUserService
-  ) {}
+  constructor(private readonly blockedUserService: BlockedUserService) {}
 
   @Get('/IDs/:token')
   async getBlockedUserIDs(@Param('token') token: string) {

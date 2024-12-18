@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { emitter } from '../emitter';
 
 interface BlockButtonProps {
   memberID: number;
   blockedUserIDs: number[];
-  selectChannel: (channelID: number | null) => void;
-  channelID: number;
   token: string;
 }
 
-const BlockButton = ({ memberID, blockedUserIDs, selectChannel, channelID, token }: BlockButtonProps) => {
+const BlockButton = ({ memberID, blockedUserIDs, token }: BlockButtonProps) => {
   const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
@@ -19,9 +18,8 @@ const BlockButton = ({ memberID, blockedUserIDs, selectChannel, channelID, token
   const handleToggleBlock = async () => {
     const action = isBlocked ? 'unblock' : 'block';
     try {
-      axios.post(`http://localhost:3001/chat/blockedUser/${token}/${action}`, { userID: memberID });
+      await axios.post(`http://localhost:3001/chat/blockedUser/${token}/${action}`, { userID: memberID });
       setIsBlocked(!isBlocked);
-      selectChannel(channelID);
     } catch (error) {
       console.error(`Failed to ${action} the user`, error);
     }

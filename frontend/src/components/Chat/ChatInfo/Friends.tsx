@@ -63,7 +63,7 @@ const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
     };
 
     fetchFriends();
-  }, [setFriends, socket, token]);
+  }, [setFriends, socket]);
 
   return (
     <div className="friends-container">

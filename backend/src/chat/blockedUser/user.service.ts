@@ -69,12 +69,6 @@ export class UserService {
     return user;
   }
 
-  async getWebSocketByUserID(server: Namespace, userID: number): Promise<Socket | null> {
-    const user = await this.prisma.user.findUnique({ where: { ID: userID }, select: { websocketID: true } });
-    const socket: Socket = server.sockets.get(user.websocketID);
-    return socket ? socket : null;
-  }
-
   async getUserIDBySocketID(socketID: string): Promise<number | null> {
     const user = await this.prisma.user.findUnique({
       where: {

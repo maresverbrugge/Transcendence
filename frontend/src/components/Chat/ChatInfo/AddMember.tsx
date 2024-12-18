@@ -3,22 +3,22 @@ import axios from 'axios';
 
 import { MemberData, ChannelData } from '../interfaces';
 import './AddMember.css';
+import { emitter } from '../emitter';
 
 interface AddMemberProps {
   channel: ChannelData;
   friends: MemberData[];
   socket: any;
   token: string;
-  setAlert: (message: string) => void;
 }
 
-const AddMember = ({ channel, friends, socket, token, setAlert }: AddMemberProps) => {
+const AddMember = ({ channel, friends, socket, token }: AddMemberProps) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
 
   const handleAddMember = async () => {
     if (!selectedFriend) {
-      setAlert('Please select a friend to add to the channel!');
+      emitter.emit('alert', 'Please select a friend to add to the channel!');
       return;
     }
 
@@ -30,11 +30,10 @@ const AddMember = ({ channel, friends, socket, token, setAlert }: AddMemberProps
     try {
       await axios.post('http://localhost:3001/chat/channel/newMember', { newMemberData });
       socket.emit('updateChannel', selectedFriend.ID);
+      resetForm();
     } catch (error) {
-      if (error?.response?.data?.message) setAlert(error.response.data.message);
-      console.error(error);
+      emitter.emit('error', error);
     }
-    resetForm();
   };
 
   const resetForm = () => {

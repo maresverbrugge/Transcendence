@@ -10,8 +10,6 @@ export interface ChannelData {
   name?: string;
   isPrivate: boolean;
   isDM?: boolean;
-  members: MemberData[];
-  messages: MessageData[];
 }
 
 export interface MemberData {

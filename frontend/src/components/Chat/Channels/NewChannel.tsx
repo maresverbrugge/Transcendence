@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import './NewChannel.css';
 import axios from 'axios';
+import { emitter } from '../emitter';
 
 import { MemberData } from '../interfaces';
 
 interface NewChannelProps {
   friends: MemberData[];
-  selectChannel: (channelID: number) => void;
   socket: any;
   token: string;
 }
 
-const NewChannel = ({ friends, selectChannel, socket, token }: NewChannelProps) => {
+const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [channelName, setChannelName] = useState<string>('');
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
@@ -28,14 +28,14 @@ const NewChannel = ({ friends, selectChannel, socket, token }: NewChannelProps) 
       name: channelName,
       isPrivate,
       isDM: false,
-      password: isPrivate && passwordEnabled ? password : null,
+      password: passwordEnabled ? password : null,
       token,
       memberIDs: isPrivate ? selectedMemberIDs : [],
     };
     const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
     socket.emit('newChannel', response.data);
     resetForm();
-    selectChannel(response.data.ID);
+    emitter.emit('selectChannel', response.data.ID)
   };
 
   const resetForm = () => {

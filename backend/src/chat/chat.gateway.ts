@@ -15,6 +15,7 @@ import { UserService } from './blockedUser/user.service';
 import { ChannelService } from './channel/channel.service';
 import { MessageService } from './message/message.service';
 import { ChannelMemberService } from './channel-member/channel-member.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type ChannelWithMembersAndMessages = Channel & {
   members: (ChannelMember & {
@@ -43,7 +44,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
     @Inject(forwardRef(() => ChannelMemberService))
-    private readonly channelMemberService: ChannelMemberService
+    private readonly channelMemberService: ChannelMemberService,
+    private prisma: PrismaService
   ) {}
 
   @SubscribeMessage('newChannel')
@@ -114,11 +116,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async getWebSocketByUserID(userID: number): Promise<Socket | null> {
-    return this.userService.getWebSocketByUserID(this.server, userID);
+    const user = await this.prisma.user.findUnique({ where: { ID: userID }, select: { websocketID: true } });
+    const socket: Socket = this.server.sockets.get(user.websocketID);
+    return socket ? socket : null;
   }
 
   emitToRoom(message: string, room: string, body?: any) {
     if (body) this.server.to(room).emit(message, body);
     else this.server.to(room).emit(message);
+  }
+
+  emitToSocket(message: string, socket: Socket, body?: any) {
+    if (body) socket.emit(message, body);
+    else socket.emit(message);
   }
 }

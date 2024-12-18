@@ -29,12 +29,14 @@ export class MessageService {
         ID: messageID,
       },
     });
+    if (!message)
+      throw new NotFoundException('Message not found')
     return blockedUserIDs.includes(message.senderID) ? null : message;
   }
 
   async getMessages(channelID: number, token: string): Promise<Message[]> {
     const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByWebsocketID(token); //change to token later
-    const channel = await this.channelService.getChannelByID(channelID);
+    const channel = await this.channelService.getChannelWithMembersAndMessagesByID(channelID);
     const messages = channel.messages.filter((message) => !blockedUserIDs.includes(message.senderID));
     return messages;
   }

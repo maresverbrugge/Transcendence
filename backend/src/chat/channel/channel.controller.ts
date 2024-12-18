@@ -40,15 +40,29 @@ export class ChannelController {
     await this.channelService.newChannelMember(body.newMemberData);
   }
 
-  @Get('/:token')
+  @Get('/all/:token')
   async getChannels(@Param('token') token: string) {
     return this.channelService.getChannelsOfUser(token);
   }
-
-  @Get(':channelID/:token')
-  async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
-    return this.channelService.getChannelAddMember(channelID, token);
+  
+  @Post('/:channelID/add-member')
+  async addChannelMember(
+    @Param('channelID', ParseIntPipe) channelID: number,
+    @Body('token') token: string, // Get the token from the request body
+  ) {
+    return this.channelMemberService.addChannelMemberIfNotExists(channelID, token);
   }
+
+  @Get('/:channelID')
+  async getChannel(@Param('channelID', ParseIntPipe) channelID: number) {
+    return this.channelService.getChannelByID(channelID);
+  }
+
+  // @Get(':channelID/:token')
+  // async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {
+  //   return this.channelService.getChannelAddMember(channelID, token);
+  // }
+
 
   @Get('/memberID/:channelID/:token')
   async getChannelMemberID(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string) {

@@ -2,32 +2,31 @@ import React, { useEffect } from 'react';
 
 import ChannelMemberList from './ChannelMemberList';
 import { ChannelData, MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface ChannelProps {
   channel: ChannelData;
-  selectChannel: (channelID: number | null) => void;
   friends: MemberData[];
-  setAlert: (message: string) => void;
   socket: any;
-  token: string;
+  token: string
 }
 
-const Channel = ({ channel, selectChannel, friends, setAlert, socket, token }: ChannelProps) => {
+const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
   useEffect(() => {
     if (channel && !channel.isPrivate) {
-      socket.emit('joinChannel', { channelID: channel.ID, token }); // token later uit storage halen
+      socket.emit('joinChannel', { channelID: channel.ID, token });
     }
 
     return () => {
       if (channel && !channel.isPrivate) {
-        socket.emit('leaveChannel', { channelID: channel.ID, token });
+        socket.emit('leaveChannel', { channelID: channel.ID, token});
       }
     };
-  }, [channel, socket, token]);
+  }, [channel, socket]);
 
   const leaveChannel = () => {
-    socket.emit('leaveChannel', { channelID: channel.ID, token });
-    selectChannel(null);
+    socket.emit('leaveChannel', { channelID: channel.ID, token});
+    emitter.emit('selectChannel', null);
   };
 
   return (
@@ -36,14 +35,12 @@ const Channel = ({ channel, selectChannel, friends, setAlert, socket, token }: C
         <h2>Channel: {channel?.name}</h2>
         <ChannelMemberList
           channel={channel}
-          selectChannel={selectChannel}
           friends={friends}
-          setAlert={setAlert}
-          token={token}
           socket={socket}
+          token={token}
         />
       </div>
-      {channel?.isPrivate && <button onClick={leaveChannel}>Leave Channel</button>}
+      {channel.isPrivate && <button onClick={leaveChannel}>Leave Channel</button>}
     </div>
   );
 };

@@ -6,17 +6,16 @@ import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
 import { ChannelData, MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface ChannelsProps {
-  selectedChannel: ChannelData | null;
-  selectChannel: (channelID: number | null) => void;
+  selectedChannelID: number | null;
   friends: MemberData[];
   socket: any; // Adjust this type if using a specific Socket.IO client library type
   token: string;
-  setAlert: (message: string | null) => void;
 }
 
-const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setAlert }: ChannelsProps) => {
+const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
@@ -24,10 +23,10 @@ const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setA
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await axios.get<ChannelData[]>(`http://localhost:3001/chat/channel/${token}`);
+        const response = await axios.get<ChannelData[]>(`http://localhost:3001/chat/channel/all/${token}`);
         setChannels(response.data);
-        if (selectedChannel && !response.data.some((channel) => channel.ID === selectedChannel.ID)) {
-          selectChannel(null);
+        if (selectedChannelID && !response.data.some((channel) => channel.ID === selectedChannelID)) {
+          emitter.emit('selectChannel', null)
         }
       } catch (error) {
         console.error('Error fetching channels:', error);
@@ -39,15 +38,15 @@ const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setA
     socket.on('updateChannel', fetchChannels);
 
     setUnreadCounts((prevCounts) => {
-      if (!selectedChannel) return prevCounts;
+      if (!selectedChannelID) return prevCounts;
       return {
         ...prevCounts,
-        [selectedChannel.ID]: 0,
+        [selectedChannelID]: 0,
       };
     });
 
     socket.on('newMessage', ({ channelID }: { channelID: number }) => {
-      if (channelID !== selectedChannel?.ID) {
+      if (channelID !== selectedChannelID) {
         setUnreadCounts((prevCounts) => ({
           ...prevCounts,
           [channelID]: (prevCounts[channelID] || 0) + 1,
@@ -55,18 +54,17 @@ const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setA
       }
     });
 
-    // Cleanup function
     return () => {
       socket.off('updateChannel', fetchChannels);
       socket.off('newMessage');
     };
-  }, [selectedChannel, socket, token]);
+  }, [selectedChannelID, socket]);
 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 
   const handleClickChannel = (channelID: number) => {
-    if (channelID === selectedChannel?.ID) selectChannel(null);
-    else selectChannel(channelID);
+    if (channelID === selectedChannelID) emitter.emit('selectChannel', null)
+    else emitter.emit('selectChannel', channelID)
   };
 
   return (
@@ -112,7 +110,7 @@ const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setA
           </>
         )}
 
-        <NewChannel friends={friends} selectChannel={selectChannel} socket={socket} token={token} />
+        <NewChannel friends={friends}socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -129,7 +127,7 @@ const Channels = ({ selectedChannel, selectChannel, friends, socket, token, setA
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} selectChannel={selectChannel} socket={socket} token={token} setAlert={setAlert} />
+        <NewDM friends={friends} socket={socket} token={token} />
       </div>
     </div>
   );

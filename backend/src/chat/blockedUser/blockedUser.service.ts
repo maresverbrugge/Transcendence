@@ -1,13 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UserService } from './user.service';
+import { ChatGateway } from '../chat.gateway';
 
 @Injectable()
 export class BlockedUserService {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   async getBlockedUserIDsByWebsocketID(socketID: string): Promise<number[]> {
@@ -29,23 +31,19 @@ export class BlockedUserService {
     });
   }
 
-  async block(targetUserID: number, token: string): Promise<void> {
-    console.log('check block');
-
-    const userID = await this.userService.getUserIDBySocketID(token); //change to token later
+  async block(targetUserID: number, userID: number): Promise<void> {
     const blockedUser = await this.prisma.blockedUser.create({
       data: {
         blocker: { connect: { ID: userID } },
         blocked: { connect: { ID: targetUserID } },
       },
     });
-    console.log('check blockedUser', blockedUser);
+    if (!blockedUser)
+      throw new InternalServerErrorException('Error creating blockedUser')
+
   }
 
-  async unblock(targetUserID: number, token: string): Promise<void> {
-    console.log('check unblock');
-
-    const userID = await this.userService.getUserIDBySocketID(token); //change to token later
+  async unblock(targetUserID: number, userID: number): Promise<void> {
     const blockedUser = await this.prisma.blockedUser.findFirst({
       where: {
         blockerID: userID,
@@ -55,18 +53,20 @@ export class BlockedUserService {
         ID: true,
       },
     });
-    if (blockedUser) {
-      console.log('check blockedUser', blockedUser);
-      await this.prisma.blockedUser.delete({
-        where: {
-          ID: blockedUser.ID,
-        },
-      });
-    }
+    if (!blockedUser)
+      throw new NotFoundException('Blocked user not found')
+    await this.prisma.blockedUser.delete({
+      where: {
+        ID: blockedUser.ID,
+      },
+    });
   }
 
   async blockUnblock(targetUserID: number, token: string, action: 'block' | 'unblock'): Promise<void> {
-    if (action === 'block') this.block(targetUserID, token);
-    else this.unblock(targetUserID, token);
+    const userID = await this.userService.getUserIDBySocketID(token); //change to token later
+    if (action === 'block') await this.block(targetUserID, userID);
+    else await this.unblock(targetUserID, userID);
+    const socket = await this.chatGateway.getWebSocketByUserID(userID);
+    if (socket) this.chatGateway.emitToSocket('reloadMessages', socket)
   }
 }

@@ -1,31 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Friends from './Friends';
 import './ChatInfo.css';
 import { ChannelData, MemberData } from '../interfaces';
 import Channel from './Channel';
 import DM from './DM';
+import axios from 'axios';
+import { emitter } from '../emitter';
+
 
 interface ChannelInfoProps {
-  channel: ChannelData;
-  selectChannel: (channel: number | null) => void;
+  channelID: number;
   friends: MemberData[];
-  setAlert: (message: string) => void;
-  token: string;
   socket: any;
+  token: string;
 }
 
 interface ChatInfoProps {
-  channel: ChannelData | null;
-  selectChannel: (channel: number | null) => void;
+  channelID: number | null;
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
-  setAlert: (message: string) => void;
   socket: any;
   token: string;
 }
 
-const ChannelInfo = ({ channel, selectChannel, friends, setAlert, token, socket }: ChannelInfoProps) => {
+const ChannelInfo = ({ channelID, friends, socket, token }: ChannelInfoProps) => {
+  const [channel, setChannel] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchChannelInfo = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get<ChannelData>(`http://localhost:3001/chat/channel/${channelID}`);
+        setChannel(response.data);
+      } catch (error) {
+        console.error("Failed to fetch channel:", error);
+        emitter.emit('alert', "Failed to load channel data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      fetchChannelInfo();
+  }, [channelID]);
+
+  if (loading) {
+    return <div>Loading channel...</div>;
+  }
+
+  if (!channel) {
+    return <div>No channel data available.</div>;
+  }
+
   return (
     <div className="channel-info">
       {channel.isDM ? (
@@ -33,9 +60,7 @@ const ChannelInfo = ({ channel, selectChannel, friends, setAlert, token, socket 
       ) : (
         <Channel
           channel={channel}
-          selectChannel={selectChannel}
           friends={friends}
-          setAlert={setAlert}
           socket={socket}
           token={token}
         />
@@ -44,19 +69,17 @@ const ChannelInfo = ({ channel, selectChannel, friends, setAlert, token, socket 
   );
 };
 
-const ChatInfo = ({ channel, selectChannel, friends, setFriends, setAlert, socket, token }: ChatInfoProps) => {
+const ChatInfo = ({ channelID, friends, setFriends, socket, token }: ChatInfoProps) => {
   return (
     <div className="chat-info-container">
-      {channel === null ? (
+      {channelID === null ? (
         <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
       ) : (
         <ChannelInfo
-          channel={channel}
-          selectChannel={selectChannel}
+          channelID={channelID}
           friends={friends}
-          setAlert={setAlert}
-          token={token}
           socket={socket}
+          token={token}
         />
       )}
     </div>

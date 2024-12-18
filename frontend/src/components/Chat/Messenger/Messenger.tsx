@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './Messenger.css';
 import axios from 'axios';
+import { emitter } from '../emitter';
 
-import { ChannelData, MessageData } from '../interfaces';
+import { MessageData } from '../interfaces';
 
 interface MessengerProps {
-  channel: ChannelData | null;
+  channelID: number | null;
   socket: any;
-  token: string;
+  token: string
 }
 
-const Messenger = ({ channel, socket, token }: MessengerProps) => {
+const Messenger = ({ channelID, socket, token }: MessengerProps) => {
   const [messages, setMessages] = useState<MessageData[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
 
@@ -18,7 +19,7 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get<MessageData[]>(
-          `http://localhost:3001/chat/message/channel/${channel?.ID}/${token}`
+          `http://localhost:3001/chat/message/channel/${channelID}/${token}`
         );
         setMessages(response.data);
       } catch (error) {
@@ -26,7 +27,7 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
       }
     };
 
-    if (channel) {
+    if (channelID) {
       fetchMessages();
     }
 
@@ -55,11 +56,13 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
       });
     });
     
+    socket.on('reloadMessages', fetchMessages)
 
     return () => {
       socket.off('newMessage');
+      socket.off('reloadMessages')
     };
-  }, [channel, socket, token]);
+  }, [channelID, socket]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -69,14 +72,14 @@ const Messenger = ({ channel, socket, token }: MessengerProps) => {
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      socket.emit('sendMessage', { channelID: channel?.ID, token, content: newMessage });
+      socket.emit('sendMessage', { channelID, token, content: newMessage });
       setNewMessage('');
     }
   };
 
   return (
     <div className="messenger-container">
-      {!channel ? (
+      {!channelID ? (
         <div className="select-channel-message">Select a channel to start chatting!</div>
       ) : (
         <>

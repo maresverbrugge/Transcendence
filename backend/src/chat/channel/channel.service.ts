@@ -33,7 +33,16 @@ export class ChannelService {
     private readonly chatGateway: ChatGateway
   ) {}
 
-  async getChannelByID(channelID: number): Promise<ChannelWithMembersAndMessages | null> {
+  async getChannelByID(channelID: number): Promise<Channel> {
+    const channel = await this.prisma.channel.findUnique({
+      where: { ID: channelID },
+    });
+    if (!channel)
+      throw new NotFoundException('Channel not found');
+    return channel;
+  }
+
+  async getChannelWithMembersAndMessagesByID(channelID: number): Promise<ChannelWithMembersAndMessages | null> {
     const channel = await this.prisma.channel.findUnique({
       where: { ID: channelID },
       include: {
@@ -41,8 +50,8 @@ export class ChannelService {
         messages: true,
       },
     });
-
-    if (!channel) throw new NotFoundException('Channel not found');
+    if (!channel)
+      throw new NotFoundException('Channel not found');
     return channel;
   }
 
@@ -213,7 +222,7 @@ export class ChannelService {
         await this.channelMemberService.createChannelMember(userID, channelID);
       } else throw error;
     }
-    const channel = await this.getChannelByID(channelID);
+    const channel = await this.getChannelWithMembersAndMessagesByID(channelID);
     const user = await this.userService.getUserBySocketID(token); //change to token later
     if ((await channel).isDM) channel.name = this.getDMName(user.username, channel);
 
@@ -225,7 +234,7 @@ export class ChannelService {
       where: { channelID: newMemberData.channelID, userID: newMemberData.memberID },
     });
     if (existingChannelMember) throw new ForbiddenException('This user is already a member of the channel');
-    const userID = await this.userService.getUserIDBySocketID(newMemberData.token); //chanhge to token later
+    const userID = await this.userService.getUserIDBySocketID(newMemberData.token); //change to token later
     const channelMember = await this.prisma.channelMember.findFirst({
       where: {
         channelID: newMemberData.channelID,
