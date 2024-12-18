@@ -7,7 +7,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Inject, forwardRef } from '@nestjs/common';
+import { Inject, NotFoundException, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { Channel, ChannelMember, User, Message } from '@prisma/client';
 
@@ -56,7 +56,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('joinChannel')
   async handleJoinChannel(client: Socket, data: { channelID: number; token: string }) {
     const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID); //change to token later
-    this.channelService.joinChannel(data.channelID, client, channelMember.user.username, channelMember.isOwner);
+    this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
   }
 
   @SubscribeMessage('leaveChannel')
@@ -103,20 +103,30 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     const user = await this.userService.getUserBySocketID(client.id);
-    await this.userService.removeWebsocketIDFromUser(client.id);
-    if (user) this.server.emit('userStatusChange', user.ID, 'OFFLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+    if (user) {
+      try {
+        return await this.prisma.user.update({
+          where: { ID: user.ID },
+          data: { websocketID: null },
+        });
+      } catch (error) {
+        console.error('Failed to remove websocketID from user', error)
+      }
+      this.server.emit('userStatusChange', user.ID, 'OFFLINE');
+    } 
   }
 
   async addSocketToRoom(userID: number, channelID: number) {
     const socket = await this.getWebSocketByUserID(userID);
     if (socket) {
       const user = await this.userService.getUserByUserID(userID);
-      this.channelService.joinChannel(channelID, socket, user.username, false);
+      this.channelService.joinChannel(channelID, socket, user.username);
     }
   }
 
   async getWebSocketByUserID(userID: number): Promise<Socket | null> {
     const user = await this.prisma.user.findUnique({ where: { ID: userID }, select: { websocketID: true } });
+    if (!user) throw new NotFoundException('User not found');
     const socket: Socket = this.server.sockets.get(user.websocketID);
     return socket ? socket : null;
   }

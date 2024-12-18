@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client';
@@ -8,7 +8,7 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   //temporary function
-  async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
+  async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace): Promise<User> {
     // Step 1: Find user with an empty websocketID
     const emptyWebSocketUser = await this.prisma.user.findFirst({
       where: { websocketID: null },
@@ -52,24 +52,15 @@ export class UserService {
     });
   }
 
-  async removeWebsocketIDFromUser(websocketID: string) {
-    const user = await this.getUserBySocketID(websocketID);
-    if (user)
-      return await this.prisma.user.update({
-        where: { ID: user.ID },
-        data: { websocketID: null },
-      });
-  }
-
-  async getUserByUserID(userID: number): Promise<User | null> {
+  async getUserByUserID(userID: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { ID: userID },
     });
-    if (!user) throw new NotFoundException(`User with ID ${userID} not found.`);
+    if (!user) throw new NotFoundException(`User not found.`);
     return user;
   }
 
-  async getUserIDBySocketID(socketID: string): Promise<number | null> {
+  async getUserIDBySocketID(socketID: string): Promise<number> {
     const user = await this.prisma.user.findUnique({
       where: {
         websocketID: socketID,
@@ -79,14 +70,16 @@ export class UserService {
       },
     });
     if (!user) throw new NotFoundException('User not found');
-    return user?.ID || null; // Return the user ID if found, otherwise return null
+    return user.ID;
   }
 
-  async getUserBySocketID(socketID: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+  async getUserBySocketID(socketID: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: {
         websocketID: socketID,
       },
     });
+    if (!user) throw new NotFoundException('User not found')
+    return user;
   }
 }

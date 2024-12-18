@@ -42,7 +42,7 @@ export class ChannelService {
     return channel;
   }
 
-  async getChannelWithMembersAndMessagesByID(channelID: number): Promise<ChannelWithMembersAndMessages | null> {
+  async getChannelWithMembersAndMessagesByID(channelID: number): Promise<ChannelWithMembersAndMessages> {
     const channel = await this.prisma.channel.findUnique({
       where: { ID: channelID },
       include: {
@@ -55,17 +55,16 @@ export class ChannelService {
     return channel;
   }
 
-  addChannelMemberToChannel(channelID: number, socket: Socket) {
+  addChannelMemberToChannel(channelID: number, socket: Socket): void {
     this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
     socket.join(String(channelID));
     console.log(`${socket.id} joined channel ${channelID}`); //remove later
   }
 
-  async joinChannel(channelID: number, socket: Socket, username: string, isOwner: boolean) {
+  async joinChannel(channelID: number, socket: Socket, username: string): Promise<void> {
     try {
       this.addChannelMemberToChannel(channelID, socket);
       await this.messageService.sendActionLogMessage(channelID, username, 'join');
-      if (isOwner) return;
     } catch (error) {
       socket.emit('error', error);
     }
@@ -229,7 +228,7 @@ export class ChannelService {
     return channel;
   }
 
-  async newChannelMember(newMemberData: { channelID: number; memberID: number; token: string }) {
+  async newChannelMember(newMemberData: { channelID: number; memberID: number; token: string }): Promise<ChannelMember> {
     const existingChannelMember = await this.prisma.channelMember.findFirst({
       where: { channelID: newMemberData.channelID, userID: newMemberData.memberID },
     });
@@ -244,10 +243,10 @@ export class ChannelService {
     });
     if (!channelMember?.isAdmin) throw new ForbiddenException('You dont have Admin rights');
     await this.chatGateway.addSocketToRoom(newMemberData.memberID, newMemberData.channelID);
-    await this.channelMemberService.createChannelMember(newMemberData.memberID, newMemberData.channelID);
+    return this.channelMemberService.createChannelMember(newMemberData.memberID, newMemberData.channelID);
   }
 
-  async getChannelMemberID(channelID: number, token: string): Promise<number | null> {
+  async getChannelMemberID(channelID: number, token: string): Promise<number> {
     const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
 
     const channelMember = await this.prisma.channelMember.findFirst({

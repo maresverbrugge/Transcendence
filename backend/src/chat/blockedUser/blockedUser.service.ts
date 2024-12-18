@@ -39,7 +39,7 @@ export class BlockedUserService {
       },
     });
     if (!blockedUser)
-      throw new InternalServerErrorException('Error creating blockedUser')
+      throw new InternalServerErrorException('Failed to block user')
 
   }
 

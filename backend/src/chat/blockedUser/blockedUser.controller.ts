@@ -8,7 +8,7 @@ export class UserController {
   constructor(private readonly blockedUserService: BlockedUserService) {}
 
   @Get('/IDs/:token')
-  async getBlockedUserIDs(@Param('token') token: string) {
+  async getBlockedUserIDs(@Param('token') token: string): Promise<number[]> {
     return this.blockedUserService.getBlockedUserIDsByWebsocketID(token); //change to token later
   }
 
@@ -17,7 +17,7 @@ export class UserController {
     @Param('token') token: string,
     @Param('action') action: 'block' | 'unblock',
     @Body() body: { userID: number }
-  ) {
+  ): Promise<void> {
     this.blockedUserService.blockUnblock(body.userID, token, action);
   }
 }

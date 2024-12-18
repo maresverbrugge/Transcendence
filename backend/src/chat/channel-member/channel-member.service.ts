@@ -108,12 +108,16 @@ export class ChannelMemberService {
   }
 
   async createChannelMember(userID: number, channelID: number): Promise<ChannelMember> {
-    return this.prisma.channelMember.create({
-      data: {
-        userID: userID,
-        channelID: channelID,
-      },
-    });
+    try {
+      return await this.prisma.channelMember.create({
+        data: {
+          userID: userID,
+          channelID: channelID,
+        },
+      });
+    } catch {
+      throw new InternalServerErrorException('Failed to create new channel member')
+    }
   }
 
   async deleteChannelMember(channelMemberID: number): Promise<ChannelMember> {
