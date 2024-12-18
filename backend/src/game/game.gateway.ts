@@ -27,12 +27,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   // private paddleRightY: number = 250;
   // private paddleLeftY: number = 250;
   constructor(
-	private ballx: number;
-	private bally: number;
-	private ballspeedx: number;
-	private ballspeedy: number;
-	private paddlerightspeedy: number;
-	private paddleleftspeedy: number;
+	private ballx: number,
+	private bally: number,
+	private ballspeedx: number,
+	private ballspeedy: number,
+	private paddlerightspeedy: number,
+	private paddleleftspeedy: number,
     private prisma: PrismaService,
     private readonly userService: UserService,
     private readonly gameService: GameService
