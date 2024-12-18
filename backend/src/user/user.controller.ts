@@ -45,4 +45,9 @@ export class UserController {
   async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<Statistics> {
     return this.userService.getUserStats(userID);
   }
+
+  @Get('leaderboard')
+  async getLeaderboard(): Promise<{ rank: number; username: string; avatarURL: string; ladderRank: number }[]> {
+    return this.userService.getLeaderboard();
+  }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Statistics from './Statistics.tsx';
+import Leaderboard from './LeaderBoard.tsx';
 import { StatisticsData } from '../interfaces.tsx'
 
 const UserInfoAccordion = ({userID}: {userID: number} ) => {
@@ -102,7 +103,7 @@ return (
         aria-labelledby="headingLeaderboard"
         data-bs-parent="#userAccordion">
         <div className="accordion-body">
-          <p>Leaderboard Content</p>
+          < Leaderboard />
         </div>
       </div>
     </div>

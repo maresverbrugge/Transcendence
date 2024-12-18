@@ -29,7 +29,7 @@ export class UserService {
       },
     });
     if (!user) throw new NotFoundException("User not found");
-    return user.ID; // Return the user ID if found, otherwise return null
+    return user.ID;
   } //! make sure to catch where calling this function
 
   async getUserProfileByToken(token: string): Promise<UserProfile> {
@@ -152,5 +152,27 @@ export class UserService {
       winRate,
       ladderRank: playerRating,
     };
+  }
+
+  async getLeaderboard(): Promise<{ username: string; rank: number; avatarURL: string; ladderRank: number }[]> {
+    const leaderboard = await this.prisma.statistics.findMany({
+      orderBy: { ladderRank: 'desc' },
+      take: 10, // Top 10 players
+      select: {
+        user: {
+          select: { username: true, avatar: true },
+        },
+        ladderRank: true
+      },
+    });
+  
+    return leaderboard.map((entry, index) => ({
+      rank: index + 1,
+      username: entry.user.username,
+      avatarURL: entry.user.avatar
+        ? `data:image/jpeg;base64,${entry.user.avatar.toString('base64')}`
+        : 'http://localhost:3001/images/default-avatar.png', // Fallback avatar
+      ladderRank: entry.ladderRank,
+    }));
   }
 }

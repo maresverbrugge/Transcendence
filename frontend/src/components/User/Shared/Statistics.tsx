@@ -37,7 +37,6 @@ const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
       </table>
     </div>
   );
-  
 }
 
 export default Statistics;
