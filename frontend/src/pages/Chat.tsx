@@ -15,7 +15,7 @@ const Chat = () => {
   const [channelID, setChannelID] = useState<number | null>(null);
   const [friends, setFriends] = useState<MemberData[]>([]);
   const [tempToken, setTempToken] = useState<string>(null);
-  var tempWebSocketID = null;
+  var tempWebSocketID: string = '';
 
   useEffect(() => {
   
@@ -27,7 +27,7 @@ const Chat = () => {
     });
 
     socketIo.on('token', (websocketID: string) => {
-      setTempToken(websocketID)
+      setTempToken(websocketID);
       tempWebSocketID = websocketID;
       console.log('replaced tempToken with webSocketID: ', websocketID);
     });

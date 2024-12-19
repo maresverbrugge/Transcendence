@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client';
+import { HttpException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -53,33 +54,42 @@ export class UserService {
   }
 
   async getUserByUserID(userID: number): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: { ID: userID },
-    });
-    if (!user) throw new NotFoundException(`User not found.`);
-    return user;
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { ID: userID },
+      });
+      if (!user) throw new NotFoundException(`User not found.`);
+      return user;
+    } catch (error) {
+      if (error instanceof HttpException)  throw error;
+      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
   async getUserIDBySocketID(socketID: string): Promise<number> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        websocketID: socketID,
-      },
-      select: {
-        ID: true,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user.ID;
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { websocketID: socketID },
+        select: { ID: true },
+      });
+      if (!user) throw new NotFoundException('User not found');
+      return user.ID;
+    } catch (error) {
+      if (error instanceof HttpException)  throw error;
+      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
   async getUserBySocketID(socketID: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        websocketID: socketID,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found')
-    return user;
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { websocketID: socketID },
+      });
+      if (!user) throw new NotFoundException('User not found')
+      return user;
+    } catch (error) {
+      if (error instanceof HttpException)  throw error;
+      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 }

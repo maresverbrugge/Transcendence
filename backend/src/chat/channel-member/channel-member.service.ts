@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException, HttpException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Namespace, Socket } from 'socket.io';
 import { ChannelMember, User } from '@prisma/client';
@@ -7,6 +7,7 @@ import { UserService } from '../blockedUser/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
+import { channel } from 'diagnostics_channel';
 
 type ChannelMemberResponse = ChannelMember & {
   user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -27,71 +28,80 @@ export class ChannelMemberService {
     private readonly channelService: ChannelService
   ) {}
 
-  async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse | null> {
-    return this.prisma.channelMember.findUnique({
-      where: { ID: channelMemberID },
-      include: {
-        user: { select: { ID: true, websocketID: true, username: true } },
-      },
-    });
+  async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse> {
+    try {
+        const channelMember = this.prisma.channelMember.findUnique({
+          where: { ID: channelMemberID },
+          include: {
+            user: { select: { ID: true, websocketID: true, username: true } },
+          },
+        });
+        if (!channelMember) throw new NotFoundException('Channel member not found');
+        return channelMember;
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
   async getChannelMembers(channelID: number, token: string): Promise<ChannelMemberResponse[]> {
-    if (!(await this.isChannelMember(channelID, token))) {
-      throw new ForbiddenException('You are not a member of this channel');
-    }
-    const channel = await this.prisma.channel.findUnique({
-      where: { ID: channelID }, // Use token as the identifier
-      include: {
-        members: {
+    try {
+        if (!(await this.isChannelMember(channelID, token))) {
+          throw new ForbiddenException('You are not a member of this channel');
+        }
+        const channel = await this.prisma.channel.findUnique({
+          where: { ID: channelID },
           include: {
-            user: { select: { ID: true, username: true, websocketID: true } },
+            members: {
+              include: {
+                user: { select: { ID: true, username: true, websocketID: true } },
+              },
+            },
           },
-        },
-      },
-    });
-    const filteredMembers = channel.members.filter((member) => !member.isBanned && member.channelID === channelID);
-    return filteredMembers;
+        });
+        if (!channel) throw new NotFoundException('Channel not found');
+        const filteredMembers = channel.members.filter((member) => !member.isBanned && member.channelID === channelID);
+        return filteredMembers;
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
   async isChannelMember(channelID: number, token: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
-      where: { websocketID: token }, // change to token later
-      include: {
-        channelMembers: {
-          select: { channelID: true, isBanned: true }, // Fetch only the channel IDs
-        },
-      },
-    });
-    if (!user)
-      throw new NotFoundException('User not found')
-    const member = user?.channelMembers.find((member) => member.channelID === channelID);
-    return member !== undefined && !member.isBanned;
+    try {
+        const user = await this.prisma.user.findUnique({
+          where: { websocketID: token }, // change to token later
+          include: { channelMembers: { select: { channelID: true, isBanned: true } } },
+        });
+        if (!user)
+          throw new NotFoundException('User not found')
+        const member = user?.channelMembers.find((member) => member.channelID === channelID);
+        return member !== undefined && !member.isBanned;
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
-  async getChannelMemberBySocketID(token: string, channelID: number): Promise<ChannelMemberResponse | null> {
-    const userID = await this.userService.getUserIDBySocketID(token); //change to Token later
-    const channelMember = await this.prisma.channelMember.findFirst({
-      where: {
-        userID: userID,
-        channelID: channelID,
-      },
-      select: {
-        ID: true,
-        websocketID: true,
-        isAdmin: true,
-        isBanned: true,
-        isMuted: true,
-        isOwner: true,
-        banUntil: true,
-        muteUntil: true,
-        userID: true,
-        channelID: true,
-        user: { select: { ID: true, websocketID: true, username: true } },
-      },
-    });
-    if (!channelMember) throw new NotFoundException('ChannelMember not found');
-    return channelMember;
+  async getChannelMemberBySocketID(token: string, channelID: number): Promise<ChannelMemberResponse> {
+    try {
+        const userID = await this.userService.getUserIDBySocketID(token); //change to Token later
+        const channelMember = await this.prisma.channelMember.findFirst({
+          where: {
+            userID: userID,
+            channelID: channelID,
+          },
+          include: {
+            user: { select: { ID: true, websocketID: true, username: true } },
+          },
+        });
+        if (!channelMember) throw new NotFoundException('ChannelMember not found');
+        return channelMember;
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
   async addChannelMemberIfNotExists(channelID: number, token: string): Promise<ChannelMember> {
@@ -100,8 +110,8 @@ export class ChannelMemberService {
       await this.checkBanOrKick(channelMember, channelID);
       return channelMember;
     } catch (error) {
-      if (error?.response?.statusCode == 404) {
-        const userID = await this.userService.getUserIDBySocketID(token); //change to Token later (+ error check?)
+      if (error instanceof NotFoundException) {
+        const userID = await this.userService.getUserIDBySocketID(token); //change to Token later
         return this.createChannelMember(userID, channelID);
       } else throw error;
     }
@@ -115,8 +125,8 @@ export class ChannelMemberService {
           channelID: channelID,
         },
       });
-    } catch {
-      throw new InternalServerErrorException('Failed to create new channel member')
+    } catch (error) {
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
     }
   }
 
@@ -126,7 +136,7 @@ export class ChannelMemberService {
         where: { ID: channelMemberID },
       });
     } catch (error) {
-      throw new NotFoundException('ChannelMember not found');
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
     }
   }
 
@@ -140,32 +150,25 @@ export class ChannelMemberService {
     return channelMember.isOwner;
   }
 
-  async updateChannelMember(memberID: number, updateData: any) {
-    await this.prisma.channelMember.update({
-      where: { ID: memberID },
-      data: updateData,
-      select: {
-        ID: true,
-        websocketID: true,
-        isAdmin: true,
-        isBanned: true,
-        isMuted: true,
-        isOwner: true,
-        banUntil: true,
-        muteUntil: true,
-        channelID: true,
-        userID: true,
-        user: { select: { ID: true, websocketID: true, username: true } },
-      },
-    });
+  async updateChannelMember(memberID: number, updateData: any): Promise<ChannelMemberResponse> {
+    try {
+        return await this.prisma.channelMember.update({
+          where: { ID: memberID },
+          data: updateData,
+          include: {
+            user: { select: { ID: true, websocketID: true, username: true } },
+          },
+        });
+    } catch (error) {
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 
-  async checkBanOrKick(channelMember: ChannelMemberResponse, channelID: number) {
+  async checkBanOrKick(channelMember: ChannelMemberResponse, channelID: number): Promise<void> {
     if (!channelMember.isBanned) return;
     if (!channelMember.banUntil) throw new ForbiddenException('You are banned from this channel');
     else {
       const timeLeft = channelMember.banUntil.getTime() - new Date().getTime();
-
       if (timeLeft > 0) {
         const secondsLeft = Math.floor(timeLeft / 1000);
         throw new ForbiddenException(`You are kicked from this channel. Try again in ${secondsLeft} seconds.`);
@@ -182,7 +185,7 @@ export class ChannelMemberService {
     targetIsAdmin: boolean,
     requiredRole: 'owner' | 'admin',
     action: action
-  ) {
+  ): Promise<void> {
     const isAllowed =
       requiredRole === 'owner' ? await this.isOwner(token, channelID) : await this.isAdmin(token, channelID);
     if (!isAllowed) throw new ForbiddenException(`You don't have ${requiredRole} permissions`);
@@ -191,7 +194,7 @@ export class ChannelMemberService {
     }
   }
 
-  actionGetUpdateData(action: action) {
+  actionGetUpdateData(action: action): any {
     switch (action) {
       case 'ban':
         return { isBanned: true };
@@ -208,7 +211,7 @@ export class ChannelMemberService {
       case 'demote':
         return { isAdmin: false };
       default:
-        throw new Error(`Unknown action: ${action}`);
+        throw new BadRequestException(`Unknown action: ${action}`);
     }
   }
 
@@ -218,43 +221,44 @@ export class ChannelMemberService {
     token: string,
     channelID: number,
     action: 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave'
-  ) {
-    try {
-      const targetChannelMember = await this.getChannelMember(channelMemberID);
-      await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
-      const updateData = this.actionGetUpdateData(action);
-      this.messageService.sendActionLogMessage(channelID, targetChannelMember.user.username, action);
-      await this.updateChannelMember(channelMemberID, updateData);
-      if (action === 'ban' || action === 'kick') {
-        if (await this.channelService.isPrivateChannel(channelID)) {
-          await this.deleteChannelMember(targetChannelMember.ID);
-        }
-        const socket = server.sockets.get(targetChannelMember.user.websocketID);
-        if (socket) {
-          socket.leave(String(channelID));
-          socket.emit('deselectChannel');
-          socket.emit('updateChannel');
-        }
+  ): Promise<void> {
+    const targetChannelMember = await this.getChannelMember(channelMemberID);
+    await this.checkPermissions(token, channelID, targetChannelMember.isAdmin, 'admin', action);
+    const updateData = this.actionGetUpdateData(action);
+    this.messageService.sendActionLogMessage(channelID, targetChannelMember.user.username, action);
+    await this.updateChannelMember(channelMemberID, updateData);
+    if (action === 'ban' || action === 'kick') {
+      if (await this.channelService.isPrivateChannel(channelID)) {
+        await this.deleteChannelMember(targetChannelMember.ID);
       }
-      this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
-    } catch (error) {
-      this.chatGateway.emitToRoom('error', String(channelID), error);
+      const socket = server.sockets.get(targetChannelMember.user.websocketID);
+      if (socket) {
+        socket.leave(String(channelID));
+        socket.emit('deselectChannel');
+        socket.emit('updateChannel');
+      }
     }
+    this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
   }
 
-  async addSocketToAllRooms(socket: Socket, token: string) {
-    void token;
-    const user = await this.prisma.user.findUnique({
-      where: { websocketID: socket.id }, // change to token later
-      select: { channelMembers: { select: { channelID: true, isBanned: true } } },
-    });
-    const channelMembers = user?.channelMembers;
-    if (!channelMembers) return;
-    channelMembers.map((member) => {
-      if (!member.isBanned) {
-        socket.join(String(member.channelID));
-        console.log(`${socket.id} joined channel ${member.channelID}`); //remove later
-      }
-    });
+  async addSocketToAllRooms(socket: Socket, token: string): Promise<void> {
+    try {
+        void token;
+        const user = await this.prisma.user.findUnique({
+          where: { websocketID: socket.id }, // change to token later
+          select: { channelMembers: { select: { channelID: true, isBanned: true } } },
+        });
+        if (!user) throw new NotFoundException('User not found');
+        const channelMembers = user.channelMembers;
+        channelMembers.map((member) => {
+          if (!member.isBanned) {
+            socket.join(String(member.channelID));
+            console.log(`${socket.id} joined channel ${member.channelID}`); //remove later
+          }
+        });
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
   }
 }
