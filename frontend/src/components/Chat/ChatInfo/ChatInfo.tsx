@@ -35,8 +35,7 @@ const ChannelInfo = ({ channelID, friends, socket, token }: ChannelInfoProps) =>
         const response = await axios.get<ChannelData>(`http://localhost:3001/chat/channel/${channelID}`);
         setChannel(response.data);
       } catch (error) {
-        console.error("Failed to fetch channel:", error);
-        emitter.emit('alert', "Failed to load channel data.");
+        emitter.emit('error', error);
       } finally {
         setLoading(false);
       }

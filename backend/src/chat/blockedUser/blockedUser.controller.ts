@@ -1,4 +1,3 @@
-import { PrismaService } from 'src/prisma/prisma.service';
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 
 import { BlockedUserService } from './blockedUser.service';

@@ -18,22 +18,25 @@ const NewDM = ({ friends, socket, token }: NewDMProps) => {
   const handleCreateDM = async () => {
     if (!selectedFriend) {
       emitter.emit('alert', 'Please select a friend to start a DM!');
-      setIsCreating(false);
       return;
     }
 
-    const newChannelData = {
-      name: '',
-      isPrivate: true,
-      isDM: true,
-      password: null,
-      token,
-      memberIDs: [selectedFriend.ID],
-    };
-    const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
-    socket.emit('newChannel', response.data);
-    resetForm();
-    emitter.emit('selectChannel', response.data.ID);
+    try {
+        const newChannelData = {
+          name: '',
+          isPrivate: true,
+          isDM: true,
+          password: null,
+          token,
+          memberIDs: [selectedFriend.ID],
+        };
+        const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
+        socket.emit('newChannel', response.data);
+        resetForm();
+        emitter.emit('selectChannel', response.data.ID);
+    } catch (error) {
+        emitter.emit('error', error);
+    }
   };
 
   const resetForm = () => {

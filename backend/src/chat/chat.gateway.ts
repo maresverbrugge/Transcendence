@@ -1,7 +1,6 @@
 import {
   WebSocketServer,
   SubscribeMessage,
-  MessageBody,
   WebSocketGateway,
   OnGatewayInit,
   OnGatewayConnection,
@@ -53,7 +52,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       this.channelService.emitNewChannel(this.server, channel);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -64,7 +63,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID); //change to token later
       this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -74,7 +73,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
         this.channelService.removeChannelMemberFromChannel(data.channelID, client, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -84,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       this.messageService.sendMessage(client, data);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -96,7 +95,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const { action, channelMemberID, token, channelID } = data;
       await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -106,7 +105,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       this.channelService.updateChannel(userID);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -129,7 +128,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
       await this.channelMemberService.addSocketToAllRooms(client, token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }
@@ -144,7 +143,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
       this.server.emit('userStatusChange', user.ID, 'OFFLINE');
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpecter error occurred', error.message);
+      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
     }
   }

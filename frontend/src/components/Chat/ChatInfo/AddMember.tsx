@@ -32,7 +32,7 @@ const AddMember = ({ channel, friends, socket, token }: AddMemberProps) => {
       socket.emit('updateChannel', selectedFriend.ID);
       resetForm();
     } catch (error) {
-      emitter.emit('error', error);
+        emitter.emit('error', error);
     }
   };
 

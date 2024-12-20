@@ -1,9 +1,8 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UserService } from './user.service';
 import { ChatGateway } from '../chat.gateway';
-import { HttpException } from '@nestjs/common';
 
 @Injectable()
 export class BlockedUserService {
@@ -52,7 +51,7 @@ export class BlockedUserService {
         select: { ID: true },
       });
       if (!blockedUser)
-        throw new NotFoundException('Blocked user not found')
+        throw new NotFoundException('Blocked user not found');
       await this.prisma.blockedUser.delete({
         where: {
           ID: blockedUser.ID,

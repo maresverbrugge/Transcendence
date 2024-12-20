@@ -20,13 +20,23 @@ const Chat = () => {
   useEffect(() => {
   
     const token = localStorage.getItem('authenticationToken');
+
+    localStorage.debug = 'socket.io-client:*';
+    
     const socketIo = io("ws://localhost:3001/chat", {
       transports: ["websocket"],
       query: { token },
       withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: 8,
+      reconnectionDelay: 2000,
+    });
+    
+    socketIo.on('connect', () => {
+      console.log('Connected to the server.');
     });
 
-    socketIo.on('token', (websocketID: string) => {
+    socketIo.on('token', (websocketID: string) => { //remove later
       setTempToken(websocketID);
       tempWebSocketID = websocketID;
       console.log('replaced tempToken with webSocketID: ', websocketID);
@@ -36,29 +46,35 @@ const Chat = () => {
       console.error('Connection Error:', error.message);
     });
 
-    socketIo.on('error', showError);
+    socketIo.on('error', handleError);
 
     socketIo.on('deselectChannel', () => {
       selectChannel(null)
     })
 
     emitter.on('selectChannel', selectChannel);
-    emitter.on('alert', setAlert),
-    emitter.on('error', showError)
+    emitter.on('alert', setAlert);
+    emitter.on('error', handleError);
 
     setSocket(socketIo);
 
     return () => {
       emitter.off('selectChannel');
-      emitter.off('error');
       emitter.off('alert');
       socketIo.disconnect();
     };
   }, []);
 
-  const showError = (error: any) => {
-    console.error(error);
-    setAlert(error?.response?.data?.message || 'An error occurred')
+  const handleError = (error: any) => {
+    if (error?.status === 403) {
+      setAlert(error?.response?.data?.message)
+    }
+    else if (error?.status === 401) {
+      localStorage.removeItem('authenticationToken');
+      //redirect?
+    }
+    else
+      setAlert('An unexpected error occurred');
   }
 
   const selectChannel = async (newChannelID: number | null) => {
@@ -70,11 +86,10 @@ const Chat = () => {
       await axios.post(`http://localhost:3001/chat/channel/${newChannelID}/add-member`, { token: tempWebSocketID} )
       setChannelID(newChannelID);
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        showError(error);
-      } else {
-        console.error('Error selecting channel', error);
+      if (error?.status === 403) {
+        setAlert(error?.response?.data?.message)
       }
+      else setAlert('Oops! Something went wrong while selecting the channel. Please refresh and try again.')
     }
   };
 

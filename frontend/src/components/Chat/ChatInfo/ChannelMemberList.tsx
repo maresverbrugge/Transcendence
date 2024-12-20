@@ -28,17 +28,17 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
         const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channel.ID}/${token}`);
         setMemberID(parseInt(response.data));
       } catch (error) {
-        console.error('Error fetching current channelMemberID:', error);
+        emitter.emit('error', error);
       }
     };
 
     const fetchChannelMembers = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3001/chat/channel/members/${channel.ID}/${token}`);
-        setMembers(response.data);
-      } catch (error) {
-        console.error('Error fetching channel members:', error);
-      }
+        try {
+            const response = await axios.get(`http://localhost:3001/chat/channel/members/${channel.ID}/${token}`);
+            setMembers(response.data);
+        } catch (error) {
+            emitter.emit('error', error);
+        }
     };
 
     const fetchBlockedUserIDs = async () => {
@@ -46,8 +46,8 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
         const response = await axios.get<number[]>(`http://localhost:3001/chat/blockedUser/IDs/${token}`);
         setBlockedUserIDs(response.data);
       } catch (error) {
-        console.error('Error fetching blocked user IDs', error);
-      }
+        emitter.emit('error', error);
+    }
     };
 
     fetchCurrentMemberID();

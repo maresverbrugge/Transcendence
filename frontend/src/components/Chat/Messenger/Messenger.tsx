@@ -23,8 +23,8 @@ const Messenger = ({ channelID, socket, token }: MessengerProps) => {
         );
         setMessages(response.data);
       } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
+        emitter.emit('error', error);
+    }
     };
 
     if (channelID) {
@@ -43,7 +43,7 @@ const Messenger = ({ channelID, socket, token }: MessengerProps) => {
           return [...prevMessages, newMessage];
         });
       } catch (error) {
-        console.error('Error fetching message:', error);
+        emitter.emit('error', error);
       }
     };
 

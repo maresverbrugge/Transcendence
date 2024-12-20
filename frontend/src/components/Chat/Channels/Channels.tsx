@@ -29,7 +29,7 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
           emitter.emit('selectChannel', null)
         }
       } catch (error) {
-        console.error('Error fetching channels:', error);
+        emitter.emit('error', error);
       }
     };
 

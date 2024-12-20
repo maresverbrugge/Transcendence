@@ -13,6 +13,7 @@ interface ChannelProps {
 
 const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
   useEffect(() => {
+    
     if (channel && !channel.isPrivate) {
       socket.emit('joinChannel', { channelID: channel.ID, token });
     }

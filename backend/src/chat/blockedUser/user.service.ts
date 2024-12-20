@@ -1,8 +1,8 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { Socket, Namespace } from 'socket.io';
+import { Injectable, NotFoundException, InternalServerErrorException, HttpException } from '@nestjs/common';
+import { Namespace } from 'socket.io';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client';
-import { HttpException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -36,7 +36,7 @@ export class UserService {
             });
         }
       } catch (error) {
-        console.log('error fetching socket: ', error);
+        console.error('error fetching socket: ', error);
       }
     }
 
@@ -75,7 +75,7 @@ export class UserService {
       if (!user) throw new NotFoundException('User not found');
       return user.ID;
     } catch (error) {
-      if (error instanceof HttpException)  throw error;
+      if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('An unexpected error occurred', error.message);
     }
   }

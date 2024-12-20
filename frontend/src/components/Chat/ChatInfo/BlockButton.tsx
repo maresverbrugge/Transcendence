@@ -21,7 +21,7 @@ const BlockButton = ({ memberID, blockedUserIDs, token }: BlockButtonProps) => {
       await axios.post(`http://localhost:3001/chat/blockedUser/${token}/${action}`, { userID: memberID });
       setIsBlocked(!isBlocked);
     } catch (error) {
-      console.error(`Failed to ${action} the user`, error);
+      emitter.emit('error', error);
     }
   };
 

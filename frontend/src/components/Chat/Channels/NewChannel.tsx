@@ -24,18 +24,22 @@ const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
   };
 
   const handleCreateChannel = async () => {
-    const newChannelData = {
-      name: channelName,
-      isPrivate,
-      isDM: false,
-      password: passwordEnabled ? password : null,
-      token,
-      memberIDs: isPrivate ? selectedMemberIDs : [],
-    };
-    const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
-    socket.emit('newChannel', response.data);
-    resetForm();
-    emitter.emit('selectChannel', response.data.ID)
+    try {
+        const newChannelData = {
+          name: channelName,
+          isPrivate,
+          isDM: false,
+          password: passwordEnabled ? password : null,
+          token,
+          memberIDs: isPrivate ? selectedMemberIDs : [],
+        };
+        const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
+        socket.emit('newChannel', response.data);
+        resetForm();
+        emitter.emit('selectChannel', response.data.ID)
+    } catch (error) {
+        emitter.emit('error', error);
+    }
   };
 
   const resetForm = () => {

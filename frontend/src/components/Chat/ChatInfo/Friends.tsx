@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import './Friends.css';
 import { MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface FriendProps {
   key: number;
@@ -57,8 +58,7 @@ const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
         const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 404) console.error('User not found');
-        else console.error('An error occurred', error);
+        emitter.emit('error', error);
       }
     };
 

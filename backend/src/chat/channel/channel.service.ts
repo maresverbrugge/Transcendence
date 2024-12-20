@@ -218,22 +218,6 @@ export class ChannelService {
     return [...publicChannels, ...privateChannels];
   }
 
-  async getChannelAddMember(channelID: number, token: string): Promise<ChannelWithMembers> {
-    try {
-      const channelMember = await this.channelMemberService.getChannelMemberBySocketID(token, channelID); //change to token
-      await this.channelMemberService.checkBanOrKick(channelMember, channelID);
-    } catch (error) {
-      if (error?.response?.statusCode == 404) {
-        const userID = await this.userService.getUserIDBySocketID(token); //change to Token later
-        await this.channelMemberService.createChannelMember(userID, channelID);
-      } else throw error;
-    }
-    const channel = await this.getChannelWithMembersAndMessagesByID(channelID);
-    const user = await this.userService.getUserBySocketID(token); //change to token later
-    if (channel.isDM) channel.name = this.getDMName(user.username, channel);
-    return channel;
-  }
-
   async newChannelMember(newMemberData: { channelID: number; memberID: number; token: string }): Promise<ChannelMember> {
     try {
         const existingChannelMember = await this.prisma.channelMember.findFirst({
