@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-interface LeaderboardEntry {
-  rank: number;
+export interface LeaderboardInfo {
   username: string;
   avatarURL: string;
   ladderRank: number;
+  rank: number;
 }
 
 const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,6 +35,14 @@ const Leaderboard = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="text-center p-3">
+        <p>Loading leaderboard...</p>
+      </div>
+    );
+  }
+
   if (leaderboard.length === 0) {
     return (
       <div className="text-center p-3">
@@ -49,10 +57,9 @@ const Leaderboard = () => {
       <table className="table table-sm table-striped align-middle">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Avatar</th>
-            <th>Username</th>
-            <th>Player Rating</th>
+            <th>Rank</th>
+            <th>User</th>
+            <th className="text-end">Player Rating</th>
           </tr>
         </thead>
         <tbody>
@@ -60,15 +67,19 @@ const Leaderboard = () => {
             <tr key={entry.rank}>
               <td>{entry.rank}</td>
               <td>
-                <img
-                  src={entry.avatarURL}
-                  alt={`${entry.username}'s avatar`}
-                  className="rounded-circle"
-                  style={{ width: '40px', height: '40px' }}
-                />
+                <div className="d-flex align-items-center">
+                  <img
+                    src={entry.avatarURL}
+                    alt={`${entry.username}'s avatar`}
+                    className="rounded-circle me-2"
+                    style={{ width: '40px', height: '40px' }}
+                  />
+                  <span>{entry.username}</span>
+                </div>
               </td>
-              <td>{entry.username}</td>
-              <td>{entry.ladderRank}</td>
+              <td className="text-end">
+                {entry.ladderRank} XP
+              </td>
             </tr>
           ))}
         </tbody>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Statistics from './Statistics.tsx';
-import Leaderboard from './LeaderBoard.tsx';
+import Leaderboard from './Leaderboard.tsx';
 import { StatisticsData } from '../interfaces.tsx'
 
 const UserInfoAccordion = ({userID}: {userID: number} ) => {

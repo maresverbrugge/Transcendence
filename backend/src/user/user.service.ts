@@ -3,12 +3,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { User, Statistics } from '@prisma/client'
 import { LoginService } from '../authentication//login/login.service';
 
-interface UserProfile extends User {
+export interface UserProfile extends User {
   avatarURL: string;
 }
 
-interface fullStatistics extends Statistics {
+export interface fullStatistics extends Statistics {
   winRate: number;
+}
+
+export interface LeaderboardInfo {
+  username: string;
+  avatarURL: string;
+  ladderRank: number;
+  rank: number;
 }
 
 @Injectable()
@@ -123,30 +130,30 @@ export class UserService {
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID },
     });
-  
+
     if (!statistics) {
       throw new NotFoundException('Statistics not found.');
     }
-  
+
     // Update gamesPlayed, wins, and totalScores based on the game result
     const updatedStats = {
       gamesPlayed: statistics.gamesPlayed + 1,
       wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
       totalScores: statistics.totalScores + gameResult.score,
     };
-  
+
     // Calculate the new ladderRank (playerRating)
     const winRate = updatedStats.gamesPlayed
       ? updatedStats.wins / updatedStats.gamesPlayed
       : 0;
     const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
-  
+
     // Update the statistics in the database
     const updatedStatistics = await this.prisma.statistics.update({
       where: { userID },
       data: { ...updatedStats, ladderRank: playerRating },
     });
-  
+
     return {
       ...updatedStatistics,
       winRate,
@@ -154,10 +161,10 @@ export class UserService {
     };
   }
 
-  async getLeaderboard(): Promise<{ username: string; rank: number; avatarURL: string; ladderRank: number }[]> {
+  async getLeaderboard(): Promise<LeaderboardInfo[]> {
     const leaderboard = await this.prisma.statistics.findMany({
       orderBy: { ladderRank: 'desc' },
-      take: 10, // Top 10 players
+      take: 10,
       select: {
         user: {
           select: { username: true, avatar: true },
@@ -165,14 +172,15 @@ export class UserService {
         ladderRank: true
       },
     });
-  
+
     return leaderboard.map((entry, index) => ({
       rank: index + 1,
       username: entry.user.username,
       avatarURL: entry.user.avatar
         ? `data:image/jpeg;base64,${entry.user.avatar.toString('base64')}`
-        : 'http://localhost:3001/images/default-avatar.png', // Fallback avatar
+        : 'http://localhost:3001/images/default-avatar.png',
       ladderRank: entry.ladderRank,
     }));
   }
 }
+

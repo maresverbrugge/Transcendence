@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { User, Statistics } from '@prisma/client';
+import { UserProfile, fullStatistics, LeaderboardInfo } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -14,7 +15,7 @@ export class UserController {
   }
 
   @Get('profile/:token')
-  async getUserProfileByUserID(@Param('token') token: string): Promise<User> {
+  async getUserProfileByToken(@Param('token') token: string): Promise<UserProfile> {
     return this.userService.getUserProfileByToken(token);
   }
 
@@ -42,12 +43,12 @@ export class UserController {
   }
 
   @Get(':userID/stats')
-  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<Statistics> {
+  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<fullStatistics> {
     return this.userService.getUserStats(userID);
   }
 
   @Get('leaderboard')
-  async getLeaderboard(): Promise<{ rank: number; username: string; avatarURL: string; ladderRank: number }[]> {
+  async getLeaderboard(): Promise<LeaderboardInfo[]> {
     return this.userService.getLeaderboard();
   }
 }
