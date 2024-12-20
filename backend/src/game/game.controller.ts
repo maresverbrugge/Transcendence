@@ -1,27 +1,10 @@
 import { Controller, Get, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('game/matches')
 export class GameController {
-  constructor(private readonly prisma: PrismaService) {}
-
-  @Get()
-  async getMatches() {
-    try {
-      const matches = await this.prisma.match.findMany({
-        where: {
-          status: 'PENDING',
-        },
-        select: {
-          matchID: true,
-        },
-      });
-      if (!matches) {
-        throw new NotFoundException('No matches found');
-      }
-      return matches;
-    } catch (error) {
-      throw new InternalServerErrorException('An error occurred while fetching matches');
-    }
-  }
+  constructor(
+	private readonly prisma: PrismaService
+  ) {}
 }

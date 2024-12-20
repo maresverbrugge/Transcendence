@@ -15,6 +15,20 @@ export class UserService {
     private readonly loginService: LoginService,
   ) {}
 
+  async getUserIDByToken(token: string): Promise<number> {
+    const intraUsername = await this.loginService.getIntraName(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        intraUsername: intraUsername,
+      },
+      select: {
+        ID: true,
+      },
+    });
+    if (!user) throw new NotFoundException("User not found");
+    return user.ID; // Return the user ID if found, otherwise return null
+  } //! make sure to catch where calling this function
+
     //temporary function
     async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
       // Step 1: Find user with an empty websocketID
