@@ -4,50 +4,96 @@ import Channels from '../components/Chat/Channels/Channels';
 import AlertMessage from '../components/AlertMessage';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
-import { ChannelData, MemberData } from '../components/Chat/interfaces';
+import { MemberData } from '../components/Chat/interfaces';
+import axios from 'axios';
 import './Chat.css'
+import { emitter } from '../components/Chat/emitter';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [tempToken, setTempToken] = useState<string | null>(null); // Temporary token replacement
   const [alert, setAlert] = useState<string | null>(null);
-  const [channel, setChannel] = useState<ChannelData | null>(null);
+  const [channelID, setChannelID] = useState<number | null>(null);
   const [friends, setFriends] = useState<MemberData[]>([]);
+  const [tempToken, setTempToken] = useState<string>(null);
+  var tempWebSocketID: string = '';
 
   useEffect(() => {
   
-    // Initialize socket connection
     const token = localStorage.getItem('authenticationToken');
+
+    localStorage.debug = 'socket.io-client:*';
+    
     const socketIo = io("ws://localhost:3001/chat", {
-      transports: ["websocket"], // Ensure WebSocket transport is used
+      transports: ["websocket"],
       query: { token },
-      withCredentials: true, // Ensure credentials are included
+      withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: 8,
+      reconnectionDelay: 2000,
+    });
+    
+    socketIo.on('connect', () => {
+      console.log('Connected to the server.');
     });
 
-    // Temporary replacing token for websocketID for testing
-    socketIo.on('token', (websocketID: string) => {
+    socketIo.on('token', (websocketID: string) => { //remove later
       setTempToken(websocketID);
-      console.log('Replaced token with websocketID: ', websocketID);
+      tempWebSocketID = websocketID;
+      console.log('replaced tempToken with webSocketID: ', websocketID);
     });
 
-    socketIo.on('connect_error', (error) => {
+    socketIo.on('connect_error', (error: any) => {
       console.error('Connection Error:', error.message);
     });
 
-    socketIo.on('error', (error: any) => {
-      console.error(error);
-      setAlert(error.response?.message || 'An error occurred');
-    });
+    socketIo.on('error', handleError);
 
-    // Set socket instance in state
+    socketIo.on('deselectChannel', () => {
+      selectChannel(null)
+    })
+
+    emitter.on('selectChannel', selectChannel);
+    emitter.on('alert', setAlert);
+    emitter.on('error', handleError);
+
     setSocket(socketIo);
 
     return () => {
-      socketIo.disconnect(); // Disconnect the socket when the component unmounts
+      emitter.off('selectChannel');
+      emitter.off('alert');
+      socketIo.disconnect();
     };
   }, []);
 
-  if (!socket || !tempToken) return null;
+  const handleError = (error: any) => {
+    if (error?.status === 403) {
+      setAlert(error?.response?.data?.message)
+    }
+    else if (error?.status === 401) {
+      localStorage.removeItem('authenticationToken');
+      //redirect?
+    }
+    else
+      setAlert('An unexpected error occurred');
+  }
+
+  const selectChannel = async (newChannelID: number | null) => {
+    if (newChannelID === null) {
+      setChannelID(null);
+      return;
+    }
+    try {
+      await axios.post(`http://localhost:3001/chat/channel/${newChannelID}/add-member`, { token: tempWebSocketID} )
+      setChannelID(newChannelID);
+    } catch (error: any) {
+      if (error?.status === 403) {
+        setAlert(error?.response?.data?.message)
+      }
+      else setAlert('Oops! Something went wrong while selecting the channel. Please refresh and try again.')
+    }
+  };
+
+  if (!socket || !tempToken) return <p>Loading...</p>;
 
   return (
     <div>
@@ -58,17 +104,14 @@ const Chat = () => {
         />
       )}
       <Channels
-        selectedChannel={channel}
-        setSelectedChannel={setChannel}
+        selectedChannelID={channelID}
         friends={friends}
         socket={socket}
         token={tempToken}
-        setAlert={setAlert}
       />
-      <Messenger channel={channel} socket={socket} token={tempToken} />
+      <Messenger channelID={channelID} socket={socket} token={tempToken} />
       <ChatInfo
-        channel={channel}
-        setChannel={setChannel}
+        channelID={channelID}
         friends={friends}
         setFriends={setFriends}
         socket={socket}

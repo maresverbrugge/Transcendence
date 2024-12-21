@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 import './Friends.css';
 import { MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface FriendProps {
-    key: string;
-    friend: MemberData;
-    socket: any;
-  }
+  key: number;
+  friend: MemberData;
+  socket: any;
+}
 
 interface FriendsProps {
   friends: MemberData[];
@@ -35,7 +37,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
       }
     };
 
-    socket.on('userStatusChange', (userID: string, userStatus: string) => {
+    socket.on('userStatusChange', (userID: number, userStatus: string) => {
       if (friend.ID === userID) setStatus(getStatusClass(userStatus));
     });
 
@@ -56,14 +58,12 @@ const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
         const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 404)
-          console.error('User not found');
-        else console.error('An error occurred', error);
+        emitter.emit('error', error);
       }
     };
 
     fetchFriends();
-  }, [setFriends, socket, token]);
+  }, [setFriends, socket]);
 
   return (
     <div className="friends-container">
