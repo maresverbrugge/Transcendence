@@ -30,7 +30,7 @@ export class ChannelMemberService {
 
   async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse> {
     try {
-        const channelMember = this.prisma.channelMember.findUnique({
+        const channelMember = await this.prisma.channelMember.findUnique({
           where: { ID: channelMemberID },
           include: {
             user: { select: { ID: true, websocketID: true, username: true } },

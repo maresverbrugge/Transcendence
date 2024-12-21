@@ -172,7 +172,7 @@ export class ChannelService {
 
   async getPublicChannels(): Promise<Channel[]> {
     try {
-        return this.prisma.channel.findMany({
+        return await this.prisma.channel.findMany({
             where: { isPrivate: false },
         });
     } catch (error) {

@@ -61,7 +61,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleJoinChannel(client: Socket, data: { channelID: number; token: string }): Promise<void> {
     try {
       const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID); //change to token later
-      this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
+      await this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
@@ -71,7 +71,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('leaveChannel')
   async handleLeaveChannel(client: Socket, data: { channelID: number; token: string }): Promise<void> {
     try {
-        this.channelService.removeChannelMemberFromChannel(data.channelID, client, data.token);
+        await this.channelService.removeChannelMemberFromChannel(data.channelID, client, data.token);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
@@ -81,7 +81,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: { channelID: number; token: string; content: string }): Promise<void> {
     try {
-      this.messageService.sendMessage(client, data);
+      await this.messageService.sendMessage(client, data);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
@@ -103,7 +103,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('updateChannel')
   async handleAddMember(client: Socket, userID: number): Promise<void> {
     try {
-      this.channelService.updateChannel(userID);
+      await this.channelService.updateChannel(userID);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       client.emit('error', error)
