@@ -7,6 +7,7 @@ import { UserService } from '../blockedUser/user.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
+import { HashingService } from '../hashing/hashing.service';
 
 type ChannelWithMembersAndMessages = Channel & {
   members: (ChannelMember & {
@@ -36,6 +37,7 @@ export class ChannelService {
     private prisma: PrismaService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
+    private readonly hashingService: HashingService,
     @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
     @Inject(forwardRef(() => ChatGateway))
@@ -136,12 +138,13 @@ export class ChannelService {
     try {
         const ownerID = await this.userService.getUserIDBySocketID(data.token);
         if (data.isDM && (await this.DMExists(ownerID, data.memberIDs))) throw new ForbiddenException('DM already exists');
+        const hashedPassword = data.password ? await this.hashingService.hashPassword(data.password) : null;
         const newChannel = await this.prisma.channel.create({
           data: {
             name: data.name,
             isPrivate: data.isPrivate,
             isDM: data.isDM,
-            password: data.password || null,
+            password: hashedPassword,
             ownerID: ownerID,
             members: {
               create: [
