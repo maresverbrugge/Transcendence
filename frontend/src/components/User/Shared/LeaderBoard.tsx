@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
-export interface LeaderboardInfo {
-  username: string;
-  avatarURL: string;
-  ladderRank: number;
-  rank: number;
-}
+import { LeaderboardData } from '../interfaces.tsx';
 
 const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get('http://localhost:3001/user/leaderboard');
-        setLeaderboard(response.data);
+        console.log('Leaderboard data fetched:', response.data);
+        setLeaderboardData(response.data);
       } catch (error) {
         console.error('Error fetching leaderboard data:', error);
       } finally {
@@ -35,15 +30,7 @@ const Leaderboard = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="text-center p-3">
-        <p>Loading leaderboard...</p>
-      </div>
-    );
-  }
-
-  if (leaderboard.length === 0) {
+  if (!leaderboardData) {
     return (
       <div className="text-center p-3">
         <p>No leaderboard data available.</p>
@@ -63,7 +50,7 @@ const Leaderboard = () => {
           </tr>
         </thead>
         <tbody>
-          {leaderboard.map((entry) => (
+          {leaderboardData.map((entry: LeaderboardData) => (
             <tr key={entry.rank}>
               <td>{entry.rank}</td>
               <td>
@@ -77,9 +64,7 @@ const Leaderboard = () => {
                   <span>{entry.username}</span>
                 </div>
               </td>
-              <td className="text-end">
-                {entry.ladderRank} XP
-              </td>
+              <td className="text-end">{entry.ladderRank} XP</td>
             </tr>
           ))}
         </tbody>

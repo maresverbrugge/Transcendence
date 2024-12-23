@@ -10,6 +10,7 @@ import LogOut from './components/Authentication/LogOut.tsx';
 import UserAccount from './pages/UserAccount.tsx';
 import UserProfile from './pages/UserProfile.tsx';
 import Chat from './pages/Chat.tsx';
+import Leaderboard from './components/User/Shared/Leaderboard.tsx';
 // import GameApp from './pages/game';
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
+			<Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />
 		  </Routes>
 		</Router>
 	  );

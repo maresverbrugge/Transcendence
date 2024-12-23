@@ -2,8 +2,8 @@ import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, 
 import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-import { User, Statistics } from '@prisma/client';
-import { UserProfile, fullStatistics, LeaderboardInfo } from './user.service';
+import { User } from '@prisma/client';
+import { UserProfile, StatisticsData, MatchHistoryData, LeaderboardData } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -43,12 +43,17 @@ export class UserController {
   }
 
   @Get(':userID/stats')
-  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<fullStatistics> {
+  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<StatisticsData> {
     return this.userService.getUserStats(userID);
   }
 
+  @Get(':userID/match-history')
+  async getMatchHistory(@Param('userID', ParseIntPipe) userID: number): Promise<MatchHistoryData[]> {
+    return this.userService.getMatchHistory(userID);
+  }
+
   @Get('leaderboard')
-  async getLeaderboard(): Promise<LeaderboardInfo[]> {
+  async getLeaderboard(): Promise<LeaderboardData[]> {
     return this.userService.getLeaderboard();
   }
 }

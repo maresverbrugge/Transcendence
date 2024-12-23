@@ -7,15 +7,21 @@ export interface UserProfile extends User {
   avatarURL: string;
 }
 
-export interface fullStatistics extends Statistics {
+export interface StatisticsData extends Statistics {
   winRate: number;
 }
 
-export interface LeaderboardInfo {
+export interface LeaderboardData {
   username: string;
   avatarURL: string;
   ladderRank: number;
   rank: number;
+}
+
+export interface MatchHistoryData {
+  opponent: string;
+  scorePlayer1: number;
+  scorePlayer2: number;
 }
 
 @Injectable()
@@ -96,7 +102,7 @@ export class UserService {
     });
   }
 
-  async getUserStats(userID: number): Promise<fullStatistics> {
+  async getUserStats(userID: number): Promise<StatisticsData> {
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID: userID },
     });
@@ -125,7 +131,7 @@ export class UserService {
   // FOR LATER: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED
   // IN FUNCTION LOOKING SOMEWHAT LIKE THIS:
-  async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<fullStatistics> {
+  async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<StatisticsData> {
     // Fetch the current statistics
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID },
@@ -161,7 +167,39 @@ export class UserService {
     };
   }
 
-  async getLeaderboard(): Promise<LeaderboardInfo[]> {
+  async getMatchHistory(userID: number): Promise<MatchHistoryData[]> {
+    const matches = await this.prisma.match.findMany({
+      where: {
+        players: {
+          some: {
+            ID: userID,
+          },
+        },
+      },
+      include: {
+        players: {
+          select: { ID: true, username: true },
+        },
+      },
+    });
+
+    console.log("matches = ", matches);
+    if (!matches || matches.length === 0) {
+      throw new NotFoundException('No match history found for this user.');
+    }
+
+    return matches.map((match) => {
+      const opponent = match.players.find((player) => player.ID !== userID);
+
+      return {
+        opponent: opponent?.username ?? 'Unknown',
+        scorePlayer1: match.scorePlayer1,
+        scorePlayer2: match.scorePlayer2,
+      };
+    });
+  }
+
+  async getLeaderboard(): Promise<LeaderboardData[]> {
     const leaderboard = await this.prisma.statistics.findMany({
       orderBy: { ladderRank: 'desc' },
       take: 10,
