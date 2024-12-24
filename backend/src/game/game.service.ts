@@ -9,6 +9,9 @@ export class GameService {
     private prisma: PrismaService,
     private readonly userService: UserService
   ) {}
+  matchinstance = {
+	  1:
+  }
   async newGame(userID1: number, userID2: number): Promise<Match | null> {
     const member1: User = await this.userService.getUserByUserID(userID1);
     const member2: User = await this.userService.getUserByUserID(userID2);
