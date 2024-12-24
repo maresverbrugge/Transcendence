@@ -9,13 +9,15 @@ export class GameService {
     private prisma: PrismaService,
     private readonly userService: UserService
   ) {}
-  async newGame(socketID: string): Promise<Match | null> {
-    const member: User = await this.userService.getUserBySocketID(socketID);
+  async newGame(userID1: number, userID2: number): Promise<Match | null> {
+    const member1: User = await this.userService.getUserByUserID(userID1);
+    const member2: User = await this.userService.getUserByUserID(userID2);
     const newGame: Match = await this.prisma.match.create({
       data: {
-        status: 'PENDING',
+        status: 'ACCEPTED',
         players: {
-          connect: member,
+          connect: member1,
+	  connect: member2
         },
       },
     });

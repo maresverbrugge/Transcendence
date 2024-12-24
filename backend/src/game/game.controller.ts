@@ -5,6 +5,15 @@ import { UserService } from 'src/user/user.service';
 @Controller('game/matches')
 export class GameController {
   constructor(
-	private readonly prisma: PrismaService
+	private readonly prisma: PrismaService,
+	private readonly game: GameService
   ) {}
+
+  @Post('/joinqueue/:userid1/:userid2')
+  async createGame(
+    @Param('userid1') userid1: number,
+    @Param('userid2') userid2: number) {
+      this.game.newGame(userid1, userid2);
+      new this.game.matchinstance();
+  }
 }
