@@ -6,12 +6,36 @@ import { io } from 'socket.io-client';
 
 import GameControl from './GameControl';
 
-const PaddleSelect = ({ gameID, socket }) => {
+const PaddleSelect = ({ socket }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedPaddle, setSelectedPaddle] = useState<string | null>(null);
+  const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
+  const [gameID, setGameID] = useState<number>(-1);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const socketIo: Socket = io('http://localhost:3001/game', {
+      transports: ['websocket', 'polling'],
+      query: { token: token }, // Hier de token uit localstorage halen
+    });
 
-    return () => { };
+    //temporary replacing token for websocketID for testing
+    socketIo.on('token', (websocketID: string) => {
+      setTempToken(websocketID);
+      console.log('replaced token with websocketID');
+    });
+
+    // Set socket instance in state
+    setSocket(socketIo);
+    socketIO.emit('getGameID', tempToken);
+    socketIo.on('gameID', (gameID: number) => {
+      setGameID(gameID);
+    });
+
+    return () => {
+      socketIo.off('token');
+      socketIo.off('getGameID');
+  };
   }, []);
 
 //   const selectPaddle = () => {

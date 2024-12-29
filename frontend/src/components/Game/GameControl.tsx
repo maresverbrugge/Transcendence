@@ -166,7 +166,7 @@ const GameLogic = ({ gameID, socket }) => {
   };
 
   useEffect(() => {
-    socket.emit('start');
+    socket.emit('start', gameID);
     g_gameID = gameID;
     const context: any = canvas.current.getContext('2d');
     let frameCount: number = 0;

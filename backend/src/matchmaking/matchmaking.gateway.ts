@@ -15,7 +15,7 @@ import {
   import { GameService } from './game.service';
   
   @WebSocketGateway({
-	namespace: 'game',
+	namespace: 'matchmaking',
 	cors: {
 	  origin: 'http://localhost:3000', // Update with your client's origin
 	  methods: ['GET', 'POST'],
@@ -24,14 +24,12 @@ import {
 	},
   })
   export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-	// private paddleRightY: number = 250;
-	// private paddleLeftY: number = 250;
 	constructor(
-	  private queue: number[],
 	  private readonly userService: UserService,
 	  private readonly gameService: GameService
 	) {}
 	@WebSocketServer() server: Namespace;
+	private queue: number[];
 	private logger: Logger = new Logger('GameGateway');
   
 	// @SubscribeMessage('message')
@@ -48,22 +46,24 @@ import {
 	  {
 		const otherID: number = this.queue.pop();
 		// make game
-		const member1: User = await this.userService.getUserByUserID(userID);
-		const member2: User = await this.userService.getUserByUserID(otherID);
-		const newGame: Match = await this.prisma.match.create({
-			data: {
-			  status: 'PENDING',
-			  players: {
-				connect: member1,
-				connect: member2
-			  },
-			},
-		  });
+		this.gameService.newgame(userID, otherID);
+		const userSocketID: string = await this.userService.getSocketIDbyUserID(userID);
+		const otherSocketID: string = await this.userService.getSocketIDbyUserID(otherID);
+		this.server.to(userSocketID)).to(otherSocketID).emit('newGame');
 	  }
 	  else
 	  {
 		this.queue.push(userID);
-		}
+	  }
+	}
+
+	@SubscribeMessage('leavequeue')
+	async handleLeaveQueue(client: any, token: string) {
+	  const userID = await this.userService.getUserIDByToken(token);
+	  if (this.queue.includes(userID))
+	  {
+		this.queue.remove(userID);
+	  }
 	}
   
 	afterInit(server: Namespace) {

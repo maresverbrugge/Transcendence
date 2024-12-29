@@ -8,7 +8,7 @@ import PaddleSelect from '../components/Game/PaddleSelect';
 const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
-  const [selectedGame, setSelectedGame] = useState<number | null>(null);
+  const [joinedGame, setJoinedGame] = useState<bool>(false);
 
   useEffect(() => {
     //because dev mode sometimes didnt disconnect old sockets
@@ -19,7 +19,7 @@ const Game = () => {
 
     // Initialize socket connection
     const token: string = localStorage.getItem('token');
-    const socketIo: Socket = io('http://localhost:3001/game', {
+    const socketIo: Socket = io('http://localhost:3001/matchmaking', {
       transports: ['websocket', 'polling'],
       query: { token: token }, // Hier de token uit localstorage halen
     });
@@ -28,6 +28,10 @@ const Game = () => {
     socketIo.on('token', (websocketID: string) => {
       setTempToken(websocketID);
       console.log('replaced token with websocketID');
+    });
+
+    socketIo.on('newgame', () => {
+      setJoinedGame(true);
     });
 
     // Set socket instance in state
@@ -40,15 +44,12 @@ const Game = () => {
     };
   }, []);
 
-  const handleSelectGame = (gameID: number) => {
-    socket.emit('acceptGame', gameID, socket.id);
-    setSelectedGame(gameID);
+  const async joinQueue = (socket: Socket) => {
+    socket.emit('joinqueue', token);
   };
 
-  const async joinQueue = (socket: Socket) => {
-    const response: AxiosResponse<Match[]> = await axios.post(`http://localhost:3001/game/matches`, {
-		socketID: socket.id
-	  });
+  const async leaveQueue = (socket: Socket) => {
+    socket.emit('leavequeue', token);
   };
 
   if (!socket) {
@@ -59,11 +60,12 @@ const Game = () => {
     <div className="games-startup">
 	  <div className="games-list">
 		<button onClick={() => joinQueue(socket)}>{`Wanna play?`}</button>
+		<button onClick={() => leaveQueue(socket)}>{`I don't want to play anymore`}</button>
       </div>
 
       {/* Display assigned game */}
       <div className="game-details">
-        {selectedGame ? <PaddleSelect gameID={selectedGame} socket={socket} /> : <p>Join the queue to play.</p>}
+        {joinedGame ? <PaddleSelect socket={socket} /> : <p>Join the queue to play.</p>}
       </div>
     </div>
   );

@@ -24,19 +24,12 @@ import { GameService } from './game.service';
   },
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  // private paddleRightY: number = 250;
-  // private paddleLeftY: number = 250;
   constructor(
-	private ballx: number,
-	private bally: number,
-	private ballspeedx: number,
-	private ballspeedy: number,
-	private paddlerightspeedy: number,
-	private paddleleftspeedy: number,
     private prisma: PrismaService,
     private readonly userService: UserService,
-    private readonly gameService: GameService
+    private readonly gameService: GameService,
   ) {}
+
   @WebSocketServer() server: Namespace;
   private logger: Logger = new Logger('GameGateway');
 
@@ -47,29 +40,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   //   this.server.emit('message', data);
   // }
 
-  @SubscribeMessage('createNewGame')
-  async handleNewGame(client: any, socketID: string) {
-    const newGame: Match = await this.gameService.newGame(socketID);
-    this.server.emit('newGame', {
-      game: newGame,
-    });
-  }
-
-  @SubscribeMessage('acceptGame')
-  async handleNewGameAccept(client: any, gameID: string, socketID: string) {
-    const member: User = await this.userService.getUserBySocketID(socketID);
-    await this.prisma.match.update({
+  @SubscribeMessage('getGameID')
+  async handleGetGameID(client: Socket, token: string) {
+    const member: user = await this.userService.getUserByToken(token);
+    const game = await this.prisma.match.findunique({
       where: {
-        matchID: parseInt(gameID),
-      },
-      data: {
-        status: 'ACCEPTED',
-        updatedAt: new Date(),
         players: {
-          connect: member,
-        },
+	  has: member
+	},
+      },
+      select: {
+        matchID: true,
       },
     });
+    client.emit('gameID', game.matchID);
   }
 
   @SubscribeMessage('start')
@@ -92,7 +76,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('left scored')
-  async handleScoreLeft(client: any, gameID: string) {
+  async handleScoreLeft(client: Socket, gameID: string) {
     await this.prisma.match.update({
       where: {
         matchID: parseInt(gameID),
@@ -106,7 +90,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('right scored')
-  async handleScoreRight(client: any, gameID: string) {
+  async handleScoreRight(client: Socket, gameID: string) {
     await this.prisma.match.update({
       where: {
         matchID: parseInt(gameID),
@@ -118,18 +102,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       },
     });
   }
-
-  // @SubscribeMessage('done')
-  // async handleFinish(client: any, gameID: string) {
-  // 	const updatedMatch: Match = await this.prisma.match.update({
-  // 		where: {
-  // 			matchID: parseInt(gameID),
-  // 		},
-  // 		data: {
-  // 			status: "FINISHED"
-  // 		},
-  // 	})
-  // }
 
   afterInit(server: Namespace) {
     this.logger.log('WebSocket Gateway Initialized');
@@ -146,7 +118,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       token as string,
       this.server
     ); // voor nu om de socket toe te wijzen aan een user zonder token
-    this.server.emit('userStatusChange', user.ID, 'ONLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
     client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
   }
 
@@ -154,8 +125,5 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected: ${client.id}`);
     const user = await this.userService.getUserBySocketID(client.id);
     await this.userService.removewebsocketIDFromUser(client.id);
-    if (user) {
-      this.server.emit('userStatusChange', user.ID, 'OFFLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
-    }
   }
 }
