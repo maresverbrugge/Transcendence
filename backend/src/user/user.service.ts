@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Statistics } from '@prisma/client'
+import { User, Statistics, Achievement, UserAchievement } from '@prisma/client'
 import { LoginService } from '../authentication//login/login.service';
+import { AchievementService } from './achievement.service';
 
 export interface UserProfile extends User {
   avatarURL: string;
@@ -23,6 +24,14 @@ export interface MatchHistoryData {
   scorePlayer1: number;
   scorePlayer2: number;
 }
+
+export interface AchievementData {
+  name: string;
+  description: string;
+  iconURL: string;
+  unlocked: boolean;
+}
+
 
 @Injectable()
 export class UserService {
@@ -102,6 +111,40 @@ export class UserService {
     });
   }
 
+  // FOR LATER: REMOVE checkAndGrantXPAchievements from user.service.ts
+  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
+  async checkAndGrantXPAchievements(userID: number, playerRating: number): Promise<void> {
+    const xpAchievements = [
+      { name: 'Scored 100 XP', threshold: 100 },
+      { name: 'Scored 1000 XP', threshold: 1000 },
+    ];
+
+    for (const achievement of xpAchievements) {
+      if (playerRating >= achievement.threshold) {
+        const achievementData = await this.prisma.achievement.findUnique({
+          where: { name: achievement.name },
+        });
+
+        if (!achievementData) {
+          throw new Error(`Achievement "${achievement.name}" not found.`);
+        }
+
+        const alreadyGranted = await this.prisma.userAchievement.findFirst({
+          where: { userID, achievementID: achievementData.ID },
+        });
+
+        if (!alreadyGranted) {
+          await this.prisma.userAchievement.create({
+            data: { userID, achievementID: achievementData.ID },
+          });
+          console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
+        }
+      }
+    }
+  }
+
+  // FOR LATER: REMOVE winRate and playerRating CALCULATION LOGIC FROM getUserStats FUNCTION
+  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
   async getUserStats(userID: number): Promise<StatisticsData> {
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID: userID },
@@ -111,15 +154,20 @@ export class UserService {
     if (!statistics)
       throw new NotFoundException("Statistics not found!");
 
+    // Calculate win rate and ladder rank -> we will later move this to game logic
     const winRate = statistics.gamesPlayed
       ? statistics.wins / statistics.gamesPlayed
       : 0;
     const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
+    // Update the ladder rank in the database -> we will later move this to game logic
     await this.prisma.statistics.update({
       where: { userID },
       data: { ladderRank: playerRating },
     });
+
+    // Check and grant XP-related achievements -> we will later move this to game logic
+    await this.checkAndGrantXPAchievements(userID, playerRating);
 
     return {
       ...statistics,
@@ -183,7 +231,7 @@ export class UserService {
       },
     });
 
-    console.log("matches = ", matches);
+    // console.log("matches = ", matches);
     if (!matches || matches.length === 0) {
       throw new NotFoundException('No match history found for this user.');
     }
@@ -218,6 +266,25 @@ export class UserService {
         ? `data:image/jpeg;base64,${entry.user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png',
       ladderRank: entry.ladderRank,
+    }));
+  }
+
+  async getUserAchievements(userID: number): Promise<AchievementData[]> {
+    const allAchievements = await this.prisma.achievement.findMany();
+    const userAchievements = await this.prisma.userAchievement.findMany({
+      where: { userID },
+    });
+
+    console.log('allAchievements = ', allAchievements);
+    console.log('userAchievements = ', userAchievements);
+
+    const unlockedAchievementIDs = userAchievements.map((ua) => ua.achievementID);
+
+    return allAchievements.map((achievement) => ({
+      name: achievement.name,
+      description: achievement.description,
+      iconURL: achievement.iconURL, // Always use the colored icon
+      unlocked: unlockedAchievementIDs.includes(achievement.ID), // Use this flag for dynamic styling
     }));
   }
 }

@@ -5,7 +5,6 @@ export interface StatisticsData {
   totalScores: number;
   winRate: number;
   ladderRank: number;
-  // achievements: Achievements;
 }
 
 export interface MatchHistoryData {
@@ -19,4 +18,11 @@ export interface LeaderboardData {
   avatarURL: string;
   ladderRank: number;
   rank: number;
+}
+
+export interface AchievementsData {
+  name: string;
+  description: string;
+  iconURL: string;
+  unlocked: boolean;
 }

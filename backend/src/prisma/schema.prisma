@@ -48,6 +48,7 @@ model User {
   blockedUsers      BlockedUser[] @relation("blockedUsers")
   blockedByUsers    BlockedUser[] @relation("blockedByUsers")
   messages          Message[]
+  userAchievements  UserAchievement[]
 }
 
 model Match {
@@ -123,4 +124,25 @@ model BlockedUser {
   blocker           User          @relation("blockedUsers", fields: [blockerID], references: [ID], onDelete: Cascade)
   blockedID         Int
   blocked           User          @relation("blockedByUsers", fields: [blockedID], references: [ID], onDelete: Cascade)
+}
+
+model Achievement {
+  ID                Int                @id @default(autoincrement())
+  name              String             @unique
+  description       String
+  iconURL           String
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  ID                Int                @id @default(autoincrement())
+  userID            Int
+  achievementID     Int
+  achievedAt        DateTime           @default(now())
+
+  user              User               @relation(fields: [userID], references: [ID], onDelete: Cascade)
+  achievement       Achievement        @relation(fields: [achievementID], references: [ID], onDelete: Cascade)
+
+  @@unique([userID, achievementID])   // Ensure no duplicate user-achievement entries
 }
