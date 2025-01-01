@@ -64,7 +64,7 @@ const Avatar = ({ username, currentAvatarURL }: AvatarProps) => {
         setUploadStatus('success');
 
         // Fetch updated avatar
-        const response = await axios.get(`http://localhost:3001/user/profile/${token}`);
+        const response = await axios.get(`http://localhost:3001/user/account/${token}`);
         setAvatarURL(response.data.avatarURL);
         setPreviewURL(null);
         setSelectedFile(null);

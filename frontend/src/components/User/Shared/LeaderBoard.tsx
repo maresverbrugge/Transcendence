@@ -3,7 +3,7 @@ import axios from 'axios';
 import { LeaderboardData } from '../interfaces.tsx';
 
 const Leaderboard = () => {
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[] | null>(null);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {

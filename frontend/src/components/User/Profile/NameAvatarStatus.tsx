@@ -24,20 +24,26 @@ function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps
 
   return (
     <div className="name-avatar-status">
+      <div className="text-center">
       {/* Display Avatar */}
       <img
         src={avatarURL}
         alt={`${username}'s Avatar`}
-        style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-      />
-      
+        style={{
+          width: '50%',
+          height: 'auto',
+          borderRadius: '50%',
+          marginBottom: '5%', }} />
+
       {/* Display Name */}
-      <h3>{username}'s Profile</h3>
+      <h2 style={{ fontSize: '2.5vw', marginBottom: '2%' }}>{username}'s</h2>
+      <h3 style={{ fontSize: '2vw', marginBottom: '10%' }}>profile</h3>
 
       {/* Display Status */}
-      <p>Status: {getStatusLabel(status)}</p>
+      <p style={{ fontSize: '1.5vw', fontWeight: 'bold' }}>{getStatusLabel(status)}</p>
+      </div>
     </div>
   );
-};
+}
 
 export default NameAvatarStatus;

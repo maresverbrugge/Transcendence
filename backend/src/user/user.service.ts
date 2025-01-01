@@ -1,11 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Statistics, Achievement, UserAchievement } from '@prisma/client'
+import { User, Statistics, UserStatus, Achievement, UserAchievement } from '@prisma/client'
 import { LoginService } from '../authentication//login/login.service';
 import { AchievementService } from './achievement.service';
 
+export interface UserAccount extends User {
+  avatarURL: string;
+}
+
 export interface UserProfile extends User {
   avatarURL: string;
+  status: UserStatus;
 }
 
 export interface StatisticsData extends Statistics {
@@ -54,7 +59,7 @@ export class UserService {
     return user.ID;
   } //! make sure to catch where calling this function
 
-  async getUserProfileByToken(token: string): Promise<UserProfile> {
+  async getUserAccountByToken(token: string): Promise<UserAccount> {
     const intraName = await this.loginService.getIntraName(token);
     console.log("intraName = ", intraName);
 
@@ -69,12 +74,12 @@ export class UserService {
     if (!user)
       throw new NotFoundException("User not found!");
 
-    // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
+    console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
     const avatarURL = user.avatar
       ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
       : 'http://localhost:3001/images/default-avatar.png';
 
-    // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
+    console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
 
     return {
       ...user,
@@ -287,5 +292,95 @@ export class UserService {
       unlocked: unlockedAchievementIDs.includes(achievement.ID), // Use this flag for dynamic styling
     }));
   }
-}
 
+  async getUserProfileByUserID(userID: number): Promise<UserProfile> {
+    const user = await this.prisma.user.findUnique({
+      where: { ID: userID },
+    });
+    console.log('LET OP Fetching profile for userID:', userID);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const avatarURL = user.avatar
+      ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
+      : 'http://localhost:3001/images/default-avatar.png';
+
+
+    return {
+      ...user,
+      avatarURL,
+    };
+  }
+
+  async getFriendshipStatus(currentUserID: number, targetUserID: number): Promise<boolean> {
+    const friendship = await this.prisma.user.findFirst({
+      where: {
+        ID: currentUserID,
+        friends: {
+          some: { ID: targetUserID },
+        },
+      },
+    });
+    return Boolean(friendship);
+  }
+
+  async toggleFriendship(currentUserID: number, targetUserID: number): Promise<string> {
+    // Check if users exist
+    const currentUser = await this.prisma.user.findUnique({ where: { ID: currentUserID } });
+    const targetUser = await this.prisma.user.findUnique({ where: { ID: targetUserID } });
+
+    if (!currentUser || !targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if friendship already exists
+    const isFriend = await this.getFriendshipStatus(currentUserID, targetUserID);
+
+    if (isFriend) {
+      // Remove friendship
+      await this.prisma.user.update({
+        where: { ID: currentUserID },
+        data: {
+          friends: {
+            disconnect: { ID: targetUserID },
+          },
+        },
+      });
+
+      await this.prisma.user.update({
+        where: { ID: targetUserID },
+        data: {
+          friends: {
+            disconnect: { ID: currentUserID },
+          },
+        },
+      });
+
+      return `You are no longer friends with user ${targetUserID}`;
+    } else {
+      // Add friendship
+      await this.prisma.user.update({
+        where: { ID: currentUserID },
+        data: {
+          friends: {
+            connect: { ID: targetUserID },
+          },
+        },
+      });
+
+      await this.prisma.user.update({
+        where: { ID: targetUserID },
+        data: {
+          friends: {
+            connect: { ID: currentUserID },
+          },
+        },
+      });
+
+      return `You are now friends with user ${targetUserID}`;
+    }
+  }
+  
+}

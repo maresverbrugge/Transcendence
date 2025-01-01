@@ -15,7 +15,7 @@ export class UserService {
       const emptyWebSocketUser = await this.prisma.user.findFirst({
         where: { websocketID: null },
       });
-    
+
       if (emptyWebSocketUser)
         // Assign socketID if user with empty websocketID is found
         return await this.prisma.user.update({
@@ -23,7 +23,7 @@ export class UserService {
           data: { websocketID: socketID,
                   token: token },
         });
-    
+
       // Step 2: Check if any user has an inactive websocketID
       const users = await this.prisma.user.findMany(); // Fetch all users
       for (const user of users) {
@@ -44,7 +44,7 @@ export class UserService {
           console.log('error fetching socket: ', error)
         }
       }
-    
+
       // Step 3: If no users have an empty or inactive websocketID, create a new user
       return await this.prisma.user.create({
         data: { username: `user${socketID}`, intraUsername: `user${socketID}`, Enabled2FA: false, status: UserStatus.ONLINE, websocketID: socketID, token: token },
@@ -59,7 +59,7 @@ export class UserService {
           data: { websocketID: null },
         });
     }
-    
+
 
     async getUsers(client: Socket) {
         const users: User[] = await this.prisma.user.findMany(); // Fetch all users from the User model
@@ -117,7 +117,7 @@ export class UserService {
 
       async deleteUserBySocketID(socketID: string): Promise<User | null> {
         const userID = await this.getUserIDBySocketID(socketID);
-    
+
         if (userID)
           return this.prisma.user.delete({
             where: {

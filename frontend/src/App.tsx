@@ -24,7 +24,7 @@ const App = () => {
 			<Route path="/logout" element={<LogOut />} />
 			<Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
 			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
-			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
+			<Route path="/profile/:userID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
 			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
 			<Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />

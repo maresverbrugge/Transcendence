@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { User } from '@prisma/client';
-import { UserService, UserProfile, StatisticsData, MatchHistoryData, LeaderboardData, AchievementData } from './user.service';
+import { UserService, UserProfile, UserAccount, StatisticsData, MatchHistoryData, LeaderboardData, AchievementData } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -13,10 +13,9 @@ export class UserController {
     return this.userService.getUserIDByToken(token);
   }
 
-  @Get('profile/:token')
-  async getUserProfileByToken(@Param('token') token: string): Promise<UserProfile> {
-    return this.userService.getUserProfileByToken(token);
-  }
+  @Get('account/:token')
+  async getUserAccountByToken(@Param('token') token: string): Promise<UserAccount> {
+    return this.userService.getUserAccountByToken(token);  }
 
   @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
@@ -59,5 +58,24 @@ export class UserController {
   @Get(':userID/achievements')
   async getUserAchievements(@Param('userID', ParseIntPipe) userID: number): Promise<AchievementData[]> {
     return this.userService.getUserAchievements(userID);
+  }
+
+  @Get('profile/:userID')
+  async getUserProfileByUserID(@Param('userID', ParseIntPipe) userID: number): Promise<UserProfile> {
+    return this.userService.getUserProfileByUserID(userID);
+  }
+
+  @Get(':currentUserID/friend/:targetUserID')
+  async getFriendshipStatus(
+    @Param('currentUserID', ParseIntPipe) currentUserID: number,
+    @Param('targetUserID', ParseIntPipe) targetUserID: number ): Promise<{ isFriend: boolean }> {
+      return this.userService.getFriendshipStatus(currentUserID, targetUserID);
+  }
+
+  @Patch(':currentUserID/friend/:targetUserID')
+  async toggleFriendship(
+    @Param('currentUserID', ParseIntPipe) currentUserID: number,
+    @Param('targetUserID', ParseIntPipe) targetUserID: number ): Promise<string> {
+    return this.userService.toggleFriendship(currentUserID, targetUserID);
   }
 }

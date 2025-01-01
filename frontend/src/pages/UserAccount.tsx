@@ -7,9 +7,9 @@ import LogOutButton from '../components/User/Account/LogOutButton.tsx';
 import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion.tsx';
 
 interface UserData {
+  ID: number;
   username: string;
   avatarURL: string;
-  ID: number;
   Enabled2FA: boolean;
 }
 
@@ -21,7 +21,7 @@ const UserAccount = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`http://localhost:3001/user/profile/${token}`);
+        const response = await axios.get(`http://localhost:3001/user/account/${token}`);
         console.log('User data fetched:', response.data);
         setUserData(response.data);
         setLoading(false);

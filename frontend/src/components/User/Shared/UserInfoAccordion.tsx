@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Statistics from './Statistics.tsx';
@@ -11,7 +9,7 @@ import { StatisticsData, MatchHistoryData, AchievementsData } from '../interface
 function UserInfoAccordion({ userID }: { userID: number }) {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [matchHistoryData, setMatchHistoryData] = useState<MatchHistoryData[] | null>(null);
-  const [achievementsData, setAchievementsData] = useState<AchievementsData[]>([]);
+  const [achievementsData, setAchievementsData] = useState<AchievementsData[] | null>(null);
   const [loadingStatistics, setLoadingStatistics] = useState<boolean>(true);
   const [loadingMatchHistory, setLoadingMatchHistory] = useState<boolean>(true);
   const [loadingAchievements, setLoadingAchievements] = useState<boolean>(true);
@@ -42,7 +40,7 @@ function UserInfoAccordion({ userID }: { userID: number }) {
     const fetchAchievements = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/user/${userID}/achievements`);
-        console.log('Fetched achievements:', response.data); // Debugging
+        console.log('Fetched achievements:', response.data); // Testing, remove later
         setAchievementsData(response.data);
       } catch (error) {
         console.error('Error fetching achievements:', error);
@@ -57,7 +55,7 @@ function UserInfoAccordion({ userID }: { userID: number }) {
     fetchAchievements();
   }, [userID]);
 
-  console.log('State achievementsData:', achievementsData); // Debugging
+  console.log('State achievementsData:', achievementsData); // Testing, remove later
 
   const renderContent = (loading: boolean, data: any, Component: any, noDataMessage: string) => {
     if (loading) {
@@ -75,7 +73,7 @@ function UserInfoAccordion({ userID }: { userID: number }) {
       </div>
       );
     }
-    
+
     return <Component {...data} />;
   };
 
