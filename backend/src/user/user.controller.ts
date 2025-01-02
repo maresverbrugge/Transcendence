@@ -69,7 +69,8 @@ export class UserController {
   async getFriendshipStatus(
     @Param('currentUserID', ParseIntPipe) currentUserID: number,
     @Param('targetUserID', ParseIntPipe) targetUserID: number ): Promise<{ isFriend: boolean }> {
-      return this.userService.getFriendshipStatus(currentUserID, targetUserID);
+      const isFriend = await this.userService.getFriendshipStatus(currentUserID, targetUserID);
+      return { isFriend };
   }
 
   @Patch(':currentUserID/friend/:targetUserID')

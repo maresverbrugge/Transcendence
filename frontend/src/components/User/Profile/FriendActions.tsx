@@ -7,11 +7,12 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
   useEffect(() => {
     const fetchFriendshipStatus = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`);
+        const response = await axios.get(
+          `http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`
+        );
         setIsFriend(response.data.isFriend);
       } catch (error) {
         console.error('Error fetching friendship status:', error);
-        setIsFriend(false);  // Assume not friends if fetch fails // ! really needed here?
       }
     };
 
@@ -20,50 +21,24 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
 
   const toggleFriendship = async () => {
     try {
-      await axios.patch(`http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`);
+      const response = await axios.patch(
+        `http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`
+      );
       setIsFriend((prev) => !prev); // Toggle friend state
+      console.log(response.data);
     } catch (error) {
       console.error('Error toggling friendship:', error);
     }
   };
 
   return (
-    <div className="btn-group w-100" role="group" aria-label="Friendship toggle">
-      <button
-        type="button"
-        className={`btn ${isFriend ? 'btn-success active' : 'btn-outline-success'}`}
-        onClick={isFriend ? undefined : toggleFriendship}
-        style={{
-          width: '50%',
-          fontSize: '1.2vw',
-          padding: '2%',
-          borderWidth: isFriend ? '2px' : '1px',
-          fontWeight: isFriend ? 'bold' : 'normal',
-        }}
-      >
-        <span style={{ display: 'inline-block', width: '1.5em', textAlign: 'center' }}>
-          {isFriend && '✔️'}
-        </span>
-        Friend
-      </button>
-      <button
-        type="button"
-        className={`btn ${!isFriend ? 'btn-danger active' : 'btn-outline-danger'}`}
-        onClick={!isFriend ? undefined : toggleFriendship}
-        style={{
-          width: '50%',
-          fontSize: '1.2vw',
-          padding: '2%',
-          borderWidth: !isFriend ? '2px' : '1px',
-          fontWeight: !isFriend ? 'bold' : 'normal',
-        }}
-      >
-        <span style={{ display: 'inline-block', width: '1.5em', textAlign: 'center' }}>
-          {!isFriend && '❌'}
-        </span>
-        Unfriend
-      </button>
-    </div>
+    <button
+      type="button"
+      className={`btn w-100 btn-lg ${isFriend ? 'btn-outline-warning' : 'btn-outline-success'}`}
+      onClick={toggleFriendship}
+      style={{ padding: '8%', fontSize: '1.2rem' }}>
+      {isFriend ? 'Unfriend' : 'Add Friend'}
+    </button>
   );
 }
 

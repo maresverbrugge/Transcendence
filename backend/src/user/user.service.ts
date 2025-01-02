@@ -323,23 +323,30 @@ export class UserService {
         },
       },
     });
+    console.log("friendship = ", Boolean(friendship));
     return Boolean(friendship);
   }
 
   async toggleFriendship(currentUserID: number, targetUserID: number): Promise<string> {
-    // Check if users exist
-    const currentUser = await this.prisma.user.findUnique({ where: { ID: currentUserID } });
-    const targetUser = await this.prisma.user.findUnique({ where: { ID: targetUserID } });
+    const currentUser = await this.prisma.user.findUnique({
+      where: { ID: currentUserID },
+      include: { friends: true },
+    });
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { ID: targetUserID },
+      include: { friendsOf: true },
+    });
 
     if (!currentUser || !targetUser) {
       throw new NotFoundException('User not found');
     }
 
-    // Check if friendship already exists
-    const isFriend = await this.getFriendshipStatus(currentUserID, targetUserID);
+    // Check if the current user is already friends with the target user
+    const isAlreadyFriend = currentUser.friends.some((friend) => friend.ID === targetUserID);
 
-    if (isFriend) {
-      // Remove friendship
+    if (isAlreadyFriend) {
+      // Unfriend logic: remove targetUser from currentUser's friends
       await this.prisma.user.update({
         where: { ID: currentUserID },
         data: {
@@ -349,18 +356,19 @@ export class UserService {
         },
       });
 
+      // Remove currentUser from targetUser's friendsOf
       await this.prisma.user.update({
         where: { ID: targetUserID },
         data: {
-          friends: {
+          friendsOf: {
             disconnect: { ID: currentUserID },
           },
         },
       });
 
-      return `You are no longer friends with user ${targetUserID}`;
+      return `You unfriended user ${targetUserID}`;
     } else {
-      // Add friendship
+      // Befriend logic: add targetUser to currentUser's friends
       await this.prisma.user.update({
         where: { ID: currentUserID },
         data: {
@@ -370,17 +378,17 @@ export class UserService {
         },
       });
 
+      // Add currentUser to targetUser's friendsOf
       await this.prisma.user.update({
         where: { ID: targetUserID },
         data: {
-          friends: {
+          friendsOf: {
             connect: { ID: currentUserID },
           },
         },
       });
 
-      return `You are now friends with user ${targetUserID}`;
+      return `You befriended user ${targetUserID}`;
     }
   }
-  
 }
