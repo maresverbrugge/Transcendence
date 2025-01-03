@@ -27,14 +27,16 @@ const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
     socket.on('disconnect', handleDisconnect);
 
     const handleBeforeUnload = () => {
-      handleDisconnect(); // Perform cleanup
-      socket.disconnect(); // Optionally disconnect socket
+      handleDisconnect();
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      socket.off('disconnect', handleDisconnect); // Cleanup disconnect listener
-      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup tab close listener
+      if (channel && !channel.isPrivate) {
+        socket.emit('leaveChannel', { channelID: channel.ID, token});
+      }
+      socket.off('disconnect', handleDisconnect);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [channel, socket]);
 

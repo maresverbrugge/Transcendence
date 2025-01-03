@@ -16,7 +16,6 @@ const ReceiveGameInvite = ({socket, token}: ReceiveGameInviteProps) => {
 
   const handleGameCreated = (created: boolean) => {
     if (created) {
-      console.log('check navigate!');
       navigate('/game');
     } else {
       emitter.emit('alert', 'An error occurred while starting the game. Please try again.')
@@ -64,7 +63,6 @@ const ReceiveGameInvite = ({socket, token}: ReceiveGameInviteProps) => {
   const handleAcceptGameInvite = (senderUserID: number) => {
     setInvite(null);
     inviteRef.current = null;
-    console.log('check accept');
     emitter.emit('acceptGameInvite');
     socket.emit('acceptGameInvite', {senderUserID, token});
     emitter.emit('alert', 'waiting for the game to start...')

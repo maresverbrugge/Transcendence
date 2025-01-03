@@ -104,17 +104,40 @@ export class ChannelService {
       await this.messageService.sendActionLogMessage(channelID, username, 'join');
   }
 
+  async assignNewOwner(channelID: number): Promise<void> {
+    var channelMember = await this.prisma.channelMember.findFirst({
+      where: {channelID: channelID, isAdmin: true, isBanned: false},
+      select: {ID: true}
+    })
+    if (!channelMember) {
+      channelMember = await this.prisma.channelMember.findFirst({
+        where: {channelID: channelID, isBanned: false},
+        select: {ID: true}
+      })
+    }
+    if (channelMember) {
+      await this.prisma.channelMember.update({
+        where: {ID: channelMember.ID},
+        data: {isOwner: true, isAdmin: true},
+      })
+    } else {
+      await this.chatGateway.deleteChannel(channelID);
+    }
+  }
+
   async removeChannelMemberFromChannel(channelID: number, socket: Socket, token: string): Promise<void> {
     const userID = await this.userService.getUserIDBySocketID(token); //change to token later
     const channelMember = await this.prisma.channelMember.findFirst({
       where: { userID: userID, channelID: channelID },
-      select: { ID: true, isBanned: true, channelID: true, user: { select: { username: true } } },
+      select: { ID: true, isBanned: true, channelID: true, isOwner: true, user: { select: { username: true } } },
     });
     if (!channelMember) throw new NotFoundException('ChannelMember not found');
     if (!channelMember.isBanned) {
-      this.channelMemberService.deleteChannelMember(channelMember.ID);
+      await this.channelMemberService.deleteChannelMember(channelMember.ID);
       this.messageService.sendActionLogMessage(channelID, channelMember.user.username, 'leave');
     }
+    if(channelMember.isOwner)
+      await this.assignNewOwner(channelID);
     socket.leave(String(channelID));
     socket.emit('updateChannel');
     this.chatGateway.emitToRoom('updateChannelMember', String(channelID));

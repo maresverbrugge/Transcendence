@@ -24,7 +24,6 @@ const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) 
   };
 
   const handleCancelInvite = () => {
-    console.log('check cancel gameinvite');
     socket.emit('cancelGameInvite', { receiverUserID, token });
     setIsPending(false);
     isPendingRef.current = false;
@@ -36,7 +35,6 @@ const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) 
       // const response = await axios.post(`http://localhost:3001/game/creategame/${receiverUserID}/${token}`, {});
       // if (response.status === 201) {
         socket.emit('gameCreated', {receiverUserID, created: true, token});
-        console.log('check navigate!');
         navigate('/game');
       // } else {
         // socket.emit('gameCreated', {receiverUserID, created: false, token});
@@ -49,7 +47,6 @@ const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) 
 
   useEffect(() => {
     const handleInviteResponse = (data: { accepted: boolean; message: string, receiverUserID: number }) => {
-      console.log('check', data, data.receiverUserID, receiverUserID);
       if (data.receiverUserID === receiverUserID) {
         setIsPending(false);
         isPendingRef.current = false;
@@ -62,7 +59,6 @@ const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) 
     };
 
     const handleAcceptGameInvite = () => {
-      console.log('check emitter acceptGameInvite', isPendingRef.current);
       if (isPendingRef.current)
         handleCancelInvite();
     }

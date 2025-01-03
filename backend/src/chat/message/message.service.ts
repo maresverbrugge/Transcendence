@@ -28,9 +28,8 @@ export class MessageService {
       const message = await this.prisma.message.findUnique({
         where: { ID: messageID },
       });
-      if (!message)
-        throw new NotFoundException('Message not found')
-      return blockedUserIDs.includes(message.senderID) ? null : message;
+      if (message)
+        return blockedUserIDs.includes(message.senderID) ? null : message;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('An unexpected error occurred', error.message);

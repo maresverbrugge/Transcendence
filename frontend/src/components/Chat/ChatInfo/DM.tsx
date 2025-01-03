@@ -25,9 +25,8 @@ const DM = ({ channel }: DMProps) => {
     };
 
     fetchDMInfo(channel.ID);
-  }, []);
+  }, [channel]);
 
-  console.log(channel);
   return (
     <div className="dm-container">
       <h1>{channel.name}</h1>

@@ -245,4 +245,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       else socket.emit(message);
     }
   }
+
+  async deleteChannel(channelID: number): Promise<void> {
+    await this.prisma.channel.delete({where: {ID: channelID}});
+    this.server.emit('updateChannel');
+  }
 }
