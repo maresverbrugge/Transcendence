@@ -47,7 +47,7 @@ export class MessageService {
   async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
     try {
       const sender = await this.userService.getUserByUserID(senderID);
-      return this.prisma.message.create({
+      const message = await this.prisma.message.create({
         data: {
           content: content,
           senderName: sender.username,
@@ -55,6 +55,8 @@ export class MessageService {
           channel: { connect: { ID: channelID } },
         },
       });
+      await this.prisma.user.update({ where: {ID: sender.ID}, data: {messagesSend: sender.messagesSend + 1}})
+      return message;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('An unexpected error occurred', error.message);
