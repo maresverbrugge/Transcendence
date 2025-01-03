@@ -145,8 +145,7 @@ export class UserService {
           // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
         }
       }
-    }
-  }
+    }  }
 
   // FOR LATER: REMOVE winRate and playerRating CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED

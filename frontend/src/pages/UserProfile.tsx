@@ -2,9 +2,9 @@ import { useParams } from 'react-router-dom'; // extract dynamic parameters from
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus.tsx';
-import FriendActions from '../components/User/Profile/FriendActions.tsx';
-import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion.tsx';
+import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus';
+import FriendActions from '../components/User/Profile/FriendActions';
+import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion';
 
 interface UserData {
   username: string;

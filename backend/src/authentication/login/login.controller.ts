@@ -1,5 +1,6 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
-import { LoginService } from './login.service'; 
+
+import { LoginService } from './login.service';
 
 @Controller('login')
 export class LoginController {
@@ -28,7 +29,6 @@ export class LoginController {
     const user = await this.loginService.getIntraName(token);
     this.loginService.setUserStatusToOffline(user);
   }
-
 
   @Post('verify-token')
   async verify(@Body() body: { token: string }) {

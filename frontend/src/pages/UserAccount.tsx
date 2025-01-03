@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Username from '../components/User/Account/Username.tsx';
-import Avatar from '../components/User/Account/Avatar.tsx';
-import Toggle2FA from '../components/User/Account/Toggle2FA.tsx';
-import LogOutButton from '../components/User/Account/LogOutButton.tsx';
-import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion.tsx';
+import Username from '../components/User/Account/Username';
+import Avatar from '../components/User/Account/Avatar';
+import Toggle2FA from '../components/User/Account/Toggle2FA';
+import LogOutButton from '../components/User/Account/LogOutButton';
+import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion';
 
 interface UserData {
   ID: number;
