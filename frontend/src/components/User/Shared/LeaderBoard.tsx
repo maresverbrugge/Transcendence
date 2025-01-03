@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { LeaderboardData } from '../interfaces.tsx';
 
-const Leaderboard = () => {
+const Leaderboard = ( { triggerRefresh }: { triggerRefresh: boolean }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -10,7 +10,7 @@ const Leaderboard = () => {
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get('http://localhost:3001/user/leaderboard');
-        console.log('Leaderboard data fetched:', response.data);
+        // console.log('Leaderboard data fetched:', response.data);
         setLeaderboardData(response.data);
       } catch (error) {
         console.error('Error fetching leaderboard data:', error);
@@ -20,7 +20,7 @@ const Leaderboard = () => {
     };
 
     fetchLeaderboard();
-  }, []);
+  }, [triggerRefresh]);
 
   if (loading) {
     return (
@@ -30,7 +30,7 @@ const Leaderboard = () => {
     );
   }
 
-  if (!leaderboardData) {
+  if (!leaderboardData || leaderboardData.length === 0) {
     return (
       <div className="text-center p-3">
         <p>No leaderboard data available.</p>

@@ -6,7 +6,12 @@ import MatchHistory from './MatchHistory.tsx';
 import Achievements from './Achievements.tsx';
 import { StatisticsData, MatchHistoryData, AchievementsData } from '../interfaces';
 
-function UserInfoAccordion({ userID }: { userID: number }) {
+interface UserInfoAccordionProps {
+  userID: number;
+  triggerRefresh: boolean;
+}
+
+function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [matchHistoryData, setMatchHistoryData] = useState<MatchHistoryData[] | null>(null);
   const [achievementsData, setAchievementsData] = useState<AchievementsData[] | null>(null);
@@ -40,7 +45,7 @@ function UserInfoAccordion({ userID }: { userID: number }) {
     const fetchAchievements = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/user/${userID}/achievements`);
-        console.log('Fetched achievements:', response.data); // Testing, remove later
+        // console.log('Fetched achievements:', response.data); // Testing, remove later
         setAchievementsData(response.data);
       } catch (error) {
         console.error('Error fetching achievements:', error);
@@ -55,7 +60,7 @@ function UserInfoAccordion({ userID }: { userID: number }) {
     fetchAchievements();
   }, [userID]);
 
-  console.log('State achievementsData:', achievementsData); // Testing, remove later
+  // console.log('State achievementsData:', achievementsData); // Testing, remove later
 
   const renderContent = (loading: boolean, data: any, Component: any, noDataMessage: string) => {
     if (loading) {
@@ -155,7 +160,8 @@ function UserInfoAccordion({ userID }: { userID: number }) {
           aria-labelledby="headingLeaderboard"
           data-bs-parent="#userAccordion">
           <div className="accordion-body p-0">
-            <Leaderboard />
+            <Leaderboard
+            triggerRefresh={triggerRefresh}/>
           </div>
         </div>
       </div>

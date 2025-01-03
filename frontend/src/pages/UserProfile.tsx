@@ -14,7 +14,7 @@ interface UserData {
 
 function UserProfile() {
   const userID = parseInt(useParams().userID, 10); // for now, might remove later?
-  console.log('Extracted userID from URL:', userID); // for testing, romove later
+  // console.log('Extracted userID from URL:', userID); // for testing, romove later
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -22,7 +22,7 @@ function UserProfile() {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/user/profile/${userID}`);
-        console.log("User data fetched: ", response.data); // for testing, romove later
+        // console.log("User data fetched: ", response.data); // for testing, romove later
         setUserData(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);

@@ -29,7 +29,7 @@ export class AchievementService {
 
       if (!exists) {
         await this.prisma.achievement.create({ data: achievement });
-        console.log(`Achievement "${achievement.name}" has been created.`);
+        // console.log(`Achievement "${achievement.name}" has been created.`);
       }
     }
   }

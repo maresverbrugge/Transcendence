@@ -1,7 +1,12 @@
 import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
 
-const Username = ({currentUsername}: {currentUsername: string} ) => {
+interface UsernameProps {
+  currentUsername: string;
+  onUsernameUpdate: (newUsername: string) => void;
+}
+
+const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
   const [username, setUsername] = useState<string>(currentUsername);
   const [tempUsername, setTempUsername] = useState<string>(currentUsername);
   const [previousUsername, setPreviousUsername] = useState<string>(currentUsername);
@@ -38,20 +43,30 @@ const Username = ({currentUsername}: {currentUsername: string} ) => {
     try {
       const token = localStorage.getItem('authenticationToken');
       await axios.patch(`http://localhost:3001/user/${token}`, { username: tempUsername });
-      setUsername(tempUsername); // Save old username for undo
       setPreviousUsername(username); // Update to new username
+      setUsername(tempUsername); // Save old username for undo
       setIsEditing(false);
       setUploadStatus('success');
+      onUsernameUpdate(tempUsername); // Notify parent of the username change
     } catch (error) {
       console.error('Error updating username:', error);
       setUploadStatus('error');
     }
   };
 
-  const handleUndo = () => {
-    setUsername(previousUsername);
-    setIsEditing(false);
-    setUploadStatus('idle');
+  const handleUndo = async () => {
+    try {
+      const token = localStorage.getItem('authenticationToken');
+      await axios.patch(`http://localhost:3001/user/${token}`, { username: previousUsername }); // Update the database
+      setUsername(previousUsername); // Update local state
+      setTempUsername(previousUsername);
+      setPreviousUsername(username); // Keep track of the change
+      setUploadStatus('success');
+      onUsernameUpdate(previousUsername); // Notify parent to refresh
+    } catch (error) {
+      console.error('Error resetting username:', error);
+      setUploadStatus('error');
+    }
   };
 
   return (
@@ -60,36 +75,24 @@ const Username = ({currentUsername}: {currentUsername: string} ) => {
         <>
           {/* Input Field with Validation */}
           <div className="mb-2 w-100" style={{ maxWidth: '22ch' }}>
-          <input
-            type="text"
-            value={tempUsername}
-            onChange={handleInputChange}
-            className={`form-control text-center ${validationMessage ? 'is-invalid' : tempUsername.trim() ? 'is-valid' : ''}`}
-            placeholder="Enter new name"
-            style={{
-              width: '100%', // Make width responsive
-              paddingInline: '5%', // Adjust padding based on container width
-              boxSizing: 'border-box', // Ensure borders and padding are included in width
-            }}
-          />
-          
-          {validationMessage ? (
-            <div
-              className="invalid-feedback text-center"
+            <input
+              type="text"
+              value={tempUsername}
+              onChange={handleInputChange}
+              className={`form-control text-center ${
+                validationMessage ? 'is-invalid' : tempUsername.trim() ? 'is-valid' : ''
+              }`}
+              placeholder="Enter new name"
               style={{
-                width: '100%', // Full width of the container
-                maxWidth: '90%', // Prevent it from exceeding the layout
-                margin: '0 auto', // Center the message within the parent
-                padding: '0.5%', // Responsive padding
-                boxSizing: 'border-box', // Ensures padding doesn't affect width
+                width: '100%',
+                paddingInline: '5%',
+                boxSizing: 'border-box',
               }}
-            >
-              {validationMessage}
-            </div>
-          ) : (
-            tempUsername.trim() && (
+            />
+
+            {validationMessage ? (
               <div
-                className="valid-feedback text-center"
+                className="invalid-feedback text-center"
                 style={{
                   width: '100%',
                   maxWidth: '90%',
@@ -98,45 +101,54 @@ const Username = ({currentUsername}: {currentUsername: string} ) => {
                   boxSizing: 'border-box',
                 }}
               >
-                Username looks good!
+                {validationMessage}
               </div>
-            )
-          )}
+            ) : (
+              tempUsername.trim() && (
+                <div
+                  className="valid-feedback text-center"
+                  style={{
+                    width: '100%',
+                    maxWidth: '90%',
+                    margin: '0 auto',
+                    padding: '0.5%',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  Username looks good!
+                </div>
+              )
+            )}
           </div>
 
           {/* Cancel and Save Buttons */}
           <div className="mt-1">
-            <button
-              type="button"
-              className="btn btn-danger btn-sm me-2"
-              onClick={handleCancel}>
+            <button type="button" className="btn btn-danger btn-sm me-2" onClick={handleCancel}>
               Cancel
             </button>
 
-            <button
-              className="btn btn-warning btn-sm"
-              onClick={handleSave}>
+            <button className="btn btn-warning btn-sm" onClick={handleSave}>
               {uploadStatus === 'saving' ? 'Saving...' : 'Save'}
             </button>
           </div>
         </>
       ) : (
         <>
-        <h2>{username}</h2>
+          <h2>{username}</h2>
           {/* Edit Button */}
           <button
             className="btn btn-outline-primary btn-sm mb-3"
             onClick={() => {
               setIsEditing(true);
-              setUploadStatus('idle');}}>
+              setUploadStatus('idle');
+            }}
+          >
             Edit Username
           </button>
 
           {/* Undo Button */}
           {uploadStatus === 'success' && (
-            <button
-              className="btn btn-outline-danger btn-sm"
-              onClick={handleUndo}>
+            <button className="btn btn-outline-danger btn-sm" onClick={handleUndo}>
               Reset
             </button>
           )}
@@ -145,10 +157,10 @@ const Username = ({currentUsername}: {currentUsername: string} ) => {
 
       {/* Status Messages */}
       {uploadStatus === 'saving' && <p className="text-info mt-3">Saving...</p>}
-      {uploadStatus === 'error' && (<p className="text-danger mt-3">Failed to update username. Please try again.</p>)}
-      {uploadStatus === 'success' && (<p className="text-success mt-3">Username updated successfully!</p>)}
+      {uploadStatus === 'error' && <p className="text-danger mt-3">Failed to update username. Please try again.</p>}
+      {uploadStatus === 'success' && <p className="text-success mt-3">Username updated successfully!</p>}
     </div>
   );
-}
+};
 
 export default Username;

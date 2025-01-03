@@ -16,23 +16,39 @@ interface UserData {
 const UserAccount = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [triggerRefresh, setTriggerRefresh] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`http://localhost:3001/user/account/${token}`);
-        console.log('User data fetched:', response.data);
+        // console.log('User data fetched:', response.data);
         setUserData(response.data);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        setLoading(false);
-      }
+        }
+        finally {
+          setLoading(false);
+        }
     };
 
     fetchUserData();
   }, []);
+
+  const handleUsernameUpdate = (newUsername: string) => {
+    if (userData) {
+      setUserData({ ...userData, username: newUsername });
+      setTriggerRefresh((prev) => !prev);
+    }
+  };
+
+  const handleAvatarUpdate = (newAvatarURL: string) => {
+    if (userData) {
+      setUserData({ ...userData, avatarURL: newAvatarURL });
+      setTriggerRefresh((prev) => !prev); // Toggle to refresh leaderboard
+    }
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -49,18 +65,24 @@ const UserAccount = () => {
         <div className="col-md-3">
           <div className="card shadow mb-4">
             <div className="card-body text-center">
-              <Avatar username={userData.username} currentAvatarURL={userData.avatarURL} />
+              <Avatar
+              username={userData.username}
+              currentAvatarURL={userData.avatarURL}
+              onAvatarUpdate={handleAvatarUpdate} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <Username currentUsername={userData.username} />
+              <Username
+              currentUsername={userData.username}
+              onUsernameUpdate={handleUsernameUpdate} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
               <div className="d-flex justify-content-center align-items-center">
-              <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} />
+              <Toggle2FA
+              twoFactorAuthenticationEnabled={userData.Enabled2FA} />
               </div>
             </div>
           </div>
@@ -75,7 +97,9 @@ const UserAccount = () => {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <UserInfoAccordion userID={userData.ID} />
+              <UserInfoAccordion
+              userID={userData.ID}
+              triggerRefresh={triggerRefresh}/>
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
         `http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`
       );
       setIsFriend((prev) => !prev); // Toggle friend state
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
       console.error('Error toggling friendship:', error);
     }

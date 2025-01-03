@@ -61,7 +61,7 @@ export class UserService {
 
   async getUserAccountByToken(token: string): Promise<UserAccount> {
     const intraName = await this.loginService.getIntraName(token);
-    console.log("intraName = ", intraName);
+    // console.log("intraName = ", intraName);
 
     if (!intraName)
       throw new NotFoundException('intraUsername not found');
@@ -69,17 +69,17 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { intraUsername: intraName },
     });
-    console.log("user = ", user);
+    // console.log("user = ", user);
 
     if (!user)
       throw new NotFoundException("User not found!");
 
-    console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
+    // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
     const avatarURL = user.avatar
       ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
       : 'http://localhost:3001/images/default-avatar.png';
 
-    console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
+    // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
 
     return {
       ...user,
@@ -142,7 +142,7 @@ export class UserService {
           await this.prisma.userAchievement.create({
             data: { userID, achievementID: achievementData.ID },
           });
-          console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
+          // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
         }
       }
     }
@@ -154,7 +154,7 @@ export class UserService {
     const statistics = await this.prisma.statistics.findUnique({
       where: { userID: userID },
     });
-    console.log("statistics = ", statistics);
+    // console.log("statistics = ", statistics);
 
     if (!statistics)
       throw new NotFoundException("Statistics not found!");
@@ -280,8 +280,8 @@ export class UserService {
       where: { userID },
     });
 
-    console.log('allAchievements = ', allAchievements);
-    console.log('userAchievements = ', userAchievements);
+    // console.log('allAchievements = ', allAchievements);
+    // console.log('userAchievements = ', userAchievements);
 
     const unlockedAchievementIDs = userAchievements.map((ua) => ua.achievementID);
 
@@ -297,7 +297,6 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { ID: userID },
     });
-    console.log('LET OP Fetching profile for userID:', userID);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -323,7 +322,7 @@ export class UserService {
         },
       },
     });
-    console.log("friendship = ", Boolean(friendship));
+    // console.log("friendship = ", Boolean(friendship));
     return Boolean(friendship);
   }
 

@@ -4,9 +4,10 @@ import axios from 'axios';
 interface AvatarProps {
   username: string;
   currentAvatarURL: string;
+  onAvatarUpdate: (newAvatarURL: string) => void;
 }
 
-const Avatar = ({ username, currentAvatarURL }: AvatarProps) => {
+const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => {
   const [avatarURL, setAvatarURL] = useState<string>(currentAvatarURL);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
@@ -61,13 +62,15 @@ const Avatar = ({ username, currentAvatarURL }: AvatarProps) => {
         await axios.post(`http://localhost:3001/user/${token}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        setUploadStatus('success');
 
         // Fetch updated avatar
         const response = await axios.get(`http://localhost:3001/user/account/${token}`);
-        setAvatarURL(response.data.avatarURL);
+        const newAvatarURL = response.data.avatarURL;
+        setAvatarURL(newAvatarURL);
+        onAvatarUpdate(newAvatarURL);
         setPreviewURL(null);
         setSelectedFile(null);
+        setUploadStatus('success');
       } catch (error) {
         setUploadStatus('error');
         console.error('Error uploading avatar:', error);
