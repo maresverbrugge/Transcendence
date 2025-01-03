@@ -26,12 +26,12 @@ const Friend = ({ friend, socket }: FriendProps) => {
     const getStatusClass = (userStatus: string) => {
       switch (userStatus) {
         case 'ONLINE':
-          return 'friend-online';
+          return 'friend-afk';
         case 'OFFLINE':
           return 'friend-offline';
+        case 'IN_CHAT':
+          return 'friend-online';
         case 'IN_GAME':
-          return 'friend-ingame';
-        case 'AFK':
           return 'friend-afk';
         default:
           return 'friend-offline';

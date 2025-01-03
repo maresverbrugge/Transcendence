@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { HttpException, Inject, InternalServerErrorException, NotFoundException, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
-import { Channel, ChannelMember, User, Message } from '@prisma/client';
+import { Channel, ChannelMember, User, Message, UserStatus } from '@prisma/client';
 
 import { UserService } from './blockedUser/user.service';
 import { ChannelService } from './channel/channel.service';
@@ -188,7 +188,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         token as string,
         this.server
       ); // voor nu om de socket toe te wijzen aan een user zonder token
-      this.server.emit('userStatusChange', user.ID, 'ONLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+      await this.prisma.user.update({where: {ID: user.ID}, data: {status: UserStatus.IN_CHAT}})
+      this.server.emit('userStatusChange', user.ID, 'IN_CHAT');
       client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
       await this.channelMemberService.addSocketToAllRooms(client, token);
     } catch (error) {
@@ -204,9 +205,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const user = await this.userService.getUserBySocketID(client.id);
       await this.prisma.user.update({
         where: { ID: user.ID },
-        data: { websocketID: null },
+        data: { websocketID: null, status: UserStatus.ONLINE },
       });
-      this.server.emit('userStatusChange', user.ID, 'OFFLINE');
+      this.server.emit('userStatusChange', user.ID, 'ONLINE');
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       console.error(error)

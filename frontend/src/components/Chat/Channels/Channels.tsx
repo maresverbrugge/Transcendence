@@ -68,14 +68,14 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 
   const handleClickChannel = (channelID: number) => {
-    const channel = channels.find((ch) => ch.ID === channelID);
-    if (channelID === selectedChannelID) emitter.emit('selectChannel', null);
-    else if (channel?.passwordEnabled) {
+    var channel = channels.find((ch) => ch.ID === channelID);
+    if (channelID === selectedChannelID) channel = null;
+    if (channel?.passwordEnabled) {
       setSelectedChannelForPassword(channelID);
       setPasswordPromptVisible(true);
     }
-    if (!channel?.passwordEnabled) {
-      emitter.emit('selectChannel', channelID);
+    else {
+      emitter.emit('selectChannel', channel ? channel.ID : null);
     }
   };
 
