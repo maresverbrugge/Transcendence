@@ -35,12 +35,12 @@ const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) 
     // try {
       // const response = await axios.post(`http://localhost:3001/game/creategame/${receiverUserID}/${token}`, {});
       // if (response.status === 201) {
-        // socket.emit('gameCreated', {receiverUserID, created: true, token});
-        // console.log('check navigate!');
-        // navigate('/game');
+        socket.emit('gameCreated', {receiverUserID, created: true, token});
+        console.log('check navigate!');
+        navigate('/game');
       // } else {
-        socket.emit('gameCreated', {receiverUserID, created: false, token});
-        emitter.emit('alert', 'Failed to create the game, please try again');
+        // socket.emit('gameCreated', {receiverUserID, created: false, token});
+        // emitter.emit('alert', 'Failed to create the game, please try again');
       // }
     // } catch (error) {
     //   emitter.emit('error', error);

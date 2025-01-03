@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ConflictException } from '@nestjs/common';
 import { UserService } from '../blockedUser/user.service';
 import { ChatGateway } from '../chat.gateway';
 import { Socket } from 'socket.io';
@@ -24,9 +24,15 @@ export class GameInviteService {
 
     async cancelGameInvite(receiverUserID: number, token: string): Promise<void> {
         const sender = await this.userService.getUserBySocketID(token); //change to token later
-        const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
-        if (receiver.connected) {
-            receiver.emit('cancelGameInvite', {senderUserID: sender.ID});
+        try {
+            const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
+            if (receiver.connected) {
+                receiver.emit('cancelGameInvite', {senderUserID: sender.ID});
+            }
+        } catch (error) {
+            if (! (error instanceof NotFoundException)) {
+                throw error;
+            }
         }
     }
 
