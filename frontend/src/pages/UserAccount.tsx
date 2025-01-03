@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
 import Username from '../components/User/Account/Username';
 import Avatar from '../components/User/Account/Avatar';
 import Toggle2FA from '../components/User/Account/Toggle2FA';
@@ -27,10 +28,9 @@ const UserAccount = () => {
         setUserData(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        }
-        finally {
-          setLoading(false);
-        }
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUserData();
@@ -66,23 +66,21 @@ const UserAccount = () => {
           <div className="card shadow mb-4">
             <div className="card-body text-center">
               <Avatar
-              username={userData.username}
-              currentAvatarURL={userData.avatarURL}
-              onAvatarUpdate={handleAvatarUpdate} />
+                username={userData.username}
+                currentAvatarURL={userData.avatarURL}
+                onAvatarUpdate={handleAvatarUpdate}
+              />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <Username
-              currentUsername={userData.username}
-              onUsernameUpdate={handleUsernameUpdate} />
+              <Username currentUsername={userData.username} onUsernameUpdate={handleUsernameUpdate} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
               <div className="d-flex justify-content-center align-items-center">
-              <Toggle2FA
-              twoFactorAuthenticationEnabled={userData.Enabled2FA} />
+                <Toggle2FA twoFactorAuthenticationEnabled={userData.Enabled2FA} />
               </div>
             </div>
           </div>
@@ -97,9 +95,7 @@ const UserAccount = () => {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <UserInfoAccordion
-              userID={userData.ID}
-              triggerRefresh={triggerRefresh}/>
+              <UserInfoAccordion userID={userData.ID} triggerRefresh={triggerRefresh} />
             </div>
           </div>
         </div>
@@ -126,6 +122,6 @@ const UserAccount = () => {
       </div>
     </div>
   );
-}
+};
 
 export default UserAccount;

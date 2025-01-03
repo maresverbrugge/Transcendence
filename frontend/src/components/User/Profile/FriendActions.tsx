@@ -7,9 +7,7 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
   useEffect(() => {
     const fetchFriendshipStatus = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`
-        );
+        const response = await axios.get(`http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`);
         setIsFriend(response.data.isFriend);
       } catch (error) {
         console.error('Error fetching friendship status:', error);
@@ -21,9 +19,7 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
 
   const toggleFriendship = async () => {
     try {
-      const response = await axios.patch(
-        `http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`
-      );
+      await axios.patch(`http://localhost:3001/user/${currentUserID}/friend/${targetUserID}`);
       setIsFriend((prev) => !prev); // Toggle friend state
       // console.log(response.data);
     } catch (error) {
@@ -36,7 +32,8 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
       type="button"
       className={`btn w-100 btn-lg ${isFriend ? 'btn-outline-warning' : 'btn-outline-success'}`}
       onClick={toggleFriendship}
-      style={{ padding: '8%', fontSize: '1.2rem' }}>
+      style={{ padding: '8%', fontSize: '1.2rem' }}
+    >
       {isFriend ? 'Unfriend' : 'Add Friend'}
     </button>
   );

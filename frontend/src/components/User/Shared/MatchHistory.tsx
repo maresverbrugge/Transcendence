@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { MatchHistoryData } from '../interfaces';
 
 const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData[] }) => (
@@ -21,9 +22,7 @@ const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData
               <td>
                 {match.scorePlayer1} - {match.scorePlayer2}
               </td>
-              <td className={isWin ? 'text-success' : 'text-danger'}>
-                {isWin ? 'Win' : 'Loss'}
-              </td>
+              <td className={isWin ? 'text-success' : 'text-danger'}>{isWin ? 'Win' : 'Loss'}</td>
             </tr>
           );
         })}

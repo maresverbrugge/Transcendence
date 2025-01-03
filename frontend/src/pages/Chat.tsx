@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+
 import Channels from '../components/Chat/Channels/Channels';
 import AlertMessage from '../components/AlertMessage';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
 import { ChannelData, MemberData } from '../components/Chat/interfaces';
-import './Chat.css'
+import './Chat.css';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -15,11 +16,10 @@ const Chat = () => {
   const [friends, setFriends] = useState<MemberData[]>([]);
 
   useEffect(() => {
-  
     // Initialize socket connection
     const token = localStorage.getItem('authenticationToken');
-    const socketIo = io("ws://localhost:3001/chat", {
-      transports: ["websocket"], // Ensure WebSocket transport is used
+    const socketIo = io('ws://localhost:3001/chat', {
+      transports: ['websocket'], // Ensure WebSocket transport is used
       query: { token },
       withCredentials: true, // Ensure credentials are included
     });
@@ -51,12 +51,7 @@ const Chat = () => {
 
   return (
     <div>
-      {alert && (
-        <AlertMessage
-          message={alert}
-          onClose={() => setAlert(null)}
-        />
-      )}
+      {alert && <AlertMessage message={alert} onClose={() => setAlert(null)} />}
       <Channels
         selectedChannel={channel}
         setSelectedChannel={setChannel}

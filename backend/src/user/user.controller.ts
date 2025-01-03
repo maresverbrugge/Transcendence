@@ -2,7 +2,16 @@ import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { User } from '@prisma/client';
-import { UserService, UserProfile, UserAccount, StatisticsData, MatchHistoryData, LeaderboardData, AchievementData } from './user.service';
+
+import {
+  UserService,
+  UserProfile,
+  UserAccount,
+  StatisticsData,
+  MatchHistoryData,
+  LeaderboardData,
+  AchievementData,
+} from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -15,29 +24,24 @@ export class UserController {
 
   @Get('account/:token')
   async getUserAccountByToken(@Param('token') token: string): Promise<UserAccount> {
-    return this.userService.getUserAccountByToken(token);  }
+    return this.userService.getUserAccountByToken(token);
+  }
 
   @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
-  async uploadAvatar(
-    @Param('token') token: string,
-    @UploadedFile() file: Multer.File) : Promise<User> {
-      const fileBuffer = file.buffer;
-      return this.userService.updateAvatar(token, fileBuffer);
+  async uploadAvatar(@Param('token') token: string, @UploadedFile() file: Multer.File): Promise<User> {
+    const fileBuffer = file.buffer;
+    return this.userService.updateAvatar(token, fileBuffer);
   }
 
   @Patch(':token')
-  async changeUsername(
-    @Param('token') token: string,
-    @Body('username') newUsername: string,) : Promise<User> {
-      return this.userService.updateUsername(token, newUsername);
+  async changeUsername(@Param('token') token: string, @Body('username') newUsername: string): Promise<User> {
+    return this.userService.updateUsername(token, newUsername);
   }
 
   @Patch(':token/2fa')
-  async toggleTwoFactorAuth(
-    @Param('token') token: string,
-    @Body() { enable }: { enable: boolean }) : Promise<User> {
-      return this.userService.toggle2FA(token, enable);
+  async toggleTwoFactorAuth(@Param('token') token: string, @Body() { enable }: { enable: boolean }): Promise<User> {
+    return this.userService.toggle2FA(token, enable);
   }
 
   @Get(':userID/stats')
@@ -68,15 +72,17 @@ export class UserController {
   @Get(':currentUserID/friend/:targetUserID')
   async getFriendshipStatus(
     @Param('currentUserID', ParseIntPipe) currentUserID: number,
-    @Param('targetUserID', ParseIntPipe) targetUserID: number ): Promise<{ isFriend: boolean }> {
-      const isFriend = await this.userService.getFriendshipStatus(currentUserID, targetUserID);
-      return { isFriend };
+    @Param('targetUserID', ParseIntPipe) targetUserID: number
+  ): Promise<{ isFriend: boolean }> {
+    const isFriend = await this.userService.getFriendshipStatus(currentUserID, targetUserID);
+    return { isFriend };
   }
 
   @Patch(':currentUserID/friend/:targetUserID')
   async toggleFriendship(
     @Param('currentUserID', ParseIntPipe) currentUserID: number,
-    @Param('targetUserID', ParseIntPipe) targetUserID: number ): Promise<string> {
+    @Param('targetUserID', ParseIntPipe) targetUserID: number
+  ): Promise<string> {
     return this.userService.toggleFriendship(currentUserID, targetUserID);
   }
 }

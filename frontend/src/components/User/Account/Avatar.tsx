@@ -106,27 +106,16 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
       <form onSubmit={handleSubmit} className="text-center">
         <label className="btn btn-outline-primary btn-sm mb-2">
           Pick New Avatar
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            hidden
-          />
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" hidden />
         </label>
 
         {/* Conditional Buttons */}
         {previewURL && buttonVisible && (
           <div className="mt-2">
-            <button
-              type="button"
-              className="btn btn-danger btn-sm me-2"
-              onClick={handleCancel}>
+            <button type="button" className="btn btn-danger btn-sm me-2" onClick={handleCancel}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-warning btn-sm">
+            <button type="submit" className="btn btn-warning btn-sm">
               Upload Avatar
             </button>
           </div>
@@ -134,6 +123,6 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
       </form>
     </div>
   );
-}
+};
 
 export default Avatar;

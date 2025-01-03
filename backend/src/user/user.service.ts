@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Statistics, UserStatus, Achievement, UserAchievement } from '@prisma/client'
+import { User, Statistics, UserStatus } from '@prisma/client';
+
 import { LoginService } from '../authentication//login/login.service';
-import { AchievementService } from './achievement.service';
 
 export interface UserAccount extends User {
   avatarURL: string;
@@ -37,12 +37,11 @@ export interface AchievementData {
   unlocked: boolean;
 }
 
-
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private readonly loginService: LoginService,
+    private readonly loginService: LoginService
   ) {}
 
   async getUserIDByToken(token: string): Promise<number> {
@@ -55,7 +54,7 @@ export class UserService {
         ID: true,
       },
     });
-    if (!user) throw new NotFoundException("User not found");
+    if (!user) throw new NotFoundException('User not found');
     return user.ID;
   } //! make sure to catch where calling this function
 
@@ -63,16 +62,14 @@ export class UserService {
     const intraName = await this.loginService.getIntraName(token);
     // console.log("intraName = ", intraName);
 
-    if (!intraName)
-      throw new NotFoundException('intraUsername not found');
+    if (!intraName) throw new NotFoundException('intraUsername not found');
 
     const user = await this.prisma.user.findUnique({
       where: { intraUsername: intraName },
     });
     // console.log("user = ", user);
 
-    if (!user)
-      throw new NotFoundException("User not found!");
+    if (!user) throw new NotFoundException('User not found!');
 
     // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
     const avatarURL = user.avatar
@@ -103,8 +100,8 @@ export class UserService {
   async updateAvatar(token: string, avatar: Buffer): Promise<User> {
     const intraUsername = await this.loginService.getIntraName(token);
     return await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
-        data: { avatar },
+      where: { intraUsername: intraUsername },
+      data: { avatar },
     });
   }
 
@@ -112,7 +109,7 @@ export class UserService {
     const intraUsername = await this.loginService.getIntraName(token);
     return await this.prisma.user.update({
       where: { intraUsername: intraUsername },
-        data: { Enabled2FA: enable },
+      data: { Enabled2FA: enable },
     });
   }
 
@@ -145,7 +142,8 @@ export class UserService {
           // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
         }
       }
-    }  }
+    }
+  }
 
   // FOR LATER: REMOVE winRate and playerRating CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED
@@ -155,13 +153,10 @@ export class UserService {
     });
     // console.log("statistics = ", statistics);
 
-    if (!statistics)
-      throw new NotFoundException("Statistics not found!");
+    if (!statistics) throw new NotFoundException('Statistics not found!');
 
     // Calculate win rate and ladder rank -> we will later move this to game logic
-    const winRate = statistics.gamesPlayed
-      ? statistics.wins / statistics.gamesPlayed
-      : 0;
+    const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
     const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
     // Update the ladder rank in the database -> we will later move this to game logic
@@ -201,9 +196,7 @@ export class UserService {
     };
 
     // Calculate the new ladderRank (playerRating)
-    const winRate = updatedStats.gamesPlayed
-      ? updatedStats.wins / updatedStats.gamesPlayed
-      : 0;
+    const winRate = updatedStats.gamesPlayed ? updatedStats.wins / updatedStats.gamesPlayed : 0;
     const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
 
     // Update the statistics in the database
@@ -259,7 +252,7 @@ export class UserService {
         user: {
           select: { username: true, avatar: true },
         },
-        ladderRank: true
+        ladderRank: true,
       },
     });
 
@@ -304,7 +297,6 @@ export class UserService {
     const avatarURL = user.avatar
       ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
       : 'http://localhost:3001/images/default-avatar.png';
-
 
     return {
       ...user,

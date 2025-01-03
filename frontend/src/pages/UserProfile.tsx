@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL -> might remove later?
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
 import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus';
 import FriendActions from '../components/User/Profile/FriendActions';
 import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion';
@@ -49,17 +49,15 @@ function UserProfile() {
         <div className="col-md-3">
           <div className="card shadow mb-4">
             <div className="card-body text-center">
-            <NameAvatarStatus
-              username={userData.username}
-              avatarURL={userData.avatarURL}
-              status={userData.status} />
+              <NameAvatarStatus username={userData.username} avatarURL={userData.avatarURL} status={userData.status} />
             </div>
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-            <FriendActions
-              currentUserID={1} // ! NEED TO FIX, this hard coded userID of logged in user
-              targetUserID={userID} />
+              <FriendActions
+                currentUserID={1} // ! NEED TO FIX, this hard coded userID of logged in user
+                targetUserID={userID}
+              />
             </div>
           </div>
         </div>

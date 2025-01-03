@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
 import Statistics from './Statistics';
 import Leaderboard from './Leaderboard';
 import MatchHistory from './MatchHistory';
@@ -11,7 +12,7 @@ interface UserInfoAccordionProps {
   triggerRefresh?: boolean;
 }
 
-function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) {
+function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
   const [matchHistoryData, setMatchHistoryData] = useState<MatchHistoryData[] | null>(null);
   const [achievementsData, setAchievementsData] = useState<AchievementsData[] | null>(null);
@@ -65,17 +66,17 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
   const renderContent = (loading: boolean, data: any, Component: any, noDataMessage: string) => {
     if (loading) {
       return (
-      <div className="text-center p-3">
-        <p>Loading...</p>;
-      </div>
+        <div className="text-center p-3">
+          <p>Loading...</p>;
+        </div>
       );
     }
 
     if (!data || (Array.isArray(data) && data.length === 0)) {
       return (
-      <div className="text-center p-3">
-        <p>{noDataMessage}</p>;
-      </div>
+        <div className="text-center p-3">
+          <p>{noDataMessage}</p>;
+        </div>
       );
     }
 
@@ -93,7 +94,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
             data-bs-toggle="collapse"
             data-bs-target="#collapseStatistics"
             aria-expanded="true"
-            aria-controls="collapseStatistics">
+            aria-controls="collapseStatistics"
+          >
             Statistics
           </button>
         </h2>
@@ -101,13 +103,10 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
           id="collapseStatistics"
           className="accordion-collapse collapse show"
           aria-labelledby="headingStatistics"
-          data-bs-parent="#userAccordion">
+          data-bs-parent="#userAccordion"
+        >
           <div className="accordion-body p-0">
-            {renderContent(
-              loadingStatistics,
-              { statisticsData },
-              Statistics,
-              'No statistics available.')}
+            {renderContent(loadingStatistics, { statisticsData }, Statistics, 'No statistics available.')}
           </div>
         </div>
       </div>
@@ -121,7 +120,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
             data-bs-toggle="collapse"
             data-bs-target="#collapseMatchHistory"
             aria-expanded="false"
-            aria-controls="collapseMatchHistory">
+            aria-controls="collapseMatchHistory"
+          >
             Match History
           </button>
         </h2>
@@ -129,14 +129,10 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
           id="collapseMatchHistory"
           className="accordion-collapse collapse"
           aria-labelledby="headingMatchHistory"
-          data-bs-parent="#userAccordion">
+          data-bs-parent="#userAccordion"
+        >
           <div className="accordion-body p-0">
-            {renderContent(
-              loadingMatchHistory,
-              { matchHistoryData },
-              MatchHistory,
-              'No match history available.',
-            )}
+            {renderContent(loadingMatchHistory, { matchHistoryData }, MatchHistory, 'No match history available.')}
           </div>
         </div>
       </div>
@@ -150,7 +146,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
             data-bs-toggle="collapse"
             data-bs-target="#collapseLeaderboard"
             aria-expanded="false"
-            aria-controls="collapseLeaderboard">
+            aria-controls="collapseLeaderboard"
+          >
             Leaderboard
           </button>
         </h2>
@@ -158,10 +155,10 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
           id="collapseLeaderboard"
           className="accordion-collapse collapse"
           aria-labelledby="headingLeaderboard"
-          data-bs-parent="#userAccordion">
+          data-bs-parent="#userAccordion"
+        >
           <div className="accordion-body p-0">
-            <Leaderboard
-            triggerRefresh={triggerRefresh}/>
+            <Leaderboard triggerRefresh={triggerRefresh} />
           </div>
         </div>
       </div>
@@ -175,7 +172,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
             data-bs-toggle="collapse"
             data-bs-target="#collapseAchievements"
             aria-expanded="false"
-            aria-controls="collapseAchievements">
+            aria-controls="collapseAchievements"
+          >
             Achievements
           </button>
         </h2>
@@ -183,7 +181,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) 
           id="collapseAchievements"
           className="accordion-collapse collapse"
           aria-labelledby="headingAchievements"
-          data-bs-parent="#userAccordion">
+          data-bs-parent="#userAccordion"
+        >
           <div className="accordion-body p-0">
             {renderContent(
               loadingAchievements,
