@@ -1,18 +1,10 @@
-import {
-	SubscribeMessage,
-	MessageBody,
-	WebSocketGateway,
-	WebSocketServer,
-	OnGatewayInit,
-	OnGatewayConnection,
-	OnGatewayDisconnect,
-  } from '@nestjs/websockets';
+  import { WebSocketServer, SubscribeMessage, MessageBody, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
   import { Logger } from '@nestjs/common';
   import { Socket, Namespace } from 'socket.io';
   import { PrismaService } from 'src/prisma/prisma.service';
   import { UserService } from 'src/user/user.service';
   import { User, Match } from '@prisma/client';
-  import { GameService } from './game.service';
+  import { GameService } from 'src/game/game.service';
   
   @WebSocketGateway({
 	namespace: 'matchmaking',
@@ -23,7 +15,7 @@ import {
 	  credentials: true,
 	},
   })
-  export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  export class MatchmakingGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 	  private readonly userService: UserService,
 	  private readonly gameService: GameService
@@ -46,10 +38,10 @@ import {
 	  {
 		const otherID: number = this.queue.pop();
 		// make game
-		this.gameService.newgame(userID, otherID);
-		const userSocketID: string = await this.userService.getSocketIDbyUserID(userID);
-		const otherSocketID: string = await this.userService.getSocketIDbyUserID(otherID);
-		this.server.to(userSocketID)).to(otherSocketID).emit('newGame');
+		await this.gameService.createGame(userID, otherID);
+		const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
+		const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
+		this.server.to(userSocketID).to(otherSocketID).emit('newGame');
 	  }
 	  else
 	  {
@@ -62,7 +54,7 @@ import {
 	  const userID = await this.userService.getUserIDByToken(token);
 	  if (this.queue.includes(userID))
 	  {
-		this.queue.remove(userID);
+		this.queue.splice(this.queue.indexOf(userID));
 	  }
 	}
   

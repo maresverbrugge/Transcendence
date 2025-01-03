@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { GameService } from 'src/game/game.service';
@@ -16,6 +16,6 @@ export class GameController {
     @Param('token') token: string,
     @Param('userid2') userid2: number) {
       const userid1: number = await this.user.getUserIDByToken(token);
-      this.game.newGame(userid1, userid2);
+      this.game.createGame(userid1, userid2);
   }
 }

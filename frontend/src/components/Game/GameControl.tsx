@@ -54,12 +54,10 @@ class Ball {
       this.y = height / 2;
     }
     if (this.bottom() > height) {
-      this.speedY = -this.speedY;
-      g_socket.emit('ball speedY reversed');
+      g_socket.emit('reverse ball speedY', this.gameID);
     }
     if (this.top() < 0) {
-      this.speedY = -this.speedY;
-      g_socket.emit('ball speedY reversed');
+      g_socket.emit('reverse ball speedY', this.gameID);
     }
   }
   display() {
@@ -120,17 +118,17 @@ function map_range(value: number, low1: number, high1: number, low2: number, hig
   return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
 }
 
-// onkeydown = (event: KeyboardEvent) => {
-//   if (end) return;
-//   let move: string;
-//   if (event.key === 'ArrowUp') {
-//     move = 'up';
-//   }
-//   if (event.key === 'ArrowDown') {
-//     move = 'down';
-//   }
-//   g_socket.emit('key', move, g_gameID, g_socket.id);
-// };
+onkeydown = (event: KeyboardEvent) => {
+  if (end) return;
+  let move: string;
+  if (event.key === 'ArrowUp') {
+    move = 'up';
+  }
+  if (event.key === 'ArrowDown') {
+    move = 'down';
+  }
+  g_socket.emit('key', move, g_gameID, g_socket.id);
+};
 
 const GameLogic = ({ gameID, socket }) => {
   const canvas: any = React.useRef();

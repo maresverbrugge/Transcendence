@@ -42,11 +42,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
-    const member: user = await this.userService.getUserByToken(token);
-    const game = await this.prisma.match.findunique({
+    const memberID: number = await this.userService.getUserIDByToken(token);
+    const game: Match = await this.prisma.match.findUnique({
       where: {
         players: {
-	  has: member
+	  has: memberID,
 	},
       },
       select: {
@@ -57,50 +57,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('start')
-  handleGameStart() {
-	this.ballspeedy = Math.floor(Math.random() * 6 - 3)
-    this.server.emit('ballSpeedY', this.ballspeedy);
+  handleGameStart(client: Socket, gameID: number) {
+    this.server.emit('ballSpeedY', this.gameService.handleStart(gameID));
   }
 
   @SubscribeMessage('key')
   async handleKey(@MessageBody() data: { move: string; gameID: number; socketID: string }) {
-    const playerID: number = await this.userService.getUserIDBySocketID(data[2]);
-    const game = await this.gameService.getPlayers(parseInt(data[1]));
-    if (game.players[0].ID === playerID) {
-      if (data[0] === 'up') this.server.emit('right up');
-      else this.server.emit('right down');
-    } else {
-      if (data[0] === 'up') this.server.emit('left up');
-      else this.server.emit('left down');
-    }
+    this.gameService.handleKey(data[0], data[2], data[1]);
   }
 
   @SubscribeMessage('left scored')
-  async handleScoreLeft(client: Socket, gameID: string) {
-    await this.prisma.match.update({
-      where: {
-        matchID: parseInt(gameID),
-      },
-      data: {
-        scorePlayer1: {
-          increment: 1,
-        },
-      },
-    });
+  async handleScoreLeft(client: Socket, gameID: number) {
+    this.gameService.handleScoreLeft(gameID);
   }
 
   @SubscribeMessage('right scored')
-  async handleScoreRight(client: Socket, gameID: string) {
-    await this.prisma.match.update({
-      where: {
-        matchID: parseInt(gameID),
-      },
-      data: {
-        scorePlayer2: {
-          increment: 1,
-        },
-      },
-    });
+  async handleScoreRight(client: Socket, gameID: number) {
+    this.gameService.handleScoreRight(gameID);
   }
 
   afterInit(server: Namespace) {
