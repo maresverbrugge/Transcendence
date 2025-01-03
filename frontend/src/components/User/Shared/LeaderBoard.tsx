@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LeaderboardData } from '../interfaces.tsx';
+import { LeaderboardData } from '../interfaces';
 
-const Leaderboard = ( { triggerRefresh }: { triggerRefresh: boolean }) => {
+const Leaderboard = ( { triggerRefresh }: { triggerRefresh?: boolean }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 

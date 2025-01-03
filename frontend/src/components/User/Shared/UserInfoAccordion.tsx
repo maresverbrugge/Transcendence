@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Statistics from './Statistics.tsx';
-import Leaderboard from './Leaderboard.tsx';
-import MatchHistory from './MatchHistory.tsx';
-import Achievements from './Achievements.tsx';
+import Statistics from './Statistics';
+import Leaderboard from './Leaderboard';
+import MatchHistory from './MatchHistory';
+import Achievements from './Achievements';
 import { StatisticsData, MatchHistoryData, AchievementsData } from '../interfaces';
 
 interface UserInfoAccordionProps {
   userID: number;
-  triggerRefresh: boolean;
+  triggerRefresh?: boolean;
 }
 
 function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps ) {

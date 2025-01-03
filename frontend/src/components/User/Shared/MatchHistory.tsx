@@ -1,5 +1,5 @@
 import React from 'react';
-import { MatchHistoryData } from '../interfaces.tsx';
+import { MatchHistoryData } from '../interfaces';
 
 const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData[] }) => (
   <div className="p-3">

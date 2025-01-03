@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatisticsData } from '../interfaces.tsx'
+import { StatisticsData } from '../interfaces'
 
 const Statistics = ({ statisticsData }: {statisticsData: StatisticsData}) => {
 
