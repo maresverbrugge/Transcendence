@@ -14,15 +14,27 @@ interface ChannelProps {
 
 const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
   useEffect(() => {
-    
+    const handleDisconnect = () => {
+      if (channel) {
+        socket.emit('leaveChannel', { channelID: channel.ID, token });
+      }
+    };
+
     if (channel && !channel.isPrivate) {
       socket.emit('joinChannel', { channelID: channel.ID, token });
     }
 
+    socket.on('disconnect', handleDisconnect);
+
+    const handleBeforeUnload = () => {
+      handleDisconnect(); // Perform cleanup
+      socket.disconnect(); // Optionally disconnect socket
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
-      if (channel && !channel.isPrivate) {
-        socket.emit('leaveChannel', { channelID: channel.ID, token});
-      }
+      socket.off('disconnect', handleDisconnect); // Cleanup disconnect listener
+      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup tab close listener
     };
   }, [channel, socket]);
 
