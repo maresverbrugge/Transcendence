@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import './Friends.css';
@@ -8,13 +9,13 @@ import { emitter } from '../emitter';
 interface FriendProps {
   key: number;
   friend: MemberData;
-  socket: any;
+  socket: Socket;
 }
 
 interface FriendsProps {
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
-  socket: any;
+  socket: Socket;
   token: string;
 }
 

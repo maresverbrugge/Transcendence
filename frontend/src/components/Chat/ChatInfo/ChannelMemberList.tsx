@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import Confirm from '../../Confirm';
@@ -6,11 +7,12 @@ import { ChannelData, MemberData } from '../interfaces';
 import AddMember from './AddMember';
 import BlockButton from './BlockButton';
 import { emitter } from '../emitter';
+import SendGameInvite from './SendGameInvite';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
   friends: MemberData[];
-  socket: any;
+  socket: Socket;
   token: string;
 }
 
@@ -19,14 +21,14 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
   const [selectedMemberID, setSelectedMemberID] = useState<number | null>(null);
-  const [memberID, setMemberID] = useState<number | null>(null);
+  const [currentMemberID, setCurrentMemberID] = useState<number | null>(null);
   const [blockedUserIDs, setBlockedUserIDs] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchCurrentMemberID = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channel.ID}/${token}`);
-        setMemberID(parseInt(response.data));
+        setCurrentMemberID(parseInt(response.data));
       } catch (error) {
         emitter.emit('error', error);
       }
@@ -61,7 +63,7 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
     };
   }, [channel, socket]);
 
-  const currentMember = members.find((member) => member.ID === memberID);
+  const currentMember = members.find((member) => member.ID === currentMemberID);
   if (currentMember?.isBanned) emitter.emit('selectChannel', null);
 
   const sortedMembers = members.sort((a, b) => {
@@ -116,19 +118,26 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
       <ul>
         {sortedMembers.map((member) => {
           if (member.isBanned) return null;
-          const isCurrentMember = currentMember && member.ID === currentMember.ID;
+          const iscurrentMember = currentMember && member.ID === currentMember.ID;
           const roleLabel = member.isOwner ? 'Owner' : member.isAdmin ? 'Admin' : '';
           return (
             <li key={member.ID}>
-              {isCurrentMember
+              {iscurrentMember
                 ? `You${roleLabel ? ` (${roleLabel})` : ''}`
-                : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ''}`}
-              {!isCurrentMember && (
-                <BlockButton
-                  memberID={member.user.ID}
-                  blockedUserIDs={blockedUserIDs}
-                  token={token}
-                />
+                : `${member?.user.username}${roleLabel ? ` (${roleLabel})` : ''}`}
+              {!iscurrentMember && (
+                <>
+                  <BlockButton
+                    userID={member?.user.ID}
+                    blockedUserIDs={blockedUserIDs}
+                    token={token}
+                  />
+                  <SendGameInvite
+                    receiverUserID={member?.user.ID}
+                    socket={socket}
+                    token={token}
+                  />
+                </>
               )}
               <div className="actions">
                 {currentMember?.isOwner && !member.isOwner && (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import Channels from '../components/Chat/Channels/Channels';
 import AlertMessage from '../components/AlertMessage';
@@ -8,6 +8,7 @@ import { MemberData } from '../components/Chat/interfaces';
 import axios from 'axios';
 import './Chat.css'
 import { emitter } from '../components/Chat/emitter';
+import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -15,13 +16,12 @@ const Chat = () => {
   const [channelID, setChannelID] = useState<number | null>(null);
   const [friends, setFriends] = useState<MemberData[]>([]);
   const [tempToken, setTempToken] = useState<string>(null);
+
   var tempWebSocketID: string = '';
 
   useEffect(() => {
   
     const token = localStorage.getItem('authenticationToken');
-
-    localStorage.debug = 'socket.io-client:*';
     
     const socketIo = io("ws://localhost:3001/chat", {
       transports: ["websocket"],
@@ -103,6 +103,10 @@ const Chat = () => {
           onClose={() => setAlert(null)}
         />
       )}
+      <ReceiveGameInvite
+        socket={socket}
+        token={tempToken}
+      />
       <Channels
         selectedChannelID={channelID}
         friends={friends}

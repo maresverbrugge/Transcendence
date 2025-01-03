@@ -7,7 +7,6 @@ import { UserService } from '../blockedUser/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
-import { channel } from 'diagnostics_channel';
 
 type ChannelMemberResponse = ChannelMember & {
   user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -25,7 +24,7 @@ export class ChannelMemberService {
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway,
     @Inject(forwardRef(() => ChannelService))
-    private readonly channelService: ChannelService
+    private readonly channelService: ChannelService,
   ) {}
 
   async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse> {

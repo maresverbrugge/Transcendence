@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { emitter } from '../emitter';
 
@@ -7,7 +8,7 @@ import './NewChannel.css';
 
 interface NewDMProps {
   friends: MemberData[];
-  socket: any;
+  socket: Socket;
   token: string;
 }
 

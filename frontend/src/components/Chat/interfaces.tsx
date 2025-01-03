@@ -9,7 +9,8 @@ export interface ChannelData {
   ID: number;
   name?: string;
   isPrivate: boolean;
-  isDM?: boolean;
+  passwordEnabled: boolean;
+  isDM: boolean;
 }
 
 export interface MemberData {

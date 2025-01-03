@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
 
 import Friends from './Friends';
 import './ChatInfo.css';
@@ -12,7 +13,7 @@ import { emitter } from '../emitter';
 interface ChannelInfoProps {
   channelID: number;
   friends: MemberData[];
-  socket: any;
+  socket: Socket;
   token: string;
 }
 
@@ -20,7 +21,7 @@ interface ChatInfoProps {
   channelID: number | null;
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
-  socket: any;
+  socket: Socket;
   token: string;
 }
 

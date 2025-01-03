@@ -1,5 +1,8 @@
+// Channels.tsx
 import React, { useState, useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 import axios from 'axios';
+import PasswordPrompt from './PasswordPrompt'; // Import the PasswordPrompt component
 
 import './Channels.css'; // Import the CSS file
 import AlertMessage from '../../AlertMessage';
@@ -11,7 +14,7 @@ import { emitter } from '../emitter';
 interface ChannelsProps {
   selectedChannelID: number | null;
   friends: MemberData[];
-  socket: any; // Adjust this type if using a specific Socket.IO client library type
+  socket: Socket; // Adjust this type if using a specific Socket.IO client library type
   token: string;
 }
 
@@ -19,6 +22,8 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
+  const [passwordPromptVisible, setPasswordPromptVisible] = useState<boolean>(false);
+  const [selectedChannelForPassword, setSelectedChannelForPassword] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchChannels = async () => {
@@ -63,8 +68,29 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
   const handleCloseBannedAlert = () => setShowBannedAlert(null);
 
   const handleClickChannel = (channelID: number) => {
-    if (channelID === selectedChannelID) emitter.emit('selectChannel', null)
-    else emitter.emit('selectChannel', channelID)
+    const channel = channels.find((ch) => ch.ID === channelID);
+    if (channelID === selectedChannelID) emitter.emit('selectChannel', null);
+    else if (channel?.passwordEnabled) {
+      setSelectedChannelForPassword(channelID);
+      setPasswordPromptVisible(true);
+    }
+    if (!channel?.passwordEnabled) {
+      emitter.emit('selectChannel', channelID);
+    }
+  };
+
+  const handlePasswordSubmit = async (password: string) => {
+    try {
+      const response = await axios.post(`http://localhost:3001/chat/channel/${selectedChannelForPassword}/verify-password`, { password })
+      if (response.status ===  200) {
+        emitter.emit('selectChannel', selectedChannelForPassword);
+        setPasswordPromptVisible(false);
+      } else {
+        emitter.emit('alert', 'Incorrect password');
+      }
+    } catch (error) {
+      emitter.emit('error', error);
+    }
   };
 
   return (
@@ -110,7 +136,7 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
           </>
         )}
 
-        <NewChannel friends={friends}socket={socket} token={token} />
+        <NewChannel friends={friends} socket={socket} token={token} />
       </div>
 
       <div className="direct-messages">
@@ -129,6 +155,10 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
         </ul>
         <NewDM friends={friends} socket={socket} token={token} />
       </div>
+
+      {passwordPromptVisible && (
+        <PasswordPrompt onClose={() => setPasswordPromptVisible(false)} onSubmit={handlePasswordSubmit} />
+      )}
     </div>
   );
 };

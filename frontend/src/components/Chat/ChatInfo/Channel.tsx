@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 
 import ChannelMemberList from './ChannelMemberList';
 import { ChannelData, MemberData } from '../interfaces';
@@ -7,7 +8,7 @@ import { emitter } from '../emitter';
 interface ChannelProps {
   channel: ChannelData;
   friends: MemberData[];
-  socket: any;
+  socket: Socket;
   token: string
 }
 

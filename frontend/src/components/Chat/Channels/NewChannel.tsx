@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Socket } from 'socket.io-client';
 import './NewChannel.css';
 import axios from 'axios';
 import { emitter } from '../emitter';
@@ -7,7 +8,7 @@ import { MemberData } from '../interfaces';
 
 interface NewChannelProps {
   friends: MemberData[];
-  socket: any;
+  socket: Socket;
   token: string;
 }
 
@@ -29,6 +30,7 @@ const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
           name: channelName,
           isPrivate,
           isDM: false,
+          passwordEnabled,
           password: passwordEnabled ? password : null,
           token,
           memberIDs: isPrivate ? selectedMemberIDs : [],

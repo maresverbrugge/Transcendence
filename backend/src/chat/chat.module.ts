@@ -12,6 +12,7 @@ import { MessageService } from './message/message.service';
 import { MessageController } from './message/message.controller';
 import { BlockedUserService } from './blockedUser/blockedUser.service';
 import { HashingService } from './hashing/hashing.service';
+import { GameInviteService } from './gameInvite/game-invite.service';
 
 @Module({
   controllers: [FriendsController, ChannelController, UserController, MessageController],
@@ -24,6 +25,7 @@ import { HashingService } from './hashing/hashing.service';
     ChatGateway,
     BlockedUserService,
     HashingService,
+    GameInviteService,
   ],
   exports: [],
   imports: [

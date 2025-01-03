@@ -80,6 +80,7 @@ model Channel {
   name              String
   isPrivate         Boolean       @default(false)
   isDM              Boolean       @default(false)
+  passwordEnabled   Boolean       @default(false)
   password          String?       // Optional password field
 
   ownerID           Int

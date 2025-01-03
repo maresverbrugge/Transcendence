@@ -9,14 +9,23 @@ import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
 import { HashingService } from '../hashing/hashing.service';
 
-type ChannelWithMembersAndMessages = Channel & {
+type ChannelResponse = {
+    ID: number;
+    name: string;
+    isPrivate: boolean;
+    isDM: boolean;
+    passwordEnabled: boolean;
+    ownerID: number;
+}
+
+type ChannelWithMembersAndMessages = ChannelResponse & {
   members: (ChannelMember & {
     user: Pick<User, 'ID' | 'username'>;
   })[];
   messages: Message[];
 };
 
-type ChannelWithMembers = Channel & {
+type ChannelWithMembers = ChannelResponse & {
   members: (ChannelMember & {
     user: Pick<User, 'ID' | 'username'>;
   })[];
@@ -26,6 +35,7 @@ type newChannelData = {
     name: string;
     isPrivate: boolean;
     isDM: boolean;
+    passwordEnabled: Boolean,
     password?: string;
     token: string;
     memberIDs: number[];
@@ -41,7 +51,7 @@ export class ChannelService {
     @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
     @Inject(forwardRef(() => ChatGateway))
-    private readonly chatGateway: ChatGateway
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   async getChannelByID(channelID: number): Promise<Channel> {
@@ -59,13 +69,19 @@ export class ChannelService {
 
   async getChannelWithMembersAndMessagesByID(channelID: number): Promise<ChannelWithMembersAndMessages> {
     try {
-      const channel = await this.prisma.channel.findUnique({
-        where: { ID: channelID },
-        include: {
-          members: { include: { user: { select: { ID: true, username: true } } } },
-          messages: true,
-        },
-      });
+        const channel = await this.prisma.channel.findUnique({
+            where: { ID: channelID },
+            select: {
+              ID: true,
+              name: true,
+              isPrivate: true,
+              isDM: true,
+              passwordEnabled: true,
+              ownerID: true,
+              members: { include: { user: { select: { ID: true, username: true } } } },
+              messages: true,
+            },
+          });
       if (!channel) throw new NotFoundException('Channel not found');
       return channel;
     } catch (error) {
@@ -144,6 +160,7 @@ export class ChannelService {
             name: data.name,
             isPrivate: data.isPrivate,
             isDM: data.isDM,
+            passwordEnabled: data.password? true : false,
             password: hashedPassword,
             ownerID: ownerID,
             members: {
@@ -155,7 +172,13 @@ export class ChannelService {
               ],
             },
           },
-          include: {
+          select: {
+            ID: true,
+            name: true,
+            isPrivate: true,
+            isDM: true,
+            passwordEnabled: true,
+            ownerID: true,
             members: { include: { user: { select: { ID: true, username: true } } } },
             messages: true,
           },
@@ -173,17 +196,27 @@ export class ChannelService {
     return channelMember.user.username;
   }
 
-  async getPublicChannels(): Promise<Channel[]> {
+  async getPublicChannels(): Promise<ChannelResponse[]> {
     try {
         return await this.prisma.channel.findMany({
             where: { isPrivate: false },
+            select: {
+                ID: true,
+                name: true,
+                isPrivate: true,
+                isDM: true,
+                passwordEnabled: true,
+                ownerID: true,
+                members: { include: { user: { select: { ID: true, username: true } } } },
+                messages: true,
+            }
         });
     } catch (error) {
         throw new InternalServerErrorException('An unexpected error occurred', error.message);
     }
   }
 
-  async getPrivateChannels(token: string): Promise<Channel[]> {
+  async getPrivateChannels(token: string): Promise<ChannelResponse[]> {
     try {
         const user = await this.prisma.user.findUnique({
           where: { websocketID: token },
@@ -192,10 +225,16 @@ export class ChannelService {
             channelMembers: {
               select: {
                 isBanned: true,
-                channel: { include: { members: { include: { user: { select: {
+                channel: { select: {
                     ID: true,
-                    username: true,
-                } } } } } },
+                    name: true,
+                    isPrivate: true,
+                    isDM: true,
+                    passwordEnabled: true,
+                    ownerID: true,
+                    members: { include: { user: { select: { ID: true, username: true } } } },
+                    messages: true,
+                } },
               },
             },
           },
@@ -215,7 +254,7 @@ export class ChannelService {
     }
   }
 
-  async getChannelsOfUser(token: string): Promise<Channel[]> {
+  async getChannelsOfUser(token: string): Promise<ChannelResponse[]> {
     const publicChannels = await this.getPublicChannels();
     const privateChannels = await this.getPrivateChannels(token);
     return [...publicChannels, ...privateChannels];
@@ -308,6 +347,20 @@ export class ChannelService {
         return channel?.isPrivate ? true : false;
     } catch (error) {
         throw new InternalServerErrorException('An unexpected error occurred', error.message);
+    }
+  }
+
+  async varifyPassword(channelID: number, password: string): Promise<boolean> {
+    try {
+      const channel = await this.prisma.channel.findUnique({
+        where: {ID: channelID},
+        select: {password: true},
+      })
+      if (!channel) throw new NotFoundException('Channel not found');
+      return await this.hashingService.comparePassword(password, channel.password);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('An unexpected error occurred', error.message);
     }
   }
 }
