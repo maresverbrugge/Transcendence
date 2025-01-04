@@ -1,5 +1,7 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Inject } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CACHE_MANAGER } from '@nestjs/common/cache';
+import { Cache } from 'cache-manager';
 import axios from 'axios';
 import { UserStatus } from '@prisma/client';
 
@@ -7,7 +9,8 @@ import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class LoginService {
-  constructor(private prisma: PrismaService) {}
+
+  constructor(private prisma: PrismaService, @Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   async getToken(response_code: string): Promise<any> {
     // Load the environment variables needed for the login process
@@ -98,6 +101,44 @@ export class LoginService {
       return response.data.login;
     } catch (error) {
       throw new InternalServerErrorException('Error while getting intra name');
+    }
+  }
+
+  async getExpiresInSeconds(token: string): Promise<number> {
+    try {
+      const response = await axios.get('https://api.intra.42.fr/oauth/token/info', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.data || !response.data['expires_in_seconds']) {
+        throw new InternalServerErrorException('Data not found in response');
+      } else {
+        return response.data['expires_in_seconds'];
+      }
+    } catch (error) {
+      throw new InternalServerErrorException('Error while getting expires in seconds');
+    }
+  }
+
+  async getUserFromCache(token: string): Promise<number> {
+    try {
+      const user = await this.cacheManager.get<number>(token);
+      if (!user) {
+        throw new InternalServerErrorException('User not found in cache'); // fix error handling here
+      }
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Error while getting user from cache');
+    }
+  }
+
+  async storeUserInCache(token: string, user: number, expiresInSeconds: number): Promise<void> {
+    try {
+      await this.cacheManager.set(token, user, expiresInSeconds);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while storing user in cache');
     }
   }
 }

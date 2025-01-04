@@ -1,10 +1,11 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 
 import { LoginService } from './login.service';
+import { UserService } from 'src/user/user.service';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly loginService: LoginService) {}
+  constructor(private readonly loginService: LoginService, private readonly userService: UserService) {}
 
   @Post('get-token')
   async getToken(@Body() body: { code: string; state: string }) {
@@ -21,6 +22,9 @@ export class LoginController {
     const { token } = body;
     const user = await this.loginService.getIntraName(token);
     this.loginService.addUserToDatabase(user);
+    const userID = await this.userService.getUserIDByIntraUsername(user);
+    const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
+    this.loginService.storeUserInCache(token, userID, expiresInSeconds);
   }
 
   @Post('offline')
