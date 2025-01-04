@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
 
 import { LoginController } from './login/login.controller';
 import { LoginService } from './login/login.service';
@@ -11,6 +10,6 @@ import { TwoFactorService } from './two-factor/two-factor.service';
 @Module({
   imports: [CacheModule.register({ isGlobal: true })],
   controllers: [LoginController, TwoFactorController],
-  providers: [LoginService, TwoFactorService, PrismaService, UserService],
+  providers: [LoginService, TwoFactorService, PrismaService],
 })
 export class LoginModule {}

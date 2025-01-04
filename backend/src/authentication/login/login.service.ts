@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Inject } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Inject } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/common/cache';
 import { Cache } from 'cache-manager';
@@ -122,14 +122,27 @@ export class LoginService {
     }
   }
 
+  async getUserIDByIntraUsername(intraUsername: string): Promise<number> {
+    const user = await this.prisma.user.findUnique({
+      where: { intraUsername: intraUsername },
+        select: { ID: true }
+    });
+    if (!user)
+      throw new NotFoundException("User not found in database");
+    return user.ID;
+  }
+
   async getUserFromCache(token: string): Promise<number> {
     try {
-      const user = await this.cacheManager.get<number>(token);
-      if (!user) {
-        throw new InternalServerErrorException('User not found in cache'); // fix error handling here
+      const userID = await this.cacheManager.get<number>(token);
+      if (!userID) {
+        throw new UnauthorizedException('User not logged in');
       }
-      return user;
+      return userID;
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Error while getting user from cache');
     }
   }
