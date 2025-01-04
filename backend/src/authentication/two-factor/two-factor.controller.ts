@@ -2,6 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 
 import { TwoFactorService } from './two-factor.service';
 import { LoginService } from '../login/login.service';
+import { OneTimePasswordPipe } from './pipes/one-time-password';
 
 @Controller('two-factor')
 export class TwoFactorController {
@@ -27,10 +28,15 @@ export class TwoFactorController {
   }
 
   @Post('verify')
-  async verify(@Body() body: { oneTimePassword: string; token: string }) {
-    const { oneTimePassword, token } = body;
+  async verify(
+    @Body('oneTimePassword', OneTimePasswordPipe) oneTimePassword: string,
+    @Body('token') token: string,
+  ) {
     const intraUsername = await this.loginService.getIntraName(token);
-    const verified = await this.twoFactorService.verifyOneTimePassword(oneTimePassword, intraUsername);
+    const verified = await this.twoFactorService.verifyOneTimePassword(
+      oneTimePassword,
+      intraUsername,
+    );
     return verified;
   }
 
