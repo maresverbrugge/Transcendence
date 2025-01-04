@@ -113,11 +113,14 @@ export class LoginService {
       });
 
       if (!response.data || !response.data['expires_in_seconds']) {
-        throw new InternalServerErrorException('Data not found in response');
+        throw new UnauthorizedException('Token not found');
       } else {
         return response.data['expires_in_seconds'];
       }
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Error while getting expires in seconds');
     }
   }
