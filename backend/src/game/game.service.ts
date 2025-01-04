@@ -24,10 +24,12 @@ export class GameService {
     private readonly userService: UserService
   ) {}
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
-    const newGame: Match = await this.prisma.match.create({
+    const newGame = await this.prisma.match.create({
       data: {
         status: 'ACCEPTED',
-        players: [userID1, userID2],
+		players: {
+            connect: [{ ID: userID1 } , { ID: userID2 }]
+          },
       },
     });
     this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0});

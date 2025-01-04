@@ -29,50 +29,6 @@ export class UserService {
     return user.ID; // Return the user ID if found, otherwise return null
   } //! make sure to catch where calling this function
 
-    //temporary function
-    async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
-      // Step 1: Find user with an empty websocketID
-      const emptyWebSocketUser = await this.prisma.user.findFirst({
-        where: { websocketID: null },
-      });
-
-      if (emptyWebSocketUser) {
-        // Assign socketID if user with empty websocketID is found
-        return await this.prisma.user.update({
-          where: { ID: emptyWebSocketUser.ID },
-          data: { websocketID: socketID,
-                  token: token },
-        });
-      }
-
-      // Step 2: Check if any user has an inactive websocketID
-      const users = await this.prisma.user.findMany(); // Fetch all users
-      for (const user of users) {
-
-        try {
-          if (user.websocketID) {
-            const socket = server.sockets.get(user.websocketID);
-            if (!socket) {
-              // Replace websocketID if an inactive socket is found
-              return await this.prisma.user.update({
-                where: { ID: user.ID },
-                data: { websocketID: socketID,
-                  token: token },
-              });
-            }
-          }
-        }
-        catch (error) {
-          console.log('error fetching socket: ', error)
-        }
-      }
-
-      // Step 3: If no users have an empty or inactive websocketID, create a new user
-      return await this.prisma.user.create({
-        data: { username: `user${socketID}`, intraUsername: 'Timmy', Enabled2FA: false, status: UserStatus.ONLINE, websocketID: socketID, token: token },
-      });
-    }
-
     async removewebsocketIDFromUser(websocketID: string) {
       const user = await this.getUserBySocketID(websocketID);
       if (user) {

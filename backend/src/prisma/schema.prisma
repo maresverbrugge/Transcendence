@@ -41,6 +41,7 @@ model User {
 
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
+  matchHistory      Match[]
   statistics        Statistics?
   channelsOwned     Channel[]
   channelMembers    ChannelMember[]
@@ -51,13 +52,13 @@ model User {
 
 model Match {
   matchID           Int           @id @default(autoincrement())
-  status            MatchStatus   @default(PENDING) // PENDING | ACCEPTED | DECLINED
+  status            MatchStatus   @default(PENDING) // PENDING | FINISHED
   scorePlayer1      Int           @default(0)
   scorePlayer2      Int           @default(0)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  players           Int[]
+  players           User[]
 }
 
 model Statistics {

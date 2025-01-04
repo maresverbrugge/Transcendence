@@ -7,8 +7,9 @@ import PaddleSelect from '../components/Game/PaddleSelect';
 
 const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [tempToken, setTempToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
-  const [joinedGame, setJoinedGame] = useState<bool>(false);
+  const [token, setToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
+  const [inQueue, setInQueue] = useState<boolean>(false);
+  const [joinedGame, setJoinedGame] = useState<boolean>(false);
 
   useEffect(() => {
     //because dev mode sometimes didnt disconnect old sockets
@@ -18,16 +19,11 @@ const Game = () => {
     }
 
     // Initialize socket connection
-    const token: string = localStorage.getItem('token');
+    const token: string = localStorage.getItem('authenticationToken');
+	setToken(token);
     const socketIo: Socket = io('http://localhost:3001/matchmaking', {
       transports: ['websocket', 'polling'],
-      query: { token: token }, // Hier de token uit localstorage halen
-    });
-
-    //temporary replacing token for websocketID for testing
-    socketIo.on('token', (websocketID: string) => {
-      setTempToken(websocketID);
-      console.log('replaced token with websocketID');
+      query: { token }, // Hier de token uit localstorage halen
     });
 
     socketIo.on('newgame', () => {
@@ -44,12 +40,14 @@ const Game = () => {
     };
   }, []);
 
-  const async joinQueue = (socket: Socket) => {
-    socket.emit('joinqueue', token);
+  const joinQueue = (token) => {
+	socket.emit('joinqueue', token);
+	setInQueue(true);
   };
 
-  const async leaveQueue = (socket: Socket) => {
-    socket.emit('leavequeue', token);
+  const leaveQueue = (token) => {
+	socket.emit('leavequeue', token);
+	setInQueue(false);
   };
 
   if (!socket) {
@@ -58,14 +56,16 @@ const Game = () => {
 
   return (
     <div className="games-startup">
-	  <div className="games-list">
-		<button onClick={() => joinQueue(socket)}>{`Wanna play?`}</button>
-		<button onClick={() => leaveQueue(socket)}>{`I don't want to play anymore`}</button>
-      </div>
+		{inQueue && (
+			<button onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
+		)}
+		{!inQueue && (
+			<button onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
+		)}
 
       {/* Display assigned game */}
       <div className="game-details">
-        {joinedGame ? <PaddleSelect socket={socket} /> : <p>Join the queue to play.</p>}
+        {joinedGame ? <PaddleSelect/> : <p>Join the queue to play.</p>}
       </div>
     </div>
   );

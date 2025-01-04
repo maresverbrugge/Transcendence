@@ -3,7 +3,7 @@
   import { Socket, Namespace } from 'socket.io';
   import { PrismaService } from 'src/prisma/prisma.service';
   import { UserService } from 'src/user/user.service';
-  import { User, Match } from '@prisma/client';
+  import { User, UserStatus, Match } from '@prisma/client';
   import { GameService } from 'src/game/game.service';
   
   @WebSocketGateway({
@@ -18,7 +18,8 @@
   export class MatchmakingGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 	  private readonly userService: UserService,
-	  private readonly gameService: GameService
+	  private readonly gameService: GameService,
+	  private readonly prismaService: PrismaService
 	) {}
 	@WebSocketServer() server: Namespace;
 	private queue: number[];
@@ -42,6 +43,14 @@
 		const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
 		const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
 		this.server.to(userSocketID).to(otherSocketID).emit('newGame');
+		await this.prismaService.user.update({
+			where: { ID: userID },
+			data: { status: UserStatus.IN_GAME },
+		});
+		await this.prismaService.user.update({
+			where: { ID: otherID },
+			data: { status: UserStatus.IN_GAME },
+		});
 	  }
 	  else
 	  {
@@ -62,27 +71,22 @@
 	  this.logger.log('WebSocket Gateway Initialized');
 	}
   
-	async handleConnection(client: Socket, ...args: any[]) {
-	  console.log(`Client connected: ${client.id}`);
-	  let token = client.handshake.query.token; // er komt een identifiyer via de token
-	  if (Array.isArray(token)) {
-		token = token[0]; // Use the first element if token is an array
+	async handleConnection(client: Socket): Promise<void> {
+		try {
+		  console.log(`Client connected: ${client.id}`);
+		} catch (error) {
+		//   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
+		  console.error(error)
+		  client.emit('error', error)
+		}
 	  }
-	  const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(
-		client.id,
-		token as string,
-		this.server
-	  ); // voor nu om de socket toe te wijzen aan een user zonder token
-	  this.server.emit('userStatusChange', user.ID, 'ONLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
-	  client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
-	}
-  
-	async handleDisconnect(client: Socket) {
-	  console.log(`Client disconnected: ${client.id}`);
-	  const user = await this.userService.getUserBySocketID(client.id);
-	  await this.userService.removewebsocketIDFromUser(client.id);
-	  if (user) {
-		this.server.emit('userStatusChange', user.ID, 'OFFLINE'); //dit moet worden verplaats naar de plek waar je in en uitlogd, niet waar je connect met de Socket
+	  async handleDisconnect(client: Socket): Promise<void> {
+		try {
+		  console.log(`Client disconnected: ${client.id}`);
+		} catch (error) {
+		//   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
+		  console.error(error)
+		  client.emit('error', error)
+		}
 	  }
-	}
   }

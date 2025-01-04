@@ -11,7 +11,7 @@ import { Logger } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { User, Match } from '@prisma/client';
+import { User, UserStatus, Match, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
 
 @WebSocketGateway({
@@ -43,16 +43,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
     const memberID: number = await this.userService.getUserIDByToken(token);
-    const game: Match = await this.prisma.match.findUnique({
-      where: {
-        players: {
-	  has: memberID,
-	},
-      },
-      select: {
-        matchID: true,
-      },
-    });
+	const user = await this.prisma.user.findUnique({
+		where: {
+			ID: memberID,
+		},
+		select: {
+			matchHistory: {
+				select: {
+					matchID: true,
+					status: true,
+				}
+			}
+		}
+	});
+	const game = user.matchHistory.filter(x => x.status == MatchStatus.PENDING)[0];
     client.emit('gameID', game.matchID);
   }
 
@@ -80,23 +84,33 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.logger.log('WebSocket Gateway Initialized');
   }
 
-  async handleConnection(client: Socket, ...args: any[]) {
-    console.log(`Client connected: ${client.id}`);
-    let token = client.handshake.query.token; // er komt een identifiyer via de token
-    if (Array.isArray(token)) {
-      token = token[0]; // Use the first element if token is an array
+  async handleConnection(client: Socket): Promise<void> {
+    try {
+      console.log(`Client connected: ${client.id}`);
+      let token = client.handshake.query.token;
+      if (Array.isArray(token)) token = token[0];
+      const userID = await this.userService.getUserIDByToken(token);
+      await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
+      this.server.emit('userStatusChange', userID, 'IN_GAME');
+    } catch (error) {
+    //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
+      console.error(error)
+      client.emit('error', error)
     }
-    const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(
-      client.id,
-      token as string,
-      this.server
-    ); // voor nu om de socket toe te wijzen aan een user zonder token
-    client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
   }
-
-  async handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
-    const user = await this.userService.getUserBySocketID(client.id);
-    await this.userService.removewebsocketIDFromUser(client.id);
+  async handleDisconnect(client: Socket): Promise<void> {
+    try {
+      console.log(`Client disconnected: ${client.id}`);
+      const user = await this.userService.getUserBySocketID(client.id);
+      await this.prisma.user.update({
+        where: { ID: user.ID },
+        data: { websocketID: null, status: UserStatus.ONLINE },
+      });
+      this.server.emit('userStatusChange', user.ID, 'ONLINE');
+    } catch (error) {
+    //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
+      console.error(error)
+      client.emit('error', error)
+    }
   }
 }
