@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import './Messenger.css';
 import axios from 'axios';
 import { emitter } from '../emitter';
 

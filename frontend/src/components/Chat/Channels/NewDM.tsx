@@ -4,7 +4,6 @@ import axios from 'axios';
 import { emitter } from '../emitter';
 
 import { MemberData } from '../interfaces';
-import './NewChannel.css';
 
 interface NewDMProps {
   friends: MemberData[];

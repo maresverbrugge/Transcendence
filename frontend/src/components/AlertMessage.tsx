@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import './AlertMessage.css';
 
 interface AlertMessageProps {
   message: string;

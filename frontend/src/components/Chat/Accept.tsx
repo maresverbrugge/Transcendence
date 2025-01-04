@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import './Accept.css';
 
 interface AcceptProps {
   message: string;

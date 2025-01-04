@@ -1,10 +1,8 @@
-// Channels.tsx
 import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-import PasswordPrompt from './PasswordPrompt'; // Import the PasswordPrompt component
+import PasswordPrompt from './PasswordPrompt';
 
-import './Channels.css'; // Import the CSS file
 import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
@@ -14,7 +12,7 @@ import { emitter } from '../emitter';
 interface ChannelsProps {
   selectedChannelID: number | null;
   friends: MemberData[];
-  socket: Socket; // Adjust this type if using a specific Socket.IO client library type
+  socket: Socket;
 }
 
 const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {

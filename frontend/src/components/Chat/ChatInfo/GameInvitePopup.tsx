@@ -1,5 +1,4 @@
 import React from 'react';
-import './SendGameInvite.css'
 
 interface GameInvitePopupProps {
   onCancel: () => void;

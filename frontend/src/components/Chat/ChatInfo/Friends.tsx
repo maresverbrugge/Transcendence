@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
-import './Friends.css';
 import { MemberData } from '../interfaces';
 import { emitter } from '../emitter';
 

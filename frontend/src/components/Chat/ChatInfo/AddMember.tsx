@@ -3,7 +3,6 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import { MemberData, ChannelData } from '../interfaces';
-import './AddMember.css';
 import { emitter } from '../emitter';
 
 interface AddMemberProps {

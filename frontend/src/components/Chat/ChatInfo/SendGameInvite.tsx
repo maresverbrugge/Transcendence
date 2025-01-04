@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './SendGameInvite.css'
 import GameInvitePopup from './GameInvitePopup';
 import { emitter } from '../emitter';
 

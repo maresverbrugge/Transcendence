@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './PasswordPrompt.css';
 
 interface PasswordPromptProps {
   onClose: () => void;
@@ -10,7 +9,6 @@ const PasswordPrompt = ({ onClose, onSubmit }: PasswordPromptProps) => {
   const PasswordPromptRef = useRef<HTMLDivElement>(null);
   const [password, setPassword] = useState<string>('');
 
-    // Add focus to the password prompt box when the component mounts
     useEffect(() => {
       PasswordPromptRef.current?.focus();
     }, []);

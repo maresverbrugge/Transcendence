@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import './Confirm.css';
 
 interface ConfirmProps {
   message: string;

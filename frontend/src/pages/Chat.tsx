@@ -6,7 +6,6 @@ import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
 import { MemberData } from '../components/Chat/interfaces';
 import axios from 'axios';
-import './Chat.css'
 import { emitter } from '../components/Chat/emitter';
 import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
 
@@ -87,27 +86,27 @@ const Chat = () => {
 
   return (
     <div>
-      {alert && (
+      {/* {alert && (
         <AlertMessage
           message={alert}
           onClose={() => setAlert(null)}
         />
-      )}
-      <ReceiveGameInvite
+      )} */}
+      {/* <ReceiveGameInvite
         socket={socket}
-      />
+      /> */}
       <Channels
         selectedChannelID={channelID}
         friends={friends}
         socket={socket}
       />
-      <Messenger channelID={channelID} socket={socket} />
-      <ChatInfo
+      {/* <Messenger channelID={channelID} socket={socket} /> */}
+      {/* <ChatInfo
         channelID={channelID}
         friends={friends}
         setFriends={setFriends}
         socket={socket}
-      />
+      /> */}
     </div>
   );
 };
