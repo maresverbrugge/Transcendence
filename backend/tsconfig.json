@@ -1,67 +1,67 @@
 // A strict configuration to help us write better code.
 
-{
-  "compilerOptions": {
-    // Targeting modern JavaScript
-    "target": "ES2021",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "experimentalDecorators": true, // Enable experimental decorators.
-    "emitDecoratorMetadata": true, // Emit design-type metadata for decorated declarations.
+// {
+//   "compilerOptions": {
+//     // Targeting modern JavaScript
+//     "target": "ES2021",
+//     "module": "ESNext",
+//     "moduleResolution": "node",
+//     "experimentalDecorators": true, // Enable experimental decorators.
+//     "emitDecoratorMetadata": true, // Emit design-type metadata for decorated declarations.
 
-    // Type Safety
-    "strict": true, // Enable all strict type-checking options.
-    "strictNullChecks": true, // Ensure null/undefined are handled explicitly.
-    "strictBindCallApply": true, // Check types for bind, call, and apply.
-    "noImplicitAny": true, // Disallow `any` type unless explicitly declared.
-    "noImplicitThis": true, // Ensure `this` is typed correctly.
-    "alwaysStrict": true, // Parse in strict mode and emit `'use strict'`.
+//     // Type Safety
+//     "strict": true, // Enable all strict type-checking options.
+//     "strictNullChecks": true, // Ensure null/undefined are handled explicitly.
+//     "strictBindCallApply": true, // Check types for bind, call, and apply.
+//     "noImplicitAny": true, // Disallow `any` type unless explicitly declared.
+//     "noImplicitThis": true, // Ensure `this` is typed correctly.
+//     "alwaysStrict": true, // Parse in strict mode and emit `'use strict'`.
 
-    // Additional Safety Features
-    "noFallthroughCasesInSwitch": true, // Disallow fallthrough in switch cases.
-    "noUnusedLocals": true, // Warn on unused variables.
-    "noUnusedParameters": true, // Warn on unused function parameters.
-    "noImplicitReturns": true, // Ensure all code paths return a value.
-    "noUncheckedIndexedAccess": true, // Check element accesses in arrays and objects.
-    "exactOptionalPropertyTypes": true, // Differentiate between optional and undefined properties.
+//     // Additional Safety Features
+//     "noFallthroughCasesInSwitch": true, // Disallow fallthrough in switch cases.
+//     "noUnusedLocals": true, // Warn on unused variables.
+//     "noUnusedParameters": true, // Warn on unused function parameters.
+//     "noImplicitReturns": true, // Ensure all code paths return a value.
+//     "noUncheckedIndexedAccess": true, // Check element accesses in arrays and objects.
+//     "exactOptionalPropertyTypes": true, // Differentiate between optional and undefined properties.
 
-    // JSX and React
-    "jsx": "react-jsx", // Use the modern React JSX runtime.
+//     // JSX and React
+//     "jsx": "react-jsx", // Use the modern React JSX runtime.
 
-    // Type Definitions
-    "typeRoots": ["./node_modules/@types"], // Use default type definitions.
-    "types": ["node"], // Include Node.js types.
+//     // Type Definitions
+//     "typeRoots": ["./node_modules/@types"], // Use default type definitions.
+//     "types": ["node"], // Include Node.js types.
 
-    // Ensure Consistency
-    "forceConsistentCasingInFileNames": true // Prevent case-sensitive import mismatches.
-  },
-  "include": ["src/**/*"], // Include all source files.
-  "exclude": ["node_modules", "dist"], // Exclude unnecessary directories and test files.
-}
+//     // Ensure Consistency
+//     "forceConsistentCasingInFileNames": true // Prevent case-sensitive import mismatches.
+//   },
+//   "include": ["src/**/*"], // Include all source files.
+//   "exclude": ["node_modules", "dist"], // Exclude unnecessary directories and test files.
+// }
 
 
 // If you don't care about the quality of the code right now, use this configuration:
 
-// {
-//   "compilerOptions": {
-//     "module": "commonjs",
-//     "declaration": true,
-//     "removeComments": true,
-//     "emitDecoratorMetadata": true,
-//     "experimentalDecorators": true,
-//     "allowSyntheticDefaultImports": true,
-//     "target": "ES2021",
-//     "sourceMap": true,
-//     "outDir": "./dist",
-//     "baseUrl": "./",
-//     "incremental": true,
-//     "strictNullChecks": false,
-//     "noImplicitAny": false,
-//     "strictBindCallApply": false,
-//     "forceConsistentCasingInFileNames": false,
-//     "noFallthroughCasesInSwitch": false,
-//     "moduleResolution": "node",
-//     "types": ["node"],
-//     "esModuleInterop": true,
-//   }
-// }
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "moduleResolution": "node",
+    "types": ["node"],
+    "esModuleInterop": true,
+  }
+}

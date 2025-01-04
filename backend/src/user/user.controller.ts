@@ -1,17 +1,24 @@
 import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Multer } from 'multer';
 import { User } from '@prisma/client';
 
 import {
   UserService,
-  UserProfile,
   UserAccount,
+  UserProfile,
+  UserFriend,
   StatisticsData,
-  MatchHistoryData,
   LeaderboardData,
+  MatchHistoryData,
   AchievementData,
 } from './user.service';
+
+interface UploadedFileType {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+}
 
 @Controller('user')
 export class UserController {
@@ -29,7 +36,7 @@ export class UserController {
 
   @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
-  async uploadAvatar(@Param('token') token: string, @UploadedFile() file: Multer.File): Promise<User> {
+  async uploadAvatar(@Param('token') token: string, @UploadedFile() file: UploadedFileType): Promise<User> {
     const fileBuffer = file.buffer;
     return this.userService.updateAvatar(token, fileBuffer);
   }
@@ -84,5 +91,10 @@ export class UserController {
     @Param('targetUserID', ParseIntPipe) targetUserID: number
   ): Promise<string> {
     return this.userService.toggleFriendship(currentUserID, targetUserID);
+  }
+
+  @Get(':userID/friends')
+  async getFriends(@Param('userID', ParseIntPipe) userID: number): Promise<UserFriend[]> {
+    return this.userService.getFriends(userID);
   }
 }

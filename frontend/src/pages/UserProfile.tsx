@@ -6,6 +6,8 @@ import NameAvatarStatus from '../components/User/Profile/NameAvatarStatus';
 import FriendActions from '../components/User/Profile/FriendActions';
 import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion';
 
+import Friends from '../components/User/Account/Friends'; // remove later, for testing
+
 interface UserData {
   username: string;
   avatarURL: string;
@@ -71,23 +73,10 @@ function UserProfile() {
           </div>
         </div>
 
-        {/* Right Column */}
+        {/* Right Column remove later, for testing */}  
         <div className="col-md-3">
           <div className="card shadow">
-            <div className="card-body">
-              <h4 className="text-center">Friends</h4>
-              <ul className="list-group">
-                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
-                  Alice <span className="badge bg-success">Online</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
-                  Bob <span className="badge bg-secondary">Offline</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between align-items-center text-truncate">
-                  Charlie <span className="badge bg-success">Online</span>
-                </li>
-              </ul>
-            </div>
+            <Friends userID={userID} />
           </div>
         </div>
       </div>

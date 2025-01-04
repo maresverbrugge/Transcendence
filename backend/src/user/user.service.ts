@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { User, Statistics, UserStatus } from '@prisma/client';
 
 import { LoginService } from '../authentication//login/login.service';
@@ -9,6 +9,13 @@ export interface UserAccount extends User {
 }
 
 export interface UserProfile extends User {
+  avatarURL: string;
+  status: UserStatus;
+}
+
+export interface UserFriend {
+  ID: number;
+  username: string;
   avatarURL: string;
   status: UserStatus;
 }
@@ -35,6 +42,17 @@ export interface AchievementData {
   description: string;
   iconURL: string;
   unlocked: boolean;
+}
+
+interface Match {
+  players: { ID: number; username: string }[];
+  scorePlayer1: number;
+  scorePlayer2: number;
+}
+
+interface LeaderboardEntry {
+  user: { username: string; avatar: Buffer | null };
+  ladderRank: number;
 }
 
 @Injectable()
@@ -76,7 +94,7 @@ export class UserService {
       ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
       : 'http://localhost:3001/images/default-avatar.png';
 
-    // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
+    // console.log("avatarURL = ", avatarURL);
 
     return {
       ...user,
@@ -213,7 +231,7 @@ export class UserService {
   }
 
   async getMatchHistory(userID: number): Promise<MatchHistoryData[]> {
-    const matches = await this.prisma.match.findMany({
+    const matches: Match[] = await this.prisma.match.findMany({
       where: {
         players: {
           some: {
@@ -233,7 +251,7 @@ export class UserService {
       throw new NotFoundException('No match history found for this user.');
     }
 
-    return matches.map((match) => {
+    return matches.map((match: Match) => {
       const opponent = match.players.find((player) => player.ID !== userID);
 
       return {
@@ -245,7 +263,7 @@ export class UserService {
   }
 
   async getLeaderboard(): Promise<LeaderboardData[]> {
-    const leaderboard = await this.prisma.statistics.findMany({
+    const leaderboard: LeaderboardEntry[] = await this.prisma.statistics.findMany({
       orderBy: { ladderRank: 'desc' },
       take: 10,
       select: {
@@ -381,4 +399,34 @@ export class UserService {
       return `You befriended user ${targetUserID}`;
     }
   }
+
+  async getFriends(userID: number): Promise<UserFriend[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { ID: userID },
+      include: {
+        friends: {
+          select: {
+            ID: true,
+            username: true,
+            avatar: true,
+            status: true,
+          },
+        },
+      },
+    });
+  
+    if (!user || !user.friends) {
+      throw new NotFoundException('No friends found');
+    }
+  
+    return user.friends.map((friend) => ({
+      ID: friend.ID,
+      username: friend.username,
+      avatarURL: friend.avatar
+        ? `data:image/jpeg;base64,${friend.avatar.toString('base64')}`
+        : 'http://localhost:3001/images/default-avatar.png',
+      status: friend.status,
+    }));
+  }
+
 }
