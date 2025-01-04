@@ -80,6 +80,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.gameService.handleScoreRight(gameID);
   }
 
+  @SubscribeMessage('done')
+  handleGameStart(client: Socket, gameID: number) {
+    await this.prisma.match.update({
+		where: {
+		  matchID: gameID,
+		},
+		data: {
+		  status: MatchStatus.FINISHED,
+		},
+	  });
+  }
+
   afterInit(server: Namespace) {
     this.logger.log('WebSocket Gateway Initialized');
   }

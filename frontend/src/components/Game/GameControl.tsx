@@ -74,17 +74,22 @@ class Paddle {
   h: number;
   speedY: number;
   context: any;
-  constructor(x: number, y: number, w: number, h: number, context: any) {
+  skinPath: string;
+  topPosition: number;
+  img: any;
+  constructor(x: number, y: number, w: number, h: number, context: any, skin: string) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+	this.topPosition = this.y - this.h / 2;
     this.speedY = 0; //get from client
-    // this.context = context;
-	// this.img = document.createElement("img");
-	// this.img.src = '/home/jvan-hal/Pictures/IMG20240920204934.jpg';
-	// this.img.width = this.w;
-	// this.img.height = this.h;
+    this.context = context;
+	this.skinPath = "";
+	if (skin === "option1")
+		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg";
+	if (skin === "option2")
+		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg";
   }
   left() {
     return this.x - this.w / 2;
@@ -108,9 +113,16 @@ class Paddle {
     this.context.beginPath();
     this.context.rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
     this.context.stroke();
+	if (this.skinPath != "")
+	{
+		this.img = document.createElement("img");
+		this.img.src = this.skinPath;
+		this.img.width = this.w;
+		this.img.height = this.h;
 
-    // This next line will just add it to the <body> tag
-    // document.body.appendChild(img);
+		// This next line will just add it to the <body> tag
+		document.body.appendChild(this.img);
+	}
   }
 }
 
@@ -130,7 +142,7 @@ onkeydown = (event: KeyboardEvent) => {
   g_socket.emit('key', move, g_gameID, g_socket.id);
 };
 
-const GameLogic = ({ gameID, socket }) => {
+const GameLogic = ({ gameID, socket, skin }) => {
   const canvas: any = React.useRef();
   const width: number = 500;
   const height: number = 500;
@@ -181,21 +193,29 @@ const GameLogic = ({ gameID, socket }) => {
     socket.on('right up', () => {
       console.log('right player up');
       paddleRight.y -= 3;
+	  paddleRight.topPosition -= 3;
+	  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
     });
     socket.on('left up', () => {
       console.log('left player up');
       paddleLeft.y -= 3;
+	  paddleLeft.topPosition -= 3;
+	  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
     });
     socket.on('right down', () => {
       console.log('right player down');
       paddleRight.y += 3;
+	  paddleRight.topPosition += 3;
+	  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
     });
     socket.on('left down', () => {
       console.log('left player down');
       paddleLeft.y += 3;
+	  paddleLeft.topPosition += 3;
+	  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
     });
-    paddleLeft = new Paddle(15, height / 2, 30, 200, context);
-    paddleRight = new Paddle(width - 15, height / 2, 30, 200, context);
+    paddleLeft = new Paddle(15, height / 2, 30, 200, context, skin);
+    paddleRight = new Paddle(width - 15, height / 2, 30, 200, context, skin);
 
     const render = () => {
       frameCount++;

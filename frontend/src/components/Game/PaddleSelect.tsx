@@ -9,13 +9,11 @@ import GameControl from './GameControl';
 const PaddleSelect = ({}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedPaddle, setSelectedPaddle] = useState<string>("default");
-  const [token, setToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
   const [gameID, setGameID] = useState<number>(-1);
   const [showGame, setShowGame] = useState<boolean>(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authenticationToken');
-	setToken(token);
     const socketIo: Socket = io('http://localhost:3001/game', {
       transports: ['websocket'],
       query: { token }, // Hier de token uit localstorage halen
@@ -47,7 +45,7 @@ const PaddleSelect = ({}) => {
   return (
 	<div>
 		{showGame && (
-			<GameControl gameID={gameID} socket={socket} />
+			<GameControl gameID={gameID} socket={socket} skin={selectedPaddle} />
 		)}
 		{!showGame && (
 			<div id="paddleselect">
@@ -57,10 +55,12 @@ const PaddleSelect = ({}) => {
 				</label>
 				<label>
 					<input type="radio" value="option1" checked={selectedPaddle === 'option1'} onChange={handleChange} />
+					<img class="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg"></img>
 					Radio 2
 				</label>
 				<label>
 					<input type="radio" value="option2" checked={selectedPaddle === 'option2'} onChange={handleChange} />
+					<img class="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg"></img>
 					Radio 3
 				</label>
 			</div>
