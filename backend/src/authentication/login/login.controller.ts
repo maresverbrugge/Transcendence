@@ -20,7 +20,10 @@ export class LoginController {
   async online(@Body() body: { token: string }) {
     const { token } = body;
     const user = await this.loginService.getIntraName(token);
-    this.loginService.addUserToDatabase(user);
+    await this.loginService.addUserToDatabase(user);
+    const userID = await this.loginService.getUserIDByIntraUsername(user);
+    const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
+    this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
   }
 
   @Post('offline')

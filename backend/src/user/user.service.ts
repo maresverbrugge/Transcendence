@@ -17,17 +17,18 @@ export class UserService {
   ) {}
 
   async getUserIDByToken(token: string): Promise<number> {
-    const intraUsername = await this.loginService.getIntraName(token);
-    const user = await this.prisma.user.findUnique({
-      where: {
-        intraUsername: intraUsername,
-      },
-      select: {
-        ID: true,
-      },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user.ID;
+    return this.loginService.getUserFromCache(token);
+    // const intraUsername = await this.loginService.getIntraName(token);
+    // const user = await this.prisma.user.findUnique({
+    //   where: {
+    //     intraUsername: intraUsername,
+    //   },
+    //   select: {
+    //     ID: true,
+    //   },
+    // });
+    // if (!user) throw new NotFoundException('User not found');
+    // return user.ID;
   } //! make sure to catch where calling this function
 
     //temporary function
