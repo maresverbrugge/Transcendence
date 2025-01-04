@@ -53,7 +53,8 @@ const Friends = ({ userID }: { userID: number }) => {
   if (!friends.length) {
     return (
       <div className="text-center p-3">
-        <p>No friends found.</p>
+        <p>No friends found! </p>
+        <p>Go on and make some, don't be shy, you can do it! </p>
       </div>
     );
   }

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Statistics, UserStatus } from '@prisma/client';
 
-import { LoginService } from '../authentication//login/login.service';
+import { LoginService } from '../authentication/login/login.service';
 
 export interface UserAccount extends User {
   avatarURL: string;
@@ -231,36 +231,40 @@ export class UserService {
   }
 
   async getMatchHistory(userID: number): Promise<MatchHistoryData[]> {
-    const matches: Match[] = await this.prisma.match.findMany({
-      where: {
-        players: {
-          some: {
-            ID: userID,
+    try {
+        const matches: Match[] = await this.prisma.match.findMany({
+        where: {
+          players: {
+            some: {
+              ID: userID,
+            },
           },
         },
-      },
-      include: {
-        players: {
-          select: { ID: true, username: true },
+        include: {
+          players: {
+            select: { ID: true, username: true },
+          },
         },
-      },
-    });
+      });
 
-    // console.log("matches = ", matches);
-    if (!matches || matches.length === 0) {
-      throw new NotFoundException('No match history found for this user.');
-    }
-
-    return matches.map((match: Match) => {
-      const opponent = match.players.find((player) => player.ID !== userID);
-
-      return {
-        opponent: opponent?.username ?? 'Unknown',
-        scorePlayer1: match.scorePlayer1,
-        scorePlayer2: match.scorePlayer2,
-      };
-    });
+      // console.log("matches = ", matches);
+      if (!matches || matches.length === 0) {
+        return [];
+      }
+      
+      return matches.map((match: Match) => {
+        const opponent = match.players.find((player) => player.ID !== userID);
+        
+        return {
+          opponent: opponent?.username ?? 'Unknown',
+          scorePlayer1: match.scorePlayer1,
+          scorePlayer2: match.scorePlayer2,
+        };
+      });
+    } catch (error) {
+    throw new NotFoundException('An error occurred while fetching match history.');
   }
+}
 
   async getLeaderboard(): Promise<LeaderboardData[]> {
     const leaderboard: LeaderboardEntry[] = await this.prisma.statistics.findMany({
@@ -428,5 +432,4 @@ export class UserService {
       status: friend.status,
     }));
   }
-
 }

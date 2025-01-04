@@ -14,7 +14,7 @@ interface UserInfoAccordionProps {
 
 function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(null);
-  const [matchHistoryData, setMatchHistoryData] = useState<MatchHistoryData[] | null>(null);
+  const [matchHistoryData, setMatchHistoryData] = useState<MatchHistoryData[]>([]);
   const [achievementsData, setAchievementsData] = useState<AchievementsData[] | null>(null);
   const [loadingStatistics, setLoadingStatistics] = useState<boolean>(true);
   const [loadingMatchHistory, setLoadingMatchHistory] = useState<boolean>(true);

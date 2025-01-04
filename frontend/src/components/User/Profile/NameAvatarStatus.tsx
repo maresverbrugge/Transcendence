@@ -7,19 +7,23 @@ interface NameAvatarStatusProps {
 }
 
 function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps) {
-  const getStatusLabel = (status: string): string => {
+  const getStatusClass = (status: string) => {
     switch (status) {
       case 'ONLINE':
-        return 'online';
-      case 'OFFLINE':
-        return 'offline';
-      case 'IN_GAME':
-        return 'in game';
+        return 'bg-success';
       case 'IN_CHAT':
-        return 'in chat';
+        return 'bg-info';
+      case 'IN_GAME':
+        return 'bg-warning';
+      case 'OFFLINE':
+        return 'bg-danger';
       default:
-        return 'unknown';
+        return 'bg-secondary';
     }
+  };
+
+  const getStatusLabel = (status: string): string => {
+    return status.toLowerCase().replace('_', ' ');
   };
 
   return (
@@ -42,7 +46,17 @@ function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps
         <h3 style={{ fontSize: '2vw', marginBottom: '10%' }}>profile</h3>
 
         {/* Display Status */}
-        <p style={{ fontSize: '1.5vw', fontWeight: 'bold' }}>{getStatusLabel(status)}</p>
+        <span
+          className={`badge ${getStatusClass(status)}`}
+          style={{
+            fontSize: '1.2vw',
+            fontWeight: 'bold',
+            padding: '0.5rem 1rem',
+            textTransform: 'capitalize',
+          }}
+        >
+          {getStatusLabel(status)}
+        </span>
       </div>
     </div>
   );

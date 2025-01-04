@@ -69,7 +69,6 @@ model Statistics {
   losses            Int           @default(0)
   totalScores       Int           @default(0)
   ladderRank        Int           @default(0)
-  //achievements    Achievements?
 
   userID            Int           @unique
   user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
