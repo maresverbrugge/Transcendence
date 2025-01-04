@@ -60,10 +60,10 @@ export class LoginService {
     }
   }
 
-  async setUserStatusToOffline(intraUsername: string): Promise<void> {
+  async setUserStatusToOffline(userID: number): Promise<void> {
     try {
       await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: { status: UserStatus.OFFLINE },
       });
     } catch (error) {
