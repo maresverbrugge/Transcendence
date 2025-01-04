@@ -5,11 +5,11 @@ import { emitter } from '../emitter';
 interface BlockButtonProps {
   userID: number;
   blockedUserIDs: number[];
-  token: string;
 }
 
-const BlockButton = ({ userID, blockedUserIDs, token }: BlockButtonProps) => {
+const BlockButton = ({ userID, blockedUserIDs }: BlockButtonProps) => {
   const [isBlocked, setIsBlocked] = useState(false);
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
     setIsBlocked(blockedUserIDs.includes(userID));

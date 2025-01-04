@@ -5,7 +5,6 @@ import { ChannelData } from '../interfaces';
 
 interface DMProps {
   channel: ChannelData;
-  token: string;
 }
 
 const DM = ({ channel }: DMProps) => {

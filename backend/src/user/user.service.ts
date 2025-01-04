@@ -3,13 +3,32 @@ import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client'
 
+import { LoginService } from '../authentication//login/login.service';
+
 interface UserProfile extends User {
   avatarURL: string;
 }
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly loginService: LoginService
+  ) {}
+
+  async getUserIDByToken(token: string): Promise<number> {
+    const intraUsername = await this.loginService.getIntraName(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        intraUsername: intraUsername,
+      },
+      select: {
+        ID: true,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user.ID;
+  } //! make sure to catch where calling this function
 
     //temporary function
     async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {

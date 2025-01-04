@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, Inject, forwardRef, HttpException, InternalServerErrorException } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { User, Message } from '@prisma/client';
+import { Message } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { ChatGateway } from '../chat.gateway';
 import { BlockedUserService } from '../blockedUser/blockedUser.service';
-import { UserService } from '../blockedUser/user.service';
+import { UserService } from '../../user/user.service';
 import { ChannelService } from '../channel/channel.service';
 
 type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave';
@@ -24,7 +24,7 @@ export class MessageService {
 
   async getMessage(messageID: number, token: string): Promise<Message | null> {
     try {
-      const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByWebsocketID(token); //change to token later
+      const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByToken(token);
       const message = await this.prisma.message.findUnique({
         where: { ID: messageID },
       });
@@ -37,7 +37,7 @@ export class MessageService {
   }
 
   async getMessages(channelID: number, token: string): Promise<Message[]> {
-    const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByWebsocketID(token); //change to token later
+    const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByToken(token);
     const channel = await this.channelService.getChannelWithMembersAndMessagesByID(channelID);
     const messages = channel.messages.filter((message) => !blockedUserIDs.includes(message.senderID));
     return messages;
@@ -64,8 +64,8 @@ export class MessageService {
 
   async sendMessage(client: Socket, data: { channelID: number; token: string; content: string }): Promise<void> {
     await this.channelService.checkIsMuted(data.channelID, data.token);
-    const sender = await this.userService.getUserBySocketID(data.token);
-    const message = await this.createMessage(data.channelID, sender.ID, data.content);
+    const senderID = await this.userService.getUserIDByToken(data.token);
+    const message = await this.createMessage(data.channelID, senderID, data.content);
     this.chatGateway.emitToRoom('newMessage', String(data.channelID), {
       channelID: data.channelID,
       messageID: message.ID,

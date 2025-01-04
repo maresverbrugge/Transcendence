@@ -8,7 +8,7 @@ export class UserController {
 
   @Get('/IDs/:token')
   async getBlockedUserIDs(@Param('token') token: string): Promise<number[]> {
-    return this.blockedUserService.getBlockedUserIDsByWebsocketID(token); //change to token later
+    return this.blockedUserService.getBlockedUserIDsByToken(token);
   }
 
   @Post('/:token/:action')

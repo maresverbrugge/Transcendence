@@ -9,16 +9,16 @@ import { MemberData } from '../interfaces';
 interface NewChannelProps {
   friends: MemberData[];
   socket: Socket;
-  token: string;
 }
 
-const NewChannel = ({ friends, socket, token }: NewChannelProps) => {
+const NewChannel = ({ friends, socket }: NewChannelProps) => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [channelName, setChannelName] = useState<string>('');
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
   const [passwordEnabled, setPasswordEnabled] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [selectedMemberIDs, setSelectedMemberIDs] = useState<number[]>([]);
+  const token = localStorage.getItem('authenticationToken');
 
   const toggleMember = (userID: number) => {
     setSelectedMemberIDs((prev) => (prev.includes(userID) ? prev.filter((id) => id !== userID) : [...prev, userID]));

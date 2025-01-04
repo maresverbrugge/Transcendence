@@ -10,12 +10,12 @@ interface AddMemberProps {
   channel: ChannelData;
   friends: MemberData[];
   socket: Socket;
-  token: string;
 }
 
-const AddMember = ({ channel, friends, socket, token }: AddMemberProps) => {
+const AddMember = ({ channel, friends, socket }: AddMemberProps) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
+  const token = localStorage.getItem('authenticationToken');
 
   const handleAddMember = async () => {
     if (!selectedFriend) {

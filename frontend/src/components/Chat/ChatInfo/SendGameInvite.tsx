@@ -9,13 +9,13 @@ import { emitter } from '../emitter';
 interface SendGameInviteProps {
     receiverUserID: number;
     socket: Socket;
-    token: string;
 }
 
-const SendGameInvite = ({ receiverUserID, socket, token }: SendGameInviteProps) => {
+const SendGameInvite = ({ receiverUserID, socket }: SendGameInviteProps) => {
   const [isPending, setIsPending] = useState(false);
   const isPendingRef = useRef(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem('authenticationToken');
 
   const handleSendGameInvite = () => {
     socket.emit('sendGameInvite', { receiverUserID, token });

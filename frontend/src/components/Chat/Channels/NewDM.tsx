@@ -9,12 +9,12 @@ import './NewChannel.css';
 interface NewDMProps {
   friends: MemberData[];
   socket: Socket;
-  token: string;
 }
 
-const NewDM = ({ friends, socket, token }: NewDMProps) => {
+const NewDM = ({ friends, socket }: NewDMProps) => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
+  const token = localStorage.getItem('authenticationToken');
 
   const handleCreateDM = async () => {
     if (!selectedFriend) {

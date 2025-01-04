@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, NotFoundException, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { UserService } from './user.service';
+import { UserService } from '../../user/user.service';
 import { ChatGateway } from '../chat.gateway';
 
 @Injectable()
@@ -12,10 +12,11 @@ export class BlockedUserService {
     private readonly chatGateway: ChatGateway,
   ) {}
 
-  async getBlockedUserIDsByWebsocketID(socketID: string): Promise<number[]> {
+  async getBlockedUserIDsByToken(token: string): Promise<number[]> {
     try {
+      const userID = await this.userService.getUserIDByToken(token);
       const user = await this.prisma.user.findUnique({
-        where: { websocketID: socketID },
+        where: { ID: userID },
         select: { blockedUsers: { select: { blockedID: true } } },
       });
       if (!user) throw new NotFoundException('User not found');
@@ -64,7 +65,7 @@ export class BlockedUserService {
   }
 
   async blockUnblock(targetUserID: number, token: string, action: 'block' | 'unblock'): Promise<void> {
-    const userID = await this.userService.getUserIDBySocketID(token); //change to token later
+    const userID = await this.userService.getUserIDByToken(token);
     if (action === 'block') await this.block(targetUserID, userID);
     else await this.unblock(targetUserID, userID);
     const socket = await this.chatGateway.getWebSocketByUserID(userID);

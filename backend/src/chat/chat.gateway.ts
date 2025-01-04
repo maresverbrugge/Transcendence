@@ -10,7 +10,7 @@ import { HttpException, Inject, InternalServerErrorException, NotFoundException,
 import { Socket, Namespace } from 'socket.io';
 import { Channel, ChannelMember, User, Message, UserStatus } from '@prisma/client';
 
-import { UserService } from './blockedUser/user.service';
+import { UserService } from '../user/user.service';
 import { ChannelService } from './channel/channel.service';
 import { MessageService } from './message/message.service';
 import { ChannelMemberService } from './channel-member/channel-member.service';
@@ -64,7 +64,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('joinChannel')
   async handleJoinChannel(client: Socket, data: { channelID: number; token: string }): Promise<void> {
     try {
-      const channelMember = await this.channelMemberService.getChannelMemberBySocketID(data.token, data.channelID); //change to token later
+      const channelMember = await this.channelMemberService.getChannelMemberByToken(data.token, data.channelID);
       await this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
@@ -181,17 +181,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleConnection(client: Socket): Promise<void> {
     try {
       console.log(`Client connected: ${client.id}`);
-      let token = client.handshake.query.token; // er komt een IDentifiyer via de token
-      if (Array.isArray(token)) token = token[0]; // Use the first element if token is an array
-      const user = await this.userService.assignSocketAndTokenToUserOrCreateNewUser(
-        client.id,
-        token as string,
-        this.server
-      ); // voor nu om de socket toe te wijzen aan een user zonder token
-      await this.prisma.user.update({where: {ID: user.ID}, data: {status: UserStatus.IN_CHAT}})
-      this.server.emit('userStatusChange', user.ID, 'IN_CHAT');
-      client.emit('token', client.id); //even socketID voor token vervangen tijdelijk
-      await this.channelMemberService.addSocketToAllRooms(client, token);
+      let token = client.handshake.query.token;
+      if (Array.isArray(token)) token = token[0];
+      const userID = await this.userService.getUserIDByToken(token);
+      await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_CHAT, websocketID: client.id}})
+      this.server.emit('userStatusChange', userID, 'IN_CHAT');
+      await this.channelMemberService.addSocketToAllRooms(client, userID);
     } catch (error) {
       if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       console.error(error)

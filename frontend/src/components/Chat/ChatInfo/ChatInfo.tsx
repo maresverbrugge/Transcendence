@@ -14,7 +14,6 @@ interface ChannelInfoProps {
   channelID: number;
   friends: MemberData[];
   socket: Socket;
-  token: string;
 }
 
 interface ChatInfoProps {
@@ -22,10 +21,9 @@ interface ChatInfoProps {
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
   socket: Socket;
-  token: string;
 }
 
-const ChannelInfo = ({ channelID, friends, socket, token }: ChannelInfoProps) => {
+const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
   const [channel, setChannel] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -56,30 +54,28 @@ const ChannelInfo = ({ channelID, friends, socket, token }: ChannelInfoProps) =>
   return (
     <div className="channel-info">
       {channel.isDM ? (
-        <DM channel={channel} token={token} />
+        <DM channel={channel} />
       ) : (
         <Channel
           channel={channel}
           friends={friends}
           socket={socket}
-          token={token}
         />
       )}
     </div>
   );
 };
 
-const ChatInfo = ({ channelID, friends, setFriends, socket, token }: ChatInfoProps) => {
+const ChatInfo = ({ channelID, friends, setFriends, socket }: ChatInfoProps) => {
   return (
     <div className="chat-info-container">
       {channelID === null ? (
-        <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
+        <Friends friends={friends} setFriends={setFriends} socket={socket} />
       ) : (
         <ChannelInfo
           channelID={channelID}
           friends={friends}
           socket={socket}
-          token={token}
         />
       )}
     </div>

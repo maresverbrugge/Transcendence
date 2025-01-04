@@ -16,7 +16,6 @@ interface FriendsProps {
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
   socket: Socket;
-  token: string;
 }
 
 const Friend = ({ friend, socket }: FriendProps) => {
@@ -52,7 +51,9 @@ const Friend = ({ friend, socket }: FriendProps) => {
   return <li className={status}>{friend.username}</li>;
 };
 
-const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
+const Friends = ({ friends, setFriends, socket }: FriendsProps) => {
+  const token = localStorage.getItem('authenticationToken');
+
   useEffect(() => {
     const fetchFriends = async () => {
       try {

@@ -3,7 +3,7 @@ import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client';
 
-import { UserService } from '../blockedUser/user.service';
+import { UserService } from '../../user/user.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
@@ -126,7 +126,7 @@ export class ChannelService {
   }
 
   async removeChannelMemberFromChannel(channelID: number, socket: Socket, token: string): Promise<void> {
-    const userID = await this.userService.getUserIDBySocketID(token); //change to token later
+    const userID = await this.userService.getUserIDByToken(token);
     const channelMember = await this.prisma.channelMember.findFirst({
       where: { userID: userID, channelID: channelID },
       select: { ID: true, isBanned: true, channelID: true, isOwner: true, user: { select: { username: true } } },
@@ -141,7 +141,6 @@ export class ChannelService {
     socket.leave(String(channelID));
     socket.emit('updateChannel');
     this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
-    console.log(`${socket.id} left channel ${channelID}`); //remove later
   }
 
   emitNewPrivateChannel(channel: ChannelWithMembersAndMessages): void {
@@ -175,7 +174,7 @@ export class ChannelService {
 
   async newChannel(data: newChannelData): Promise<ChannelWithMembersAndMessages> {
     try {
-        const ownerID = await this.userService.getUserIDBySocketID(data.token);
+        const ownerID = await this.userService.getUserIDByToken(data.token);
         if (data.isDM && (await this.DMExists(ownerID, data.memberIDs))) throw new ForbiddenException('DM already exists');
         const hashedPassword = data.password ? await this.hashingService.hashPassword(data.password) : null;
         const newChannel = await this.prisma.channel.create({
@@ -188,10 +187,10 @@ export class ChannelService {
             ownerID: ownerID,
             members: {
               create: [
-                { userID: ownerID, isOwner: true, isAdmin: true }, // Create as owner and admin
+                { userID: ownerID, isOwner: true, isAdmin: true },
                 ...data.memberIDs.map((memberID) => ({
                   userID: memberID,
-                })), // Create each additional member without admin or owner rights (default is without)
+                })),
               ],
             },
           },
@@ -241,36 +240,37 @@ export class ChannelService {
 
   async getPrivateChannels(token: string): Promise<ChannelResponse[]> {
     try {
-        const user = await this.prisma.user.findUnique({
-          where: { websocketID: token },
-          select: {
-            username: true,
-            channelMembers: {
-              select: {
-                isBanned: true,
-                channel: { select: {
-                    ID: true,
-                    name: true,
-                    isPrivate: true,
-                    isDM: true,
-                    passwordEnabled: true,
-                    ownerID: true,
-                    members: { include: { user: { select: { ID: true, username: true } } } },
-                    messages: true,
-                } },
-              },
+      const userID = await this.userService.getUserIDByToken(token);
+      const user = await this.prisma.user.findUnique({
+        where: { ID: userID },
+        select: {
+          username: true,
+          channelMembers: {
+            select: {
+              isBanned: true,
+              channel: { select: {
+                  ID: true,
+                  name: true,
+                  isPrivate: true,
+                  isDM: true,
+                  passwordEnabled: true,
+                  ownerID: true,
+                  members: { include: { user: { select: { ID: true, username: true } } } },
+                  messages: true,
+              } },
             },
           },
-        });
-        if (!user)
-            throw new NotFoundException('User not found')
-        return user.channelMembers
-            .filter((channelMember) => !channelMember.isBanned && channelMember.channel.isPrivate)
-            .map((channelMember) => {
-            if (channelMember.channel.isDM)
-                channelMember.channel.name = this.getDMName(user.username, channelMember.channel);
-            return channelMember.channel;
-        });
+        },
+      });
+      if (!user)
+          throw new NotFoundException('User not found')
+      return user.channelMembers
+          .filter((channelMember) => !channelMember.isBanned && channelMember.channel.isPrivate)
+          .map((channelMember) => {
+          if (channelMember.channel.isDM)
+              channelMember.channel.name = this.getDMName(user.username, channelMember.channel);
+          return channelMember.channel;
+      });
     } catch (error) {
         if (error instanceof HttpException) throw error;
         throw new InternalServerErrorException('An unexpected error occurred', error.message)
@@ -289,7 +289,7 @@ export class ChannelService {
           where: { channelID: newMemberData.channelID, userID: newMemberData.memberID },
         });
         if (existingChannelMember) throw new ForbiddenException('This user is already a member of the channel');
-        const userID = await this.userService.getUserIDBySocketID(newMemberData.token); //change to token later
+        const userID = await this.userService.getUserIDByToken(newMemberData.token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: newMemberData.channelID,
@@ -308,7 +308,7 @@ export class ChannelService {
 
   async getChannelMemberID(channelID: number, token: string): Promise<number> {
     try {
-        const userID = await this.userService.getUserIDBySocketID(token); //later veranderen naar token
+        const userID = await this.userService.getUserIDByToken(token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: channelID,
@@ -326,7 +326,7 @@ export class ChannelService {
 
   async checkIsMuted(channelID: number, token: string) {
     try {
-        const userID = await this.userService.getUserIDBySocketID(token); // later change to token
+        const userID = await this.userService.getUserIDByToken(token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: channelID,

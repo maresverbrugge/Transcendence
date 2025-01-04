@@ -15,15 +15,15 @@ interface ChannelsProps {
   selectedChannelID: number | null;
   friends: MemberData[];
   socket: Socket; // Adjust this type if using a specific Socket.IO client library type
-  token: string;
 }
 
-const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) => {
+const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
   const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
   const [passwordPromptVisible, setPasswordPromptVisible] = useState<boolean>(false);
   const [selectedChannelForPassword, setSelectedChannelForPassword] = useState<number | null>(null);
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
     const fetchChannels = async () => {
@@ -136,7 +136,7 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
           </>
         )}
 
-        <NewChannel friends={friends} socket={socket} token={token} />
+        <NewChannel friends={friends} socket={socket} />
       </div>
 
       <div className="direct-messages">
@@ -153,7 +153,7 @@ const Channels = ({ selectedChannelID, friends, socket, token }: ChannelsProps) 
               </li>
             ))}
         </ul>
-        <NewDM friends={friends} socket={socket} token={token} />
+        <NewDM friends={friends} socket={socket} />
       </div>
 
       {passwordPromptVisible && (

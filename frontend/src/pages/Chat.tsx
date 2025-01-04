@@ -15,14 +15,10 @@ const Chat = () => {
   const [alert, setAlert] = useState<string | null>(null);
   const [channelID, setChannelID] = useState<number | null>(null);
   const [friends, setFriends] = useState<MemberData[]>([]);
-  const [tempToken, setTempToken] = useState<string>(null);
-
-  var tempWebSocketID: string = '';
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-  
-    const token = localStorage.getItem('authenticationToken');
-    
+      
     const socketIo = io("ws://localhost:3001/chat", {
       transports: ["websocket"],
       query: { token },
@@ -34,12 +30,6 @@ const Chat = () => {
     
     socketIo.on('connect', () => {
       console.log('Connected to the server.');
-    });
-
-    socketIo.on('token', (websocketID: string) => { //remove later
-      setTempToken(websocketID);
-      tempWebSocketID = websocketID;
-      console.log('replaced tempToken with webSocketID: ', websocketID);
     });
 
     socketIo.on('connect_error', (error: any) => {
@@ -83,7 +73,7 @@ const Chat = () => {
       return;
     }
     try {
-      await axios.post(`http://localhost:3001/chat/channel/${newChannelID}/add-member`, { token: tempWebSocketID} )
+      await axios.post(`http://localhost:3001/chat/channel/${newChannelID}/add-member`, { token: token} )
       setChannelID(newChannelID);
     } catch (error: any) {
       if (error?.status === 403) {
@@ -93,7 +83,7 @@ const Chat = () => {
     }
   };
 
-  if (!socket || !tempToken) return <p>Loading...</p>;
+  if (!socket) return <p>Loading...</p>;
 
   return (
     <div>
@@ -105,21 +95,18 @@ const Chat = () => {
       )}
       <ReceiveGameInvite
         socket={socket}
-        token={tempToken}
       />
       <Channels
         selectedChannelID={channelID}
         friends={friends}
         socket={socket}
-        token={tempToken}
       />
-      <Messenger channelID={channelID} socket={socket} token={tempToken} />
+      <Messenger channelID={channelID} socket={socket} />
       <ChatInfo
         channelID={channelID}
         friends={friends}
         setFriends={setFriends}
         socket={socket}
-        token={tempToken}
       />
     </div>
   );

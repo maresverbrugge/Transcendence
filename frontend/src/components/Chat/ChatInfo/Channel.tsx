@@ -9,10 +9,11 @@ interface ChannelProps {
   channel: ChannelData;
   friends: MemberData[];
   socket: Socket;
-  token: string
 }
 
-const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
+const Channel = ({ channel, friends, socket }: ChannelProps) => {
+  const token = localStorage.getItem('authenticationToken');
+
   useEffect(() => {
     const handleDisconnect = () => {
       if (channel) {
@@ -53,7 +54,6 @@ const Channel = ({ channel, friends, socket, token }: ChannelProps) => {
           channel={channel}
           friends={friends}
           socket={socket}
-          token={token}
         />
       </div>
       {channel.isPrivate && <button onClick={leaveChannel}>Leave Channel</button>}

@@ -13,16 +13,16 @@ interface ChannelMemberListProps {
   channel: ChannelData;
   friends: MemberData[];
   socket: Socket;
-  token: string;
 }
 
-const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberListProps) => {
+const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps) => {
   const [members, setMembers] = useState<MemberData[]>([]);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
   const [selectedMemberID, setSelectedMemberID] = useState<number | null>(null);
   const [currentMemberID, setCurrentMemberID] = useState<number | null>(null);
   const [blockedUserIDs, setBlockedUserIDs] = useState<number[]>([]);
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
     const fetchCurrentMemberID = async () => {
@@ -130,12 +130,10 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
                   <BlockButton
                     userID={member?.user.ID}
                     blockedUserIDs={blockedUserIDs}
-                    token={token}
                   />
                   <SendGameInvite
                     receiverUserID={member?.user.ID}
                     socket={socket}
-                    token={token}
                   />
                 </>
               )}
@@ -163,7 +161,7 @@ const ChannelMemberList = ({ channel, friends, socket, token }: ChannelMemberLis
         })}
       </ul>
       {currentMember?.isAdmin && channel.isPrivate && (
-        <AddMember channel={channel} friends={friends} socket={socket} token={token} />
+        <AddMember channel={channel} friends={friends} socket={socket} />
       )}
     </div>
   );

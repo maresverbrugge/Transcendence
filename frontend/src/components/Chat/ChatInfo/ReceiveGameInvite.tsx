@@ -6,19 +6,21 @@ import Accept from '../Accept';
 
 interface ReceiveGameInviteProps {
     socket: Socket;
-    token: string;
   }
 
-const ReceiveGameInvite = ({socket, token}: ReceiveGameInviteProps) => {
+const ReceiveGameInvite = ({ socket }: ReceiveGameInviteProps) => {
   const [invite, setInvite] = useState<{senderUsername: string , senderUserID: number} | null>(null);
   const inviteRef = useRef<{ senderUsername: string; senderUserID: number } | null>(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem('authenticationToken');
 
-  const handleGameCreated = (created: boolean) => {
-    if (created) {
-      navigate('/game');
-    } else {
-      emitter.emit('alert', 'An error occurred while starting the game. Please try again.')
+  const handleGameCreated = (data: {created: boolean, senderID: number}) => {
+    if (invite.senderUserID === data.senderID) {
+      if (data.created) {
+        navigate('/game');
+      } else {
+        emitter.emit('alert', 'An error occurred while starting the game. Please try again.')
+      }
     }
   }
 

@@ -9,12 +9,12 @@ import { MessageData } from '../interfaces';
 interface MessengerProps {
   channelID: number | null;
   socket: Socket;
-  token: string
 }
 
-const Messenger = ({ channelID, socket, token }: MessengerProps) => {
+const Messenger = ({ channelID, socket }: MessengerProps) => {
   const [messages, setMessages] = useState<MessageData[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
     const fetchMessages = async () => {
