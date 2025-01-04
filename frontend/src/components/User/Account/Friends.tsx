@@ -66,7 +66,8 @@ return (
           {friends.map((friend) => (
             <li
               key={friend.ID}
-              className="list-group-item d-flex align-items-center">
+              className="list-group-item d-flex align-items-center"
+                style={{ padding: '0.2rem 1rem', gap: '0.5rem' }}>
               <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
                 <img
                   src={friend.avatarURL}
