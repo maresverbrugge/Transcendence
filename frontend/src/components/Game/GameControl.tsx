@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
 let g_socket: Socket;
@@ -142,6 +143,7 @@ onkeydown = (event: KeyboardEvent) => {
 };
 
 const GameLogic = ({ gameID, socket, skin }) => {
+  const navigate = useNavigate();
   const canvas: any = React.useRef();
   const width: number = 500;
   const height: number = 500;
@@ -155,11 +157,11 @@ const GameLogic = ({ gameID, socket, skin }) => {
     paddleRight.display(height);
     if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
       ball.speedX = -ball.speedX;
-      ball.speedY = map_range(ball.y - paddleLeft.y, -paddleLeft.h / 2, paddleLeft.h / 2, -10, 10);
+	  socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
     }
     if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
       ball.speedX = -ball.speedX;
-      ball.speedY = map_range(ball.y - paddleRight.y, -paddleRight.h / 2, paddleRight.h / 2, -10, 10);
+	  socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
     }
     ctx.fillText(scoreRight, width / 2 + 30, 30); // Right side score
     ctx.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
@@ -171,6 +173,9 @@ const GameLogic = ({ gameID, socket, skin }) => {
       ball.y = height / 2;
       ball.speedX = 0;
       ball.speedY = 0;
+	  setTimeout(() => {
+		navigate('/landingpage');
+	  }, 2000);
     }
   };
 
@@ -185,10 +190,12 @@ const GameLogic = ({ gameID, socket, skin }) => {
     context.textAlign = 'center';
     context.lineWidth = 1;
     ball = new Ball(width / 2, height / 2, 50, context, gameID);
-    ball.speedX = 5;
     socket.on('ballSpeedY', (speed: string) => {
       ball.speedY = parseInt(speed);
     });
+	socket.on('ballSpeedX', (speed: string) => {
+		ball.speedX = parseInt(speed);
+	  });
     socket.on('right up', () => {
       console.log('right player up');
       paddleRight.y -= 3;
@@ -227,6 +234,20 @@ const GameLogic = ({ gameID, socket, skin }) => {
     });
     paddleLeft = new Paddle(15, height / 2, 30, 200, context, skin);
     paddleRight = new Paddle(width - 15, height / 2, 30, 200, context, skin);
+	socket.on('pause', () => {
+		ball.speedX = 0;
+		ball.speedY = 0;
+	  });
+
+	socket.on('disconnect', () => {
+		console.log('game paused');
+		ball.speedX = 0;
+		ball.speedY = 0;
+	  });
+
+	socket.on('connect'), () => {
+		socket.emit('reconnected', gameID);
+	}
 
     const render = () => {
       frameCount++;

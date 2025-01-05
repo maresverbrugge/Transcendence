@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { User, Match } from '@prisma/client';
@@ -36,10 +37,31 @@ export class GameService {
     return newGame;
   }
 
-  handleStart(gameID: number): number {
+  handleStart(gameID: number, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     game.ballspeedy = Math.floor(Math.random() * 6 - 3);
     game.ballspeedx = 5;
+	server.emit('ballSpeedY', game.ballspeedy);
+	server.emit('ballSpeedX', game.ballspeedx);
+  }
+
+  handleReconnection(gameID: number, server: Namespace) {
+    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	const socketLeft = this.userService.getWebSocketByUserID(server, game.leftPlayerID);
+	const socketRight = this.userService.getWebSocketByUserID(server, game.rightPlayerID);
+	socketLeft.emit('ballSpeedY', game.ballspeedy);
+	socketLeft.emit('ballSpeedX', game.ballspeedx);
+	socketRight.emit('ballSpeedY', game.ballspeedy);
+	socketRight.emit('ballSpeedX', game.ballspeedx);
+  }
+
+  map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
+	return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
+  }
+
+  handleHitPaddle(gameID: number, value: number, oldHigh: number): number {
+    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+    game.ballspeedy = map_range(value, -oldHigh, oldHigh, -10, 10);
     return game.ballspeedy;
   }
 
@@ -73,7 +95,7 @@ export class GameService {
     });
   }
 
-  handleReverseSpeedY(gameID: number) {
+  handleReverseSpeedY(gameID: number): number {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     game.ballspeedy *= -1;
   }
@@ -97,5 +119,13 @@ export class GameService {
       else
 	      game.paddleleftspeedy = -1;
     }
+  }
+
+  handleEnd(gameID: number): void {
+    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+    game.ballspeedy = 0;
+    game.ballspeedx = 0;
+	game.paddleleftspeedy = 0;
+	game.paddlerightspeedy = 0;
   }
 }

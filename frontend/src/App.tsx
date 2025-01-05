@@ -11,6 +11,7 @@ import UserAccount from './pages/UserAccount';
 import UserProfile from './pages/UserProfile';
 import Chat from './pages/Chat';
 import Game from './pages/game';
+import PaddleSelect from './components/Game/PaddleSelect';
 
 const App = () => {
 	return (
@@ -25,7 +26,8 @@ const App = () => {
 			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-			<Route path="/game" element={<ProtectedRoute element={<Game />}  />} />
+			<Route path="/queue" element={<ProtectedRoute element={<Game />}  />} />
+			<Route path="/game" element={<ProtectedRoute element={<PaddleSelect />}  />} />
 		  </Routes>
 		</Router>
 	  );

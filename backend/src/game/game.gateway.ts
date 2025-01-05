@@ -13,6 +13,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { User, UserStatus, Match, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
+import { LoginService } from 'src/authentication/login/login.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -28,6 +29,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private prisma: PrismaService,
     private readonly userService: UserService,
     private readonly gameService: GameService,
+	private readonly loginService: LoginService
   ) {}
 
   @WebSocketServer() server: Namespace;
@@ -42,7 +44,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
-    const memberID: number = await this.userService.getUserIDFromCache(token);
+    const memberID: number = await this.loginService.getUserIDFromCache(token);
 	const user = await this.prisma.user.findUnique({
 		where: {
 			ID: memberID,
@@ -62,7 +64,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('start')
   handleGameStart(client: Socket, gameID: number) {
-    this.server.emit('ballSpeedY', this.gameService.handleStart(gameID));
+    this.gameService.handleStart(gameID, this.server);
+  }
+
+  @SubscribeMessage('reconnected')
+  handleReconnection(client: Socket, gameID: number) {
+    this.gameService.handleReconnection(gameID, this.server);
   }
 
   @SubscribeMessage('key')
@@ -80,6 +87,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.gameService.handleScoreRight(gameID);
   }
 
+  @SubscribeMessage('hit paddle')
+  async handleHitPaddle(client: Socket, gameID: number, value: number, oldHigh: number) {
+    this.server.emit('ballSpeedY', this.gameService.handleHitPaddle(gameID, value, oldHigh));
+  }
+
+  @SubscribeMessage('reverse ball speedy')
+  async handleReverseSpeedY(client: Socket, gameID: number) {
+    this.server.emit('ballSpeedY', this.gameService.handleReverseSpeedY(gameID));
+  }
+
   @SubscribeMessage('done')
   async handleGameEnd(client: Socket, gameID: number) {
     await this.prisma.match.update({
@@ -91,6 +108,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		  updatedAt: new Date(),
 		},
 	  });
+	this.gameService.handleEnd(gameID);
   }
 
   afterInit(server: Namespace) {
@@ -102,9 +120,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
-      const userID = await this.userService.getUserIDFromCache(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
-      this.server.emit('userStatusChange', userID, 'IN_GAME');
     } catch (error) {
     //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       console.error(error)
@@ -113,13 +130,35 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
   async handleDisconnect(client: Socket): Promise<void> {
     try {
-      console.log(`Client disconnected: ${client.id}`);
-      const user = await this.userService.getUserBySocketID(client.id);
-      await this.prisma.user.update({
-        where: { ID: user.ID },
+		const playerID: number = await this.userService.getUserIDBySocketID(client.id);
+		const user = await this.prisma.user.findUnique({
+			where: {
+				ID: playerID,
+			},
+			select: {
+				matches: {
+					select: {
+						status: true,
+						players: {
+							select: {
+								websocketID: true,
+							}
+						}
+					}
+				}
+			}
+		});
+		const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
+		for (client in game.players)
+		{
+			if (client.websocketID != playerID)
+				this.server.to(client.websocketID).emit('pause');
+		}
+		console.log(`Client disconnected: ${client.id}`);
+		await this.prisma.user.update({
+        where: { ID: playerID },
         data: { websocketID: null, status: UserStatus.ONLINE },
       });
-      this.server.emit('userStatusChange', user.ID, 'ONLINE');
     } catch (error) {
     //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       console.error(error)

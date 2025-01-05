@@ -1,21 +1,19 @@
 import { Controller, Post, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
 import { GameService } from 'src/game/game.service';
+import { LoginService } from 'src/authentication/login/login.service';
 
 @Controller('game/matches')
 export class GameController {
   constructor(
-	private readonly prisma: PrismaService,
 	private readonly game: GameService,
-	private readonly user: UserService
+	private readonly login: LoginService
   ) {}
 
   @Post('/creategame/:token/:userid2')
   async createGame(
     @Param('token') token: string,
     @Param('userid2') userid2: number) {
-      const userid1: number = await this.user.getUserIDFromCache(token);
+      const userid1: number = await this.login.getUserIDFromCache(token);
       this.game.createGame(userid1, userid2);
   }
 }

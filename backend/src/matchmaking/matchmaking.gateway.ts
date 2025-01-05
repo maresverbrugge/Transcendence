@@ -5,6 +5,7 @@
   import { UserService } from 'src/user/user.service';
   import { User, UserStatus, Match } from '@prisma/client';
   import { GameService } from 'src/game/game.service';
+import { LoginService } from 'src/authentication/login/login.service';
   
   @WebSocketGateway({
 	namespace: 'matchmaking',
@@ -19,7 +20,8 @@
 	constructor(
 	  private readonly userService: UserService,
 	  private readonly gameService: GameService,
-	  private readonly prismaService: PrismaService
+	  private readonly prismaService: PrismaService,
+	  private readonly loginService: LoginService
 	) {}
 	@WebSocketServer() server: Namespace;
 	private queue: number[] = [];
@@ -34,7 +36,7 @@
   
 	@SubscribeMessage('joinqueue')
 	async handleJoinQueue(client: any, token: string) {
-	  const userID = await this.userService.getUserIDFromCache(token);
+	  const userID = await this.loginService.getUserIDFromCache(token);
 	  if (this.queue.length >= 1)
 	  {
 		const otherID: number = this.queue.pop();
@@ -60,7 +62,7 @@
 
 	@SubscribeMessage('leavequeue')
 	async handleLeaveQueue(client: any, token: string) {
-	  const userID = await this.userService.getUserIDFromCache(token);
+	  const userID = await this.loginService.getUserIDFromCache(token);
 	  if (this.queue.indexOf(userID) >= 0)
 	  {
 		this.queue.splice(this.queue.indexOf(userID));
