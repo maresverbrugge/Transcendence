@@ -280,6 +280,7 @@ export class UserService {
 }
 
   async getLeaderboard(): Promise<LeaderboardData[]> {
+    console.log("hallootjes?");
     const leaderboard: LeaderboardEntry[] = await this.prisma.statistics.findMany({
       orderBy: { ladderRank: 'desc' },
       take: 10,

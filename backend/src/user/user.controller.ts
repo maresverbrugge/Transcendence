@@ -47,7 +47,12 @@ export class UserController {
 
   @Get(':token')
   async getUserIDFromCache(@Param('token') token: string): Promise<number> {
-    return this.loginService.getUserIDFromCache(token);
+    console.log("hier dan?");
+    console.log("token = ", token);
+    const userID = await this.loginService.getUserIDFromCache(token);
+    console.log("userID = ", userID);
+    return userID;
+    // return this.loginService.getUserIDFromCache(token);
   }
 
   @Patch(':token')

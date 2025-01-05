@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import Username from '../components/User/Account/Username';
-import Avatar from '../components/User/Account/Avatar';
-import Toggle2FA from '../components/User/Account/Toggle2FA';
-import LogOutButton from '../components/User/Account/LogOutButton';
-import UserInfoAccordion from '../components/User/Shared/UserInfoAccordion';
-import Friends from '../components/User/Account/Friends';
+import Username from './Username';
+import Avatar from './Avatar';
+import Toggle2FA from './Toggle2FA';
+import LogOutButton from './LogOutButton';
+import UserInfoAccordion from '../Shared/UserInfoAccordion';
+import Friends from './Friends';
 
 interface UserData {
   ID: number;
@@ -25,7 +25,7 @@ const UserAccount = () => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`http://localhost:3001/user/account/${token}`);
-        // console.log('User data fetched:', response.data);
+        console.log('Uuuuuser data fetched:', response.data);
         setUserData(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
