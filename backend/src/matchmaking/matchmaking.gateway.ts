@@ -10,7 +10,7 @@ import { LoginService } from 'src/authentication/login/login.service';
   @WebSocketGateway({
 	namespace: 'matchmaking',
 	cors: {
-	  origin: 'http://localhost:3000', // Update with your client's origin
+	  origin: process.env.REACT_APP_URL_FRONTEND, // Update with your client's origin
 	  methods: ['GET', 'POST'],
 	  transports: ['websocket'],
 	  credentials: true,

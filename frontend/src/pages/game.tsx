@@ -21,7 +21,7 @@ const Game = () => {
     // Initialize socket connection
     const token: string = localStorage.getItem('authenticationToken');
 	setToken(token);
-    const socketIo: Socket = io('http://localhost:3001/matchmaking', {
+    const socketIo: Socket = io('{process.env.REACT_APP_URL_BACKEND}/matchmaking', {
       transports: ['websocket', 'polling'],
       query: { token }, // Hier de token uit localstorage halen
     });
