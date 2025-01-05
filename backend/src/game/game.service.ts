@@ -45,15 +45,15 @@ export class GameService {
 	server.emit('ballSpeedX', game.ballspeedx);
   }
 
-  handleReconnection(gameID: number, server: Namespace) {
-    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	const socketLeft = this.userService.getWebSocketByUserID(server, game.leftPlayerID);
-	const socketRight = this.userService.getWebSocketByUserID(server, game.rightPlayerID);
-	socketLeft.emit('ballSpeedY', game.ballspeedy);
-	socketLeft.emit('ballSpeedX', game.ballspeedx);
-	socketRight.emit('ballSpeedY', game.ballspeedy);
-	socketRight.emit('ballSpeedX', game.ballspeedx);
-  }
+//   handleReconnection(gameID: number, server: Namespace) {
+//     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+// 	const socketLeft = this.userService.getWebSocketByUserID(server, game.leftPlayerID);
+// 	const socketRight = this.userService.getWebSocketByUserID(server, game.rightPlayerID);
+// 	socketLeft.emit('ballSpeedY', game.ballspeedy);
+// 	socketLeft.emit('ballSpeedX', game.ballspeedx);
+// 	socketRight.emit('ballSpeedY', game.ballspeedy);
+// 	socketRight.emit('ballSpeedX', game.ballspeedx);
+//   }
 
   map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
 	return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
@@ -61,7 +61,7 @@ export class GameService {
 
   handleHitPaddle(gameID: number, value: number, oldHigh: number): number {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-    game.ballspeedy = map_range(value, -oldHigh, oldHigh, -10, 10);
+    game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -10, 10);
     return game.ballspeedy;
   }
 
@@ -95,7 +95,7 @@ export class GameService {
     });
   }
 
-  handleReverseSpeedY(gameID: number): number {
+  handleReverseSpeedY(gameID: number) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     game.ballspeedy *= -1;
   }

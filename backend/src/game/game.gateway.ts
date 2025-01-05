@@ -69,7 +69,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('reconnected')
   handleReconnection(client: Socket, gameID: number) {
-    this.gameService.handleReconnection(gameID, this.server);
+    // this.gameService.handleReconnection(gameID, this.server);
   }
 
   @SubscribeMessage('key')
@@ -149,11 +149,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 		});
 		const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
-		for (client in game.players)
-		{
-			if (client.websocketID != playerID)
-				this.server.to(client.websocketID).emit('pause');
-		}
+		// for (client in game.players)
+		// {
+		// 	if (client.websocketID != playerID)
+		// 		this.server.to(client.websocketID).emit('pause');
+		// }
 		console.log(`Client disconnected: ${client.id}`);
 		await this.prisma.user.update({
         where: { ID: playerID },
