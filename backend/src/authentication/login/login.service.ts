@@ -157,4 +157,12 @@ export class LoginService {
       throw new InternalServerErrorException('Error while storing user in cache');
     }
   }
+
+  async removeUserFromCache(token: string): Promise<void> {
+    try {
+      await this.cacheManager.del(token);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while removing user from cache');
+    }
+  }
 }

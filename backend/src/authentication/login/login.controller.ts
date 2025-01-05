@@ -31,6 +31,7 @@ export class LoginController {
     const { token } = body;
     const userID = await this.loginService.getUserFromCache(token);
     this.loginService.setUserStatusToOffline(userID);
+    this.loginService.removeUserFromCache(token);
   }
 
   @Post('verify-token')
