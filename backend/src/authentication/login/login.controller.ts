@@ -8,8 +8,9 @@ export class LoginController {
 
   @Post('get-token')
   async getToken(@Body() body: { code: string; state: string }) {
+    console.log('getToken');
     const { code, state } = body;
-    if (state !== process.env.REACT_APP_LOGIN_STATE) {
+    if (state !== process.env.LOGIN_STATE) {
       throw new BadRequestException('Invalid state');
     }
     const token = await this.loginService.getToken(code);

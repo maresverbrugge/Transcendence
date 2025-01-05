@@ -9,6 +9,12 @@ services:
       - /app/node_modules
     env_file:
       - ./.env
+    environment:
+      - SITE_URL=${SITE_URL}
+      - FRONT_URL=${FRONT_URL}
+      - BACK_URL=${BACK_URL}
+      - FRONT_PORT=${FRONT_PORT}
+      - BACK_PORT=${BACK_PORT}
     ports:
       - "4000:4000"
     depends_on:
@@ -24,6 +30,13 @@ services:
       - /app/node_modules
     env_file:
       - ./.env
+    environment:
+      - PUBLIC_URL=${FRONT_URL}
+      - REACT_APP_BACKEND_URL=${BACK_URL}
+      - REACT_APP_LOGIN_CLIENT_ID=${LOGIN_CLIENT_ID}
+      - REACT_APP_LOGIN_CLIENT_SECRET=${LOGIN_CLIENT_SECRET}
+      - REACT_APP_LOGIN_REDIRECT=${LOGIN_REDIRECT}
+      - REACT_APP_LOGIN_STATE=${LOGIN_STATE}
     ports:
       - "3000:3000"
     depends_on:

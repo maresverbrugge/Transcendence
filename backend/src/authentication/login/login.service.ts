@@ -14,9 +14,9 @@ export class LoginService {
 
   async getToken(response_code: string): Promise<any> {
     // Load the environment variables needed for the login process
-    const clientId = process.env.REACT_APP_LOGIN_CLIENT_ID;
-    const clientSecret = process.env.REACT_APP_LOGIN_CLIENT_SECRET;
-    const redirectUri = 'http://localhost:3000/login/redirect';
+    const clientId = process.env.LOGIN_CLIENT_ID;
+    const clientSecret = process.env.LOGIN_CLIENT_SECRET;
+    const redirectUri = process.env.LOGIN_REDIRECT;
 
     try {
       // Request the token from the 42 API

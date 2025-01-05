@@ -5,17 +5,21 @@ import { join } from 'path';
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
+	const frontendUrl = process.env.FRONT_URL;
+	const backendUrl = process.env.BACK_URL;
 	// Enable CORS with options
 	app.enableCors({
-		origin: 'http://localhost:3000', // Update with the client origin
+		// origin: 'http://localhost:3000', // Update with the client origin
+		origin: frontendUrl,
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
 		credentials: true,
 	});
 
 	app.useStaticAssets(join(__dirname, '..', 'src', 'public'));
 	
-	await app.listen(3001);
-	console.log('Visit Transcendancing Queens\'s BACKEND on: http://localhost:3001\nVisit Transcendancing Queens\'s FRONTEND on: http://localhost:3000');
+	// await app.listen(3001);
+	await app.listen(process.env.BACK_PORT);
+	// console.log('Visit Transcendancing Queens\'s BACKEND on: http://localhost:3001\nVisit Transcendancing Queens\'s FRONTEND on: http://localhost:3000');
+	console.log('Visit Transcendancing Queens\'s BACKEND on ' + backendUrl + '\nVisit Transcendancing Queens\'s FRONTEND on ' + frontendUrl);
 }
 bootstrap();
