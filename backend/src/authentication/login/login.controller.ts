@@ -29,7 +29,7 @@ export class LoginController {
   @Post('offline')
   async offline(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     this.loginService.setUserStatusToOffline(userID);
     this.loginService.removeUserFromCache(token);
   }

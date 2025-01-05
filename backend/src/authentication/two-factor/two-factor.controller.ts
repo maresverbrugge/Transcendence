@@ -14,7 +14,7 @@ export class TwoFactorController {
   @Post('qrcode')
   async qrcode(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     const qrcode = await this.twoFactorService.getQRCode(userID);
     return qrcode;
   }
@@ -22,7 +22,7 @@ export class TwoFactorController {
   @Post('is-enabled')
   async isEnabled(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     const isEnabled = await this.twoFactorService.isTwoFactorEnabled(userID);
     return isEnabled;
   }
@@ -32,7 +32,7 @@ export class TwoFactorController {
     @Body('oneTimePassword', OneTimePasswordPipe) oneTimePassword: string,
     @Body('token') token: string,
   ) {
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     const verified = await this.twoFactorService.verifyOneTimePassword(
       oneTimePassword,
       userID,
@@ -43,14 +43,14 @@ export class TwoFactorController {
   @Post('enable')
   async enable(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     await this.twoFactorService.enableTwoFactor(userID);
   }
 
   @Post('disable')
   async disable(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserFromCache(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     await this.twoFactorService.disableTwoFactor(userID);
   }
 }

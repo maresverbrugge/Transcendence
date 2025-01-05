@@ -135,7 +135,7 @@ export class LoginService {
     return user.ID;
   }
 
-  async getUserFromCache(token: string): Promise<number> {
+  async getUserIDFromCache(token: string): Promise<number> {
     try {
       const userID = await this.cacheManager.get<number>(token);
       if (!userID) {
@@ -150,9 +150,9 @@ export class LoginService {
     }
   }
 
-  async storeUserInCache(token: string, user: number, expiresInMilliseconds: number): Promise<void> {
+  async storeUserInCache(token: string, userID: number, expiresInMilliseconds: number): Promise<void> {
     try {
-      await this.cacheManager.set(token, user, expiresInMilliseconds);
+      await this.cacheManager.set(token, userID, expiresInMilliseconds);
     } catch (error) {
       throw new InternalServerErrorException('Error while storing user in cache');
     }
