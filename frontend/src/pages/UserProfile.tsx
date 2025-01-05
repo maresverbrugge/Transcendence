@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'; // extract dynamic parameters from the current URL -> might remove later?
+import { useParams, useNavigate } from 'react-router-dom'; // extract dynamic parameters from the current URL -> might remove later?
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -15,15 +15,23 @@ interface UserData {
 }
 
 function UserProfile() {
-  const userID = parseInt(useParams().userID, 10); // for now, might remove later?
-  // console.log('Extracted userID from URL:', userID); // for testing, romove later
+  const { userID } = useParams<{ userID: string }>();
+  // const userID = parseInt(useParams().userID, 10); // for now, might remove later?
+  const navigate = useNavigate();
+  console.log('Extracted userID from URL:', userID); // for testing, romove later
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/user/profile/${userID}`);
+        const token = localStorage.getItem('authenticationToken');
+        const { data: currentUserID } = await axios.get<number>(`http://localhost:3001/${token}`);
+        if (parseInt(userID, 10) === currentUserID) {
+          navigate('/account'); // Redirect to UserAccount if viewing own profile
+          return;
+        }
+        const response = await axios.get(`http://localhost:3001/user/profile/${userID}/${token}`);
         // console.log("User data fetched: ", response.data); // for testing, romove later
         setUserData(response.data);
       } catch (error) {
@@ -58,7 +66,7 @@ function UserProfile() {
             <div className="card-body">
               <FriendActions
                 currentUserID={1} // ! NEED TO FIX, this hard coded userID of logged in user
-                targetUserID={userID}
+                targetUserID={parseInt(userID, 10)}
               />
             </div>
           </div>
@@ -68,7 +76,7 @@ function UserProfile() {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <UserInfoAccordion userID={userID} />
+              <UserInfoAccordion userID={parseInt(userID, 10)} />
             </div>
           </div>
         </div>
@@ -76,7 +84,7 @@ function UserProfile() {
         {/* Right Column remove later, for testing */}  
         <div className="col-md-3">
           <div className="card shadow">
-            <Friends userID={userID} />
+            <Friends userID={parseInt(userID, 10)} />
           </div>
         </div>
       </div>

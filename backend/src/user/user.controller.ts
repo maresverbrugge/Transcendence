@@ -13,6 +13,8 @@ import {
   AchievementData,
 } from './user.service';
 
+import { LoginService } from '../authentication/login/login.service';
+
 interface UploadedFileType {
   buffer: Buffer;
   originalname: string;
@@ -22,7 +24,9 @@ interface UploadedFileType {
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService,
+    private readonly loginService: LoginService
+  ) {}
 
   @Get('userID/:token')
   async getUserIDByToken(@Param('token') token: string): Promise<number> {
@@ -39,6 +43,11 @@ export class UserController {
   async uploadAvatar(@Param('token') token: string, @UploadedFile() file: UploadedFileType): Promise<User> {
     const fileBuffer = file.buffer;
     return this.userService.updateAvatar(token, fileBuffer);
+  }
+
+  @Get(':token')
+  async getUserIDFromCache(@Param('token') token: string): Promise<number> {
+    return this.loginService.getUserIDFromCache(token);
   }
 
   @Patch(':token')
@@ -71,9 +80,9 @@ export class UserController {
     return this.userService.getUserAchievements(userID);
   }
 
-  @Get('profile/:userID')
-  async getUserProfileByUserID(@Param('userID', ParseIntPipe) userID: number): Promise<UserProfile> {
-    return this.userService.getUserProfileByUserID(userID);
+  @Get('profile/:userID/:token')
+  async getUserProfileByUserID(@Param('userID', ParseIntPipe) userID: number, @Param('token') token: string): Promise<UserProfile> {
+    return this.userService.getUserProfileByUserID(userID, token);
   }
 
   @Get(':currentUserID/friend/:targetUserID')

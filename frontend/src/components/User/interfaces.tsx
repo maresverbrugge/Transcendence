@@ -8,6 +8,7 @@ export interface StatisticsData {
 }
 
 export interface MatchHistoryData {
+  opponentID: number;
   opponent: string;
   scorePlayer1: number;
   scorePlayer2: number;

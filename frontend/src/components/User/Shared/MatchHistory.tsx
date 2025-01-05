@@ -1,8 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { MatchHistoryData } from '../interfaces';
 
-const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData[] }) => (
+const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData[] }) => {
+  const navigate = useNavigate();
+
+  return(
   <div className="p-3">
     <h5 className="text-center mb-3">Match History</h5>
     {matchHistoryData.length === 0 ? (
@@ -21,21 +25,28 @@ const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData
             <tr key={index}>
               <td
                 className={
-                  match.result === 'Win' ? 'text-success' : 'text-danger'
-                }
-              >
+                  match.result === 'Win' ? 'text-success' : 'text-danger'}>
                 {match.result}
               </td>
               <td>
                 {match.scorePlayer1} - {match.scorePlayer2}
               </td>
-              <td>{match.opponent}</td>
+              <td>
+                  <button
+                    onClick={() => navigate(`/profile/${match.opponentID}`)}
+                    className="btn btn-link p-0"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {match.opponent}
+                  </button>
+                </td>
             </tr>
           ))}
         </tbody>
       </table>
     )}
   </div>
-);
+  );
+};
 
 export default MatchHistory;

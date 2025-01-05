@@ -32,6 +32,7 @@ export interface LeaderboardData {
 }
 
 export interface MatchHistoryData {
+  opponentID: number;
   opponent: string;
   scorePlayer1: number;
   scorePlayer2: number;
@@ -260,6 +261,7 @@ export class UserService {
         const opponent = match.players.find((player) => player.ID !== userID);
 
         return {
+          opponentID: opponent?.ID ?? -1,
           opponent: opponent?.username ?? 'Unknown',
           scorePlayer1: isPlayer1 ? match.scorePlayer1 : match.scorePlayer2,
           scorePlayer2: isPlayer1 ? match.scorePlayer2 : match.scorePlayer1,
@@ -318,7 +320,9 @@ export class UserService {
     }));
   }
 
-  async getUserProfileByUserID(userID: number): Promise<UserProfile> {
+  async getUserProfileByUserID(userID: number, token: string): Promise<UserProfile> {
+    this.loginService.getUserIDFromCache(token);
+
     const user = await this.prisma.user.findUnique({
       where: { ID: userID },
     });
