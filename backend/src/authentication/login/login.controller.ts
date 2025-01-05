@@ -29,8 +29,9 @@ export class LoginController {
   @Post('offline')
   async offline(@Body() body: { token: string }) {
     const { token } = body;
-    const user = await this.loginService.getIntraName(token);
-    this.loginService.setUserStatusToOffline(user);
+    const userID = await this.loginService.getUserIDFromCache(token);
+    this.loginService.setUserStatusToOffline(userID);
+    this.loginService.removeUserFromCache(token);
   }
 
   @Post('verify-token')

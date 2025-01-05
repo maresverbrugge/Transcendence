@@ -60,10 +60,10 @@ export class LoginService {
     }
   }
 
-  async setUserStatusToOffline(intraUsername: string): Promise<void> {
+  async setUserStatusToOffline(userID: number): Promise<void> {
     try {
       await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: { status: UserStatus.OFFLINE },
       });
     } catch (error) {
@@ -114,11 +114,14 @@ export class LoginService {
       });
 
       if (!response.data || !response.data['expires_in_seconds']) {
-        throw new InternalServerErrorException('Data not found in response');
+        throw new UnauthorizedException('Token not found');
       } else {
         return response.data['expires_in_seconds'];
       }
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Error while getting expires in seconds');
     }
   }
@@ -133,7 +136,7 @@ export class LoginService {
     return user.ID;
   }
 
-  async getUserFromCache(token: string): Promise<number> {
+  async getUserIDFromCache(token: string): Promise<number> {
     try {
       const userID = await this.cacheManager.get<number>(token);
       if (!userID) {
@@ -148,11 +151,19 @@ export class LoginService {
     }
   }
 
-  async storeUserInCache(token: string, user: number, expiresInSeconds: number): Promise<void> {
+  async storeUserInCache(token: string, userID: number, expiresInMilliseconds: number): Promise<void> {
     try {
-      await this.cacheManager.set(token, user, expiresInSeconds);
+      await this.cacheManager.set(token, userID, expiresInMilliseconds);
     } catch (error) {
       throw new InternalServerErrorException('Error while storing user in cache');
+    }
+  }
+
+  async removeUserFromCache(token: string): Promise<void> {
+    try {
+      await this.cacheManager.del(token);
+    } catch (error) {
+      throw new InternalServerErrorException('Error while removing user from cache');
     }
   }
 }
