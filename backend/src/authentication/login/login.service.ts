@@ -150,9 +150,9 @@ export class LoginService {
     }
   }
 
-  async storeUserInCache(token: string, user: number, expiresInSeconds: number): Promise<void> {
+  async storeUserInCache(token: string, user: number, expiresInMilliseconds: number): Promise<void> {
     try {
-      await this.cacheManager.set(token, user, expiresInSeconds);
+      await this.cacheManager.set(token, user, expiresInMilliseconds);
     } catch (error) {
       throw new InternalServerErrorException('Error while storing user in cache');
     }
