@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, Statistics, UserStatus } from '@prisma/client';
+import { User, Statistics, UserStatus, MatchStatus } from '@prisma/client';
 
 import { LoginService } from '../authentication/login/login.service';
 
@@ -35,6 +35,7 @@ export interface MatchHistoryData {
   opponent: string;
   scorePlayer1: number;
   scorePlayer2: number;
+  result: string;
 }
 
 export interface AchievementData {
@@ -48,6 +49,7 @@ interface Match {
   players: { ID: number; username: string }[];
   scorePlayer1: number;
   scorePlayer2: number;
+  status: MatchStatus;
 }
 
 interface LeaderboardEntry {
@@ -234,6 +236,7 @@ export class UserService {
     try {
         const matches: Match[] = await this.prisma.match.findMany({
         where: {
+          status: 'FINISHED',
           players: {
             some: {
               ID: userID,
@@ -251,14 +254,22 @@ export class UserService {
       if (!matches || matches.length === 0) {
         return [];
       }
-      
+
       return matches.map((match: Match) => {
+        const isPlayer1 = match.players[0].ID === userID;
         const opponent = match.players.find((player) => player.ID !== userID);
-        
+
         return {
           opponent: opponent?.username ?? 'Unknown',
-          scorePlayer1: match.scorePlayer1,
-          scorePlayer2: match.scorePlayer2,
+          scorePlayer1: isPlayer1 ? match.scorePlayer1 : match.scorePlayer2,
+          scorePlayer2: isPlayer1 ? match.scorePlayer2 : match.scorePlayer1,
+          result: isPlayer1
+          ? match.scorePlayer1 > match.scorePlayer2
+            ? 'Win'
+            : 'Loss'
+          : match.scorePlayer2 > match.scorePlayer1
+          ? 'Win'
+          : 'Loss',
         };
       });
     } catch (error) {

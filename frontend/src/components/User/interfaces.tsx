@@ -11,6 +11,7 @@ export interface MatchHistoryData {
   opponent: string;
   scorePlayer1: number;
   scorePlayer2: number;
+  result: string;
 }
 
 export interface LeaderboardData {
