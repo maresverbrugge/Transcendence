@@ -9,12 +9,14 @@ import axios from 'axios';
 import './Chat.css'
 import { emitter } from '../components/Chat/emitter';
 import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
+import { useNavigate } from 'react-router-dom';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [alert, setAlert] = useState<string | null>(null);
   const [channelID, setChannelID] = useState<number | null>(null);
   const [friends, setFriends] = useState<MemberData[]>([]);
+  const navigate = useNavigate();
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
@@ -23,9 +25,6 @@ const Chat = () => {
       transports: ["websocket"],
       query: { token },
       withCredentials: true,
-      reconnection: true,
-      reconnectionAttempts: 8,
-      reconnectionDelay: 2000,
     });
     
     socketIo.on('connect', () => {
@@ -56,12 +55,11 @@ const Chat = () => {
   }, []);
 
   const handleError = (error: any) => {
-    if (error?.status === 403) {
+    if (error?.status === 403 || error?.status === 400) {
       setAlert(error?.response?.data?.message)
     }
     else if (error?.status === 401) {
-      localStorage.removeItem('authenticationToken');
-      //redirect?
+      navigate('/logout');
     }
     else
       setAlert('An unexpected error occurred');

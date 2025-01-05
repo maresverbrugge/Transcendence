@@ -78,7 +78,6 @@ export class LoginService {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("token response: ", response.data);
       if (!response.data || !response.data['expires_in_seconds']) {
         return false;
       } else if (response.data['expires_in_seconds'] <= 0) {

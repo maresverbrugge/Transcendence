@@ -3,6 +3,8 @@ import { User, Message, ChannelMember } from '@prisma/client';
 
 import { ChannelService } from './channel.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
+import { ChannelPasswordPipe } from '../pipes/channel-password.pipe';
+import { ChannelNamePipe } from '../pipes/channel-name.pipe';
 
 type ChannelResponse = {
   ID: number;
@@ -49,6 +51,12 @@ export class ChannelController {
 
   @Post()
   async newChannel(@Body() body: { newChannelData: newChannelData }): Promise<ChannelWithMembersAndMessages> {
+    const channelNamePipe = new ChannelNamePipe();
+    channelNamePipe.transform(body.newChannelData.name);
+    if (body.newChannelData.password) {
+      const channelPasswordPipe = new ChannelPasswordPipe();
+      channelPasswordPipe.transform(body.newChannelData.password);
+    }
     return this.channelService.newChannel(body.newChannelData);
   }
 
@@ -70,9 +78,9 @@ export class ChannelController {
     return this.channelMemberService.addChannelMemberIfNotExists(channelID, token);
   }
 
-  @Get('/:channelID')
-  async getChannel(@Param('channelID', ParseIntPipe) channelID: number): Promise<ChannelResponse> {
-    return this.channelService.getChannelByID(channelID);
+  @Get('/:channelID/:token')
+  async getChannel(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string): Promise<ChannelResponse> {
+    return this.channelService.getChannelByID(channelID, token);
   }
 
   @Get('/memberID/:channelID/:token')

@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException, Inject, forwardRef, HttpException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client';
 
-import { UserService } from '../../user/user.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
 import { HashingService } from '../hashing/hashing.service';
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 type ChannelResponse = {
     ID: number;
@@ -45,25 +46,26 @@ type newChannelData = {
 export class ChannelService {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService,
+    private readonly loginService: LoginService,
     private readonly messageService: MessageService,
     private readonly hashingService: HashingService,
     @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
-  async getChannelByID(channelID: number): Promise<Channel> {
+  async getChannelByID(channelID: number, token: string): Promise<Channel> {
     try {
+        this.loginService.getUserIDFromCache(token);
         const channel = await this.prisma.channel.findUnique({
           where: { ID: channelID },
         });
         if (!channel) throw new NotFoundException('Channel not found');
         return channel;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -85,8 +87,7 @@ export class ChannelService {
       if (!channel) throw new NotFoundException('Channel not found');
       return channel;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
   
@@ -95,7 +96,6 @@ export class ChannelService {
     if (socket.connected) {
         this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
         socket.join(String(channelID));
-        console.log(`${socket.id} joined channel ${channelID}`); //remove later
     }
   }
 
@@ -126,7 +126,7 @@ export class ChannelService {
   }
 
   async removeChannelMemberFromChannel(channelID: number, socket: Socket, token: string): Promise<void> {
-    const userID = await this.userService.getUserIDByToken(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     const channelMember = await this.prisma.channelMember.findFirst({
       where: { userID: userID, channelID: channelID },
       select: { ID: true, isBanned: true, channelID: true, isOwner: true, user: { select: { username: true } } },
@@ -168,13 +168,13 @@ export class ChannelService {
         });
         return !!DM;
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message)
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async newChannel(data: newChannelData): Promise<ChannelWithMembersAndMessages> {
     try {
-        const ownerID = await this.userService.getUserIDByToken(data.token);
+        const ownerID = await this.loginService.getUserIDFromCache(data.token);
         if (data.isDM && (await this.DMExists(ownerID, data.memberIDs))) throw new ForbiddenException('DM already exists');
         const hashedPassword = data.password ? await this.hashingService.hashPassword(data.password) : null;
         const newChannel = await this.prisma.channel.create({
@@ -207,8 +207,7 @@ export class ChannelService {
         });
         return newChannel;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message)
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -234,13 +233,13 @@ export class ChannelService {
             }
         });
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async getPrivateChannels(token: string): Promise<ChannelResponse[]> {
     try {
-      const userID = await this.userService.getUserIDByToken(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
       const user = await this.prisma.user.findUnique({
         where: { ID: userID },
         select: {
@@ -272,8 +271,7 @@ export class ChannelService {
           return channelMember.channel;
       });
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message)
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -289,7 +287,7 @@ export class ChannelService {
           where: { channelID: newMemberData.channelID, userID: newMemberData.memberID },
         });
         if (existingChannelMember) throw new ForbiddenException('This user is already a member of the channel');
-        const userID = await this.userService.getUserIDByToken(newMemberData.token);
+        const userID = await this.loginService.getUserIDFromCache(newMemberData.token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: newMemberData.channelID,
@@ -301,14 +299,13 @@ export class ChannelService {
         await this.chatGateway.addSocketToRoom(newMemberData.memberID, newMemberData.channelID);
         return this.channelMemberService.createChannelMember(newMemberData.memberID, newMemberData.channelID);
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async getChannelMemberID(channelID: number, token: string): Promise<number> {
     try {
-        const userID = await this.userService.getUserIDByToken(token);
+        const userID = await this.loginService.getUserIDFromCache(token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: channelID,
@@ -319,14 +316,13 @@ export class ChannelService {
         if (!channelMember) throw new NotFoundException('ChannelMember not found');
         return channelMember.ID;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async checkIsMuted(channelID: number, token: string) {
     try {
-        const userID = await this.userService.getUserIDByToken(token);
+        const userID = await this.loginService.getUserIDFromCache(token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             channelID: channelID,
@@ -351,8 +347,7 @@ export class ChannelService {
           });
         }
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -369,7 +364,7 @@ export class ChannelService {
         });
         return channel?.isPrivate ? true : false;
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -382,8 +377,7 @@ export class ChannelService {
       if (!channel) throw new NotFoundException('Channel not found');
       return await this.hashingService.comparePassword(password, channel.password);
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 }

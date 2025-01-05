@@ -6,16 +6,18 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { HttpException, Inject, InternalServerErrorException, NotFoundException, forwardRef } from '@nestjs/common';
+import { Inject, NotFoundException, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { Channel, ChannelMember, User, Message, UserStatus } from '@prisma/client';
 
-import { UserService } from '../user/user.service';
 import { ChannelService } from './channel/channel.service';
 import { MessageService } from './message/message.service';
 import { ChannelMemberService } from './channel-member/channel-member.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GameInviteService } from './gameInvite/game-invite.service';
+import { LoginService } from 'src/authentication/login/login.service';
+import { MessagePipe } from './pipes/message.pipe';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 type ChannelWithMembersAndMessages = Channel & {
   members: (ChannelMember & {
@@ -40,14 +42,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
     @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
-    private readonly userService: UserService,
+    private readonly loginService: LoginService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
     @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
     @Inject(forwardRef(() => GameInviteService))
     private readonly gameInviteService: GameInviteService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   @SubscribeMessage('newChannel')
@@ -55,9 +58,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       this.channelService.emitNewChannel(this.server, channel);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -67,9 +68,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const channelMember = await this.channelMemberService.getChannelMemberByToken(data.token, data.channelID);
       await this.channelService.joinChannel(data.channelID, client, channelMember.user.username);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -78,20 +77,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
         await this.channelService.removeChannelMemberFromChannel(data.channelID, client, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(client: Socket, data: { channelID: number; token: string; content: string }): Promise<void> {
     try {
+      const messagePipe = new MessagePipe();
+      data.content = messagePipe.transform(data.content as string);
       await this.messageService.sendMessage(client, data);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -102,9 +99,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const { action, channelMemberID, token, channelID } = data;
       await this.channelMemberService.action(this.server, channelMemberID, token, channelID, action);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -113,9 +108,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.channelService.updateChannel(userID);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -124,9 +117,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.gameInviteService.sendGameInvite(client, data.receiverUserID, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -135,9 +126,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.gameInviteService.cancelGameInvite(data.receiverUserID, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -146,9 +135,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.gameInviteService.declineGameInvite(data.senderUserID, data.message, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -157,9 +144,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.gameInviteService.acceptGameInvite(data.senderUserID, data.token);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -168,9 +153,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       await this.gameInviteService.handleGameCreated(data.receiverUserID, data.created, data.token)
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
@@ -183,36 +166,41 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
-      const userID = await this.userService.getUserIDByToken(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
+      const user = await this.prisma.user.findUnique({where: {ID: userID}, select: {ID: true}});
+      if (!user) {
+        throw new NotFoundException('User not found')
+      }
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_CHAT, websocketID: client.id}})
       this.server.emit('userStatusChange', userID, 'IN_CHAT');
       await this.channelMemberService.addSocketToAllRooms(client, userID);
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
     try {
       console.log(`Client disconnected: ${client.id}`);
-      const user = await this.userService.getUserBySocketID(client.id);
+      const user = await this.prisma.user.findUnique({where: {websocketID: client.id}, select: {ID: true}});
+      if (!user) {
+        throw new NotFoundException('User not found')
+      }
       await this.prisma.user.update({
         where: { ID: user.ID },
         data: { websocketID: null, status: UserStatus.ONLINE },
+        select: {ID: true},
       });
       this.server.emit('userStatusChange', user.ID, 'ONLINE');
     } catch (error) {
-      if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+      console.log('CHeck het is gecatcht!')
+      this.errorHandlingService.emitHttpException(error, client);
     }
   }
 
   async addSocketToRoom(userID: number, channelID: number): Promise<void> {
     const socket = await this.getWebSocketByUserID(userID);
-    const user = await this.userService.getUserByUserID(userID);
+    const user = await this.prisma.user.findUnique({where: {ID: userID}, select: {username: true}});
     this.channelService.joinChannel(channelID, socket, user.username);
   }
 
@@ -224,8 +212,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (!socket?.connected) throw new NotFoundException('Websocket not found');
       return socket;
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 

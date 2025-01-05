@@ -1,12 +1,13 @@
-import { Injectable, NotFoundException, Inject, forwardRef, HttpException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Message } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { ChatGateway } from '../chat.gateway';
 import { BlockedUserService } from '../blockedUser/blockedUser.service';
-import { UserService } from '../../user/user.service';
 import { ChannelService } from '../channel/channel.service';
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave';
 
@@ -14,12 +15,13 @@ type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave
 export class MessageService {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService,
+    private readonly loginService: LoginService,
     private readonly blockedUserService: BlockedUserService,
     @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
     @Inject(forwardRef(() => ChatGateway))
-    private readonly chatGateway: ChatGateway
+    private readonly chatGateway: ChatGateway,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   async getMessage(messageID: number, token: string): Promise<Message | null> {
@@ -31,8 +33,7 @@ export class MessageService {
       if (message)
         return blockedUserIDs.includes(message.senderID) ? null : message;
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -45,7 +46,7 @@ export class MessageService {
 
   async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
     try {
-      const sender = await this.userService.getUserByUserID(senderID);
+      const sender = await this.prisma.user.findUnique({where: {ID: senderID}, select: {ID:true, username: true, messagesSend: true}});
       const message = await this.prisma.message.create({
         data: {
           content: content,
@@ -57,14 +58,13 @@ export class MessageService {
       await this.prisma.user.update({ where: {ID: sender.ID}, data: {messagesSend: sender.messagesSend + 1}})
       return message;
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async sendMessage(client: Socket, data: { channelID: number; token: string; content: string }): Promise<void> {
     await this.channelService.checkIsMuted(data.channelID, data.token);
-    const senderID = await this.userService.getUserIDByToken(data.token);
+    const senderID = await this.loginService.getUserIDFromCache(data.token);
     const message = await this.createMessage(data.channelID, senderID, data.content);
     this.chatGateway.emitToRoom('newMessage', String(data.channelID), {
       channelID: data.channelID,
@@ -92,7 +92,7 @@ export class MessageService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException('An unexpected error occurred', error.message);
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 

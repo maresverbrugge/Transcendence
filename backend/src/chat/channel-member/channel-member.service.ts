@@ -1,12 +1,13 @@
-import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, InternalServerErrorException, HttpException, BadRequestException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Namespace, Socket } from 'socket.io';
 import { ChannelMember, User } from '@prisma/client';
 
-import { UserService } from '../../user/user.service';
 import { ChannelService } from '../channel/channel.service';
 import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 type ChannelMemberResponse = ChannelMember & {
   user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -18,13 +19,14 @@ type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave
 export class ChannelMemberService {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService,
+    private readonly loginService: LoginService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway,
     @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse> {
@@ -38,8 +40,7 @@ export class ChannelMemberService {
         if (!channelMember) throw new NotFoundException('Channel member not found');
         return channelMember;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -62,14 +63,13 @@ export class ChannelMemberService {
         const filteredMembers = channel.members.filter((member) => !member.isBanned && member.channelID === channelID);
         return filteredMembers;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async isChannelMember(channelID: number, token: string): Promise<boolean> {
     try {
-      const userID = await this.userService.getUserIDByToken(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
       const user = await this.prisma.user.findUnique({
         where: { ID: userID },
         include: { channelMembers: { select: { channelID: true, isBanned: true } } },
@@ -79,14 +79,13 @@ export class ChannelMemberService {
       const member = user?.channelMembers.find((member) => member.channelID === channelID);
       return member !== undefined && !member.isBanned;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
   async getChannelMemberByToken(token: string, channelID: number): Promise<ChannelMemberResponse> {
     try {
-        const userID = await this.userService.getUserIDByToken(token);
+        const userID = await this.loginService.getUserIDFromCache(token);
         const channelMember = await this.prisma.channelMember.findFirst({
           where: {
             userID: userID,
@@ -99,8 +98,7 @@ export class ChannelMemberService {
         if (!channelMember) throw new NotFoundException('ChannelMember not found');
         return channelMember;
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -111,7 +109,7 @@ export class ChannelMemberService {
       return channelMember;
     } catch (error) {
       if (error instanceof NotFoundException) {
-        const userID = await this.userService.getUserIDByToken(token);
+        const userID = await this.loginService.getUserIDFromCache(token);
         return this.createChannelMember(userID, channelID);
       } else throw error;
     }
@@ -126,7 +124,7 @@ export class ChannelMemberService {
         },
       });
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -136,7 +134,7 @@ export class ChannelMemberService {
         where: { ID: channelMemberID },
       });
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -160,7 +158,7 @@ export class ChannelMemberService {
           },
         });
     } catch (error) {
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 
@@ -255,8 +253,7 @@ export class ChannelMemberService {
         }
       });
     } catch (error) {
-        if (error instanceof HttpException) throw error;
-        throw new InternalServerErrorException('An unexpected error occurred', error.message);
+        this.errorHandlingService.throwHttpException(error);
     }
   }
 }
