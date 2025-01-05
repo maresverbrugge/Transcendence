@@ -6,9 +6,6 @@ services:
       - /app/node_modules
     env_file:
       - ./.env
-    environment:
-      - FRONTEND_URL=${FRONTEND_URL}
-      - BACKEND_PORT=${BACKEND_PORT}
     ports:
       - "3001:3001"
     depends_on:
@@ -23,7 +20,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - REACT_APP_BACKEND_URL=${BACKEND_URL}
+      - REACT_APP_URL_BACKEND=${URL_BACKEND}
       - REACT_APP_LOGIN_CLIENT_ID=${LOGIN_CLIENT_ID}
       - REACT_APP_LOGIN_REDIRECT=${LOGIN_REDIRECT}
       - REACT_APP_LOGIN_STATE=${LOGIN_STATE}

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const backend = process.env.REACT_APP_BACKEND_URL;
+const backend = process.env.REACT_APP_URL_BACKEND;
 
 export const getToken = (code: string, state: string) =>
   axios.post(`${backend}/login/get-token`, {
