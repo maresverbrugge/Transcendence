@@ -193,7 +193,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
       this.server.emit('userStatusChange', user.ID, 'ONLINE');
     } catch (error) {
-      console.log('CHeck het is gecatcht!')
       this.errorHandlingService.emitHttpException(error, client);
     }
   }
