@@ -3,8 +3,8 @@ services:
     build: ./backend
     container_name: trans-backend
     volumes:
-    - /app/node_modules
-    env_file :
+      - /app/node_modules
+    env_file:
       - ./.env
     ports:
       - "3001:3001"
@@ -16,9 +16,14 @@ services:
     build: ./frontend
     container_name: trans-frontend
     volumes:
-    - /app/node_modules
-    env_file :
+      - /app/node_modules
+    env_file:
       - ./.env
+    environment:
+      - REACT_APP_URL_BACKEND=${URL_BACKEND}
+      - REACT_APP_LOGIN_CLIENT_ID=${LOGIN_CLIENT_ID}
+      - REACT_APP_LOGIN_REDIRECT=${LOGIN_REDIRECT}
+      - REACT_APP_LOGIN_STATE=${LOGIN_STATE}
     ports:
       - "3000:3000"
     depends_on:
@@ -30,7 +35,7 @@ services:
     container_name: trans-database
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file :
+    env_file:
       - ./.env
     ports:
       - "5432:5432"

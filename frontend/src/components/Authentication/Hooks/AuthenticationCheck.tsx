@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+
+import { verifyToken } from '../../Utils/apiCalls';
 
 const isAuthenticatedHook = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -9,21 +10,20 @@ const isAuthenticatedHook = () => {
     if (!token) {
       setIsAuthenticated(false);
     } else {
-      axios
-        .post('http://localhost:3001/login/verify-token', {
-          token: token,
-        })
-        .then((response) => {
+      const verify = async () => {
+        try {
+          const response = await verifyToken(token);
           const authenticated = response.data;
           if (!authenticated) {
             localStorage.removeItem('authenticationToken');
           }
           setIsAuthenticated(authenticated);
-        })
-        .catch((err) => {
+        } catch (err) {
           console.error('Error verifying token:', err);
           setIsAuthenticated(false);
-        });
+        }
+      };
+      verify();
     }
   }, []);
 
