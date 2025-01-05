@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+  Inject,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/common/cache';
 import { Cache } from 'cache-manager';
@@ -9,14 +15,16 @@ import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class LoginService {
-
-  constructor(private prisma: PrismaService, @Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
+  ) {}
 
   async getToken(response_code: string): Promise<any> {
     // Load the environment variables needed for the login process
-    const clientId = process.env.REACT_APP_LOGIN_CLIENT_ID;
-    const clientSecret = process.env.REACT_APP_LOGIN_CLIENT_SECRET;
-    const redirectUri = 'http://localhost:3000/login/redirect';
+    const clientId = process.env.LOGIN_CLIENT_ID;
+    const clientSecret = process.env.LOGIN_CLIENT_SECRET;
+    const redirectUri = process.env.LOGIN_REDIRECT;
 
     try {
       // Request the token from the 42 API
@@ -128,10 +136,9 @@ export class LoginService {
   async getUserIDByIntraUsername(intraUsername: string): Promise<number> {
     const user = await this.prisma.user.findUnique({
       where: { intraUsername: intraUsername },
-        select: { ID: true }
+      select: { ID: true },
     });
-    if (!user)
-      throw new NotFoundException("User not found in database");
+    if (!user) throw new NotFoundException('User not found in database');
     return user.ID;
   }
 
