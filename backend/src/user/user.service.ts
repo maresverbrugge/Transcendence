@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client'
+
 import { LoginService } from '../authentication//login/login.service';
 
 interface UserProfile extends User {
@@ -12,8 +13,22 @@ interface UserProfile extends User {
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private readonly loginService: LoginService,
+    private readonly loginService: LoginService
   ) {}
+
+  async getUserIDByToken(token: string): Promise<number> {
+    const intraUsername = await this.loginService.getIntraName(token);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        intraUsername: intraUsername,
+      },
+      select: {
+        ID: true,
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user.ID;
+  } //! make sure to catch where calling this function
 
     //temporary function
     async assignSocketAndTokenToUserOrCreateNewUser(socketID: string, token: string | null, server: Namespace) {
@@ -68,7 +83,7 @@ export class UserService {
         });
       }
     }
-
+    
     async getUsers(client: Socket) {
         const users: User[] = await this.prisma.user.findMany(); // Fetch all users from the User model
         client.emit('users', users);
@@ -80,41 +95,21 @@ export class UserService {
       });
     }
 
-    async getUserIDByIntraUsername(intraUsername: string): Promise<number | null> {
+    async getUserProfileByUserID(userID: number): Promise<UserProfile | null> {
       const user = await this.prisma.user.findUnique({
-        where: { intraUsername: intraUsername },
-          select: { ID: true }
+        where: { ID: userID },
       });
-      console.log("user = ", user);
+      // console.log("user = ", user);
 
-      if (!user)
-        throw new NotFoundException("User not found!");
-
-      return user.ID;
-    }
-
-    async getUserProfileByUserID(token): Promise<UserProfile | null> {
-      const intraName = await this.loginService.getIntraName(token);
-      console.log("intraName = ", intraName);
-
-      if (!intraName)
-        throw new NotFoundException('intraUsername not found');
-
-      const user = await this.prisma.user.findUnique({
-        where: { intraUsername: intraName },
-      });
-      console.log("user = ", user);
-
-      if (!user)
-        throw new NotFoundException("User not found!");
+      if (!user) return null;
 
       // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
       const avatarURL = user.avatar
         ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
-
+      
       // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
-
+      
       return {
         ...user,
         avatarURL, // Attach either the user's avatar or the default avatar URL
@@ -123,21 +118,20 @@ export class UserService {
 
     async createUser(socketID: string): Promise<User> {
         return this.prisma.user.create({
-          data: {
-              username: socketID,
-              intraUsername: socketID,
-              websocketID: socketID,
-              Enabled2FA: true,
-              status: UserStatus.ONLINE,
-              },
+            data: {
+                username: socketID,
+                intraUsername: socketID,
+                websocketID: socketID,
+                Enabled2FA: true,
+                status: UserStatus.ONLINE,
+                },
         });
     }
 
-    async updateUsername(token: string, newUsername: string) {
+    async updateUsername(userID: number, newUsername: string) {
       try {
-        const intraUsername = await this.loginService.getIntraName(token);
         const updatedUser = await this.prisma.user.update({
-          where: { intraUsername: intraUsername },
+          where: { ID: userID },
           data: { username: newUsername },
         });
         return updatedUser;
@@ -146,18 +140,16 @@ export class UserService {
       }
     }
 
-    async updateAvatar(token: string, avatar: Buffer) {
-      const intraUsername = await this.loginService.getIntraName(token);
+    async updateAvatar(userID: number, avatar: Buffer) {
       return await this.prisma.user.update({
-          where: { intraUsername: intraUsername },
+          where: { ID: userID },
           data: { avatar },
       });
     }
 
-    async toggle2FA(token: string, enable: boolean) {
-      const intraUsername = await this.loginService.getIntraName(token);
+    async toggle2FA(userID: number, enable: boolean) {
       return await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+          where: { ID: userID },
           data: { Enabled2FA: enable },
       });
     }

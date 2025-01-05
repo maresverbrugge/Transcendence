@@ -78,6 +78,7 @@ clean:
 		@rm -rf ./backend/dist
 		@rm -rf ./backend/node_modules
 		@rm -rf ./frontend/node_modules
+		@rm -rf ./backend/src/prisma/migrations
 		@docker stop $(LIST_CONTAINERS) || true
 		@docker rm $(LIST_CONTAINERS) || true
 		@docker rmi -f $(LIST_IMAGES) || true

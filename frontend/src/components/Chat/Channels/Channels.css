@@ -11,6 +11,7 @@
     overflow: hidden; /* Prevent scrolling on the container itself */
     padding: 10px;
     z-index: 1;
+    color: black;
 }
 
 .channels-list {

@@ -1,52 +1,103 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Namespace, Socket } from 'socket.io';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Socket } from 'socket.io';
+import { Message } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from '../user/user.service';
+
+import { ChatGateway } from '../chat.gateway';
+import { BlockedUserService } from '../blockedUser/blockedUser.service';
 import { ChannelService } from '../channel/channel.service';
-import { User, Message } from '@prisma/client'
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
-
+type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave';
 
 @Injectable()
 export class MessageService {
+  constructor(
+    private prisma: PrismaService,
+    private readonly loginService: LoginService,
+    private readonly blockedUserService: BlockedUserService,
+    @Inject(forwardRef(() => ChannelService))
+    private readonly channelService: ChannelService,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly chatGateway: ChatGateway,
+    private readonly errorHandlingService: ErrorHandlingService,
+  ) {}
 
-    constructor(
-      private prisma: PrismaService,
-      private readonly userService: UserService,
-      private readonly channelService: ChannelService
-    ) {}  
+  async getMessage(messageID: number, token: string): Promise<Message | null> {
+    try {
+      const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByToken(token);
+      const message = await this.prisma.message.findUnique({
+        where: { ID: messageID },
+      });
+      if (message)
+        return blockedUserIDs.includes(message.senderID) ? null : message;
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
 
-    async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
-        
-      const sender: User = await this.userService.getUserByUserID(senderID)
-      if (!sender)
-        throw new NotFoundException('User not found');
-    
-      return this.prisma.message.create({
+  async getMessages(channelID: number, token: string): Promise<Message[]> {
+    const blockedUserIDs = await this.blockedUserService.getBlockedUserIDsByToken(token);
+    const channel = await this.channelService.getChannelWithMembersAndMessagesByID(channelID);
+    const messages = channel.messages.filter((message) => !blockedUserIDs.includes(message.senderID));
+    return messages;
+  }
+
+  async createMessage(channelID: number, senderID: number, content: string): Promise<Message> {
+    try {
+      const sender = await this.prisma.user.findUnique({where: {ID: senderID}, select: {ID:true, username: true, messagesSend: true}});
+      const message = await this.prisma.message.create({
         data: {
           content: content,
           senderName: sender.username,
-          sender: {
-            connect: { ID: senderID }
-          },
-
-
-          channel: {
-            connect: { ID: channelID }
-          }
-        }
+          sender: { connect: { ID: senderID } },
+          channel: { connect: { ID: channelID } },
+        },
       });
+      await this.prisma.user.update({ where: {ID: sender.ID}, data: {messagesSend: sender.messagesSend + 1}})
+      return message;
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
     }
+  }
 
-    async sendMessage(server: Namespace, client: Socket, data: { channelID: number, token: string, content: string }) {
-      try {
-        await this.channelService.checkIsMuted(data.channelID, data.token)
-        const sender = await this.userService.getUserBySocketID(data.token)
-        const newMessage: Message = await this.createMessage(data.channelID, sender.ID, data.content)
-        server.to(String(data.channelID)).emit('newMessage', newMessage)
-        // server.emit('newMessageOnChannel', data.channelID)
-      } catch (error) {
-        client.emit('error', error)
-      }
+  async sendMessage(client: Socket, data: { channelID: number; token: string; content: string }): Promise<void> {
+    await this.channelService.checkIsMuted(data.channelID, data.token);
+    const senderID = await this.loginService.getUserIDFromCache(data.token);
+    const message = await this.createMessage(data.channelID, senderID, data.content);
+    this.chatGateway.emitToRoom('newMessage', String(data.channelID), {
+      channelID: data.channelID,
+      messageID: message.ID,
+    });
+  }
+
+  async createActionLogMessage(channelID: number, username: string, action: action): Promise<Message> {
+    try  {
+      const actionMessageMap = {
+        demote: `${username} is no longer an Admin.`,
+        makeAdmin: `${username} is now an Admin.`,
+        mute: `${username} is now muted for 60 seconds.`,
+        kick: `${username} has been kicked from the channel.`,
+        ban: `${username} is now banned from the channel.`,
+        join: `${username} has joined the channel.`,
+        leave: `${username} has left the channel.`,
+      };
+      return this.prisma.message.create({
+        data: {
+          content: actionMessageMap[action],
+          senderName: 'actionLog',
+          channel: { connect: { ID: channelID } },
+          sender: undefined,
+        },
+      });
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
     }
+  }
+
+  async sendActionLogMessage(channelID: number, username: string, action: action): Promise<void> {
+    const message = await this.createActionLogMessage(channelID, username, action);
+    this.chatGateway.emitToRoom('newMessage', String(channelID), { channelID: channelID, messageID: message.ID });
+  }
 }

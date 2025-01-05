@@ -38,6 +38,7 @@ model User {
   websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
   secretKey         String?       @unique // We use the key to verify one time passwords
+  messagesSend      Int           @default(0)
 
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
@@ -80,6 +81,7 @@ model Channel {
   name              String
   isPrivate         Boolean       @default(false)
   isDM              Boolean       @default(false)
+  passwordEnabled   Boolean       @default(false)
   password          String?       // Optional password field
 
   ownerID           Int
@@ -94,9 +96,9 @@ model Message {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   senderName        String
-
-  senderID          Int
-  sender            User          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
+  
+  senderID          Int?
+  sender            User?          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
@@ -112,7 +114,7 @@ model ChannelMember {
   banUntil          DateTime?
 
   userID            Int
-  user              User          @relation(fields: [userID], references: [ID], onDelete: Cascade)
+  user              User         @relation(fields: [userID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
