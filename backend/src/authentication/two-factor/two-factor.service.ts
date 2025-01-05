@@ -23,10 +23,10 @@ export class TwoFactorService {
     }
   }
 
-  async isTwoFactorEnabled(userID: number): Promise<boolean> {
+  async isTwoFactorEnabled(intraUsername: string): Promise<boolean> {
     try {
       const isEnabled = await this.prisma.user.findUnique({
-        where: { ID: userID },
+        where: { intraUsername: intraUsername },
         select: { Enabled2FA: true },
       });
       if (isEnabled === null) {
@@ -39,10 +39,10 @@ export class TwoFactorService {
     }
   }
 
-  async verifyOneTimePassword(oneTimePassword: string, userID: number): Promise<boolean> {
+  async verifyOneTimePassword(oneTimePassword: string, intraUsername: string): Promise<boolean> {
     try {
       const secretKey = await this.prisma.user.findUnique({
-        where: { ID: userID },
+        where: { intraUsername: intraUsername },
         select: { secretKey: true },
       });
       const verified = speakeasy.totp.verify({

@@ -22,21 +22,15 @@ export class TwoFactorController {
   @Post('is-enabled')
   async isEnabled(@Body() body: { token: string }) {
     const { token } = body;
-    const userID = await this.loginService.getUserIDFromCache(token);
-    const isEnabled = await this.twoFactorService.isTwoFactorEnabled(userID);
+    const intraUsername = await this.loginService.getIntraName(token);
+    const isEnabled = await this.twoFactorService.isTwoFactorEnabled(intraUsername);
     return isEnabled;
   }
 
   @Post('verify')
-  async verify(
-    @Body('oneTimePassword', OneTimePasswordPipe) oneTimePassword: string,
-    @Body('token') token: string,
-  ) {
-    const userID = await this.loginService.getUserIDFromCache(token);
-    const verified = await this.twoFactorService.verifyOneTimePassword(
-      oneTimePassword,
-      userID,
-    );
+  async verify(@Body('oneTimePassword', OneTimePasswordPipe) oneTimePassword: string, @Body('token') token: string) {
+    const intraUsername = await this.loginService.getIntraName(token);
+    const verified = await this.twoFactorService.verifyOneTimePassword(oneTimePassword, intraUsername);
     return verified;
   }
 
