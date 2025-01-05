@@ -55,12 +55,12 @@ const PaddleSelect = ({}) => {
 				</label>
 				<label>
 					<input type="radio" value="option1" checked={selectedPaddle === 'option1'} onChange={handleChange} />
-					<img class="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg"></img>
+					<img className="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg"></img>
 					Radio 2
 				</label>
 				<label>
 					<input type="radio" value="option2" checked={selectedPaddle === 'option2'} onChange={handleChange} />
-					<img class="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg"></img>
+					<img className="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg"></img>
 					Radio 3
 				</label>
 			</div>

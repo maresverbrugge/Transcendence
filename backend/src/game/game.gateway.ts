@@ -48,7 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			ID: memberID,
 		},
 		select: {
-			matchHistory: {
+			matches: {
 				select: {
 					matchID: true,
 					status: true,
@@ -56,7 +56,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			}
 		}
 	});
-	const game = user.matchHistory.filter(x => x.status == MatchStatus.PENDING)[0];
+	const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
     client.emit('gameID', game.matchID);
   }
 
@@ -81,13 +81,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('done')
-  handleGameStart(client: Socket, gameID: number) {
+  async handleGameEnd(client: Socket, gameID: number) {
     await this.prisma.match.update({
 		where: {
 		  matchID: gameID,
 		},
 		data: {
 		  status: MatchStatus.FINISHED,
+		  updatedAt: new Date(),
 		},
 	  });
   }

@@ -26,9 +26,9 @@ export class GameService {
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
     const newGame = await this.prisma.match.create({
       data: {
-        status: 'ACCEPTED',
+        status: 'PENDING',
 		players: {
-            connect: [{ ID: userID1 } , { ID: userID2 }]
+            connect: [{ ID: userID1 }, { ID: userID2 }]
           },
       },
     });
@@ -51,7 +51,7 @@ export class GameService {
         matchID: gameID,
       },
       data: {
-        scorePlayer1: {
+        scoreLeft: {
           increment: 1,
         },
       },
@@ -66,7 +66,7 @@ export class GameService {
         matchID: gameID,
       },
       data: {
-        scorePlayer1: {
+        scoreRight: {
           increment: 1,
         },
       },

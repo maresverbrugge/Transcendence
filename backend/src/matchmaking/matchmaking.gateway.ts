@@ -22,7 +22,7 @@
 	  private readonly prismaService: PrismaService
 	) {}
 	@WebSocketServer() server: Namespace;
-	private queue: number[];
+	private queue: number[] = [];
 	private logger: Logger = new Logger('GameGateway');
   
 	// @SubscribeMessage('message')
@@ -61,7 +61,7 @@
 	@SubscribeMessage('leavequeue')
 	async handleLeaveQueue(client: any, token: string) {
 	  const userID = await this.userService.getUserIDByToken(token);
-	  if (this.queue.includes(userID))
+	  if (this.queue.indexOf(userID) >= 0)
 	  {
 		this.queue.splice(this.queue.indexOf(userID));
 	  }

@@ -24,8 +24,7 @@ enum UserStatus {
 
 enum MatchStatus {
   PENDING
-  ACCEPTED
-  DECLINED
+  FINISHED
 }
 
 model User {
@@ -33,7 +32,7 @@ model User {
   username          String
   intraUsername     String        @unique
   avatar            Bytes?
-  Enabled2FA        Boolean
+  Enabled2FA        Boolean	
   token             String?
   websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
@@ -41,7 +40,7 @@ model User {
 
   friends           User[]        @relation("Friends")
   friendsOf         User[]        @relation("Friends")
-  matchHistory      Match[]
+  matches           Match[]
   statistics        Statistics?
   channelsOwned     Channel[]
   channelMembers    ChannelMember[]
@@ -53,11 +52,10 @@ model User {
 model Match {
   matchID           Int           @id @default(autoincrement())
   status            MatchStatus   @default(PENDING) // PENDING | FINISHED
-  scorePlayer1      Int           @default(0)
-  scorePlayer2      Int           @default(0)
+  scoreLeft         Int           @default(0)
+  scoreRight        Int           @default(0)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-
   players           User[]
 }
 

@@ -72,7 +72,6 @@ class Paddle {
   y: number;
   w: number;
   h: number;
-  speedY: number;
   context: any;
   skinPath: string;
   topPosition: number;
@@ -83,7 +82,6 @@ class Paddle {
     this.w = w;
     this.h = h;
 	this.topPosition = this.y - this.h / 2;
-    this.speedY = 0; //get from client
     this.context = context;
 	this.skinPath = "";
 	if (skin === "option1")
@@ -131,7 +129,8 @@ function map_range(value: number, low1: number, high1: number, low2: number, hig
 }
 
 onkeydown = (event: KeyboardEvent) => {
-  if (end) return;
+  if (end)
+	return;
   let move: string;
   if (event.key === 'ArrowUp') {
     move = 'up';
@@ -193,26 +192,38 @@ const GameLogic = ({ gameID, socket, skin }) => {
     socket.on('right up', () => {
       console.log('right player up');
       paddleRight.y -= 3;
-	  paddleRight.topPosition -= 3;
-	  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+	  if (paddleRight.skinPath != "")
+	  {
+		  paddleRight.topPosition -= 3;
+		  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+	  }
     });
     socket.on('left up', () => {
       console.log('left player up');
       paddleLeft.y -= 3;
-	  paddleLeft.topPosition -= 3;
-	  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+	  if (paddleRight.skinPath != "")
+	  {
+		  paddleLeft.topPosition -= 3;
+		  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+	  }
     });
     socket.on('right down', () => {
       console.log('right player down');
       paddleRight.y += 3;
-	  paddleRight.topPosition += 3;
-	  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+	  if (paddleRight.skinPath != "")
+	  {
+		  paddleRight.topPosition += 3;
+		  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+	  }
     });
     socket.on('left down', () => {
       console.log('left player down');
       paddleLeft.y += 3;
-	  paddleLeft.topPosition += 3;
-	  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+	  if (paddleRight.skinPath != "")
+	  {
+		  paddleLeft.topPosition += 3;
+		  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+	  }
     });
     paddleLeft = new Paddle(15, height / 2, 30, 200, context, skin);
     paddleRight = new Paddle(width - 15, height / 2, 30, 200, context, skin);
