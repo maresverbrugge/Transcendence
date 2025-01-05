@@ -1,43 +1,86 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
+
 import Friends from './Friends';
 import './ChatInfo.css';
-import { ChannelData, MemberData } from '../interfaces' 
+import { ChannelData, MemberData } from '../interfaces';
 import Channel from './Channel';
+import DM from './DM';
+import axios from 'axios';
+import { emitter } from '../emitter';
+
 
 interface ChannelInfoProps {
-    channel: ChannelData;
-    setChannel: (channel: ChannelData | null) => void;
-    token: string;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
-  }
-  
-  interface ChatInfoProps {
-    channel: ChannelData | null;
-    setChannel: (channel: ChannelData | null) => void;
-    friends: MemberData[];
-    setFriends: (friends: MemberData[]) => void;
-    socket: any; // Adjust this type if using a specific Socket.IO client library type
-    token: string;
-  }
-  
+  channelID: number;
+  friends: MemberData[];
+  socket: Socket;
+}
 
-const ChannelInfo = ({ channel, setChannel, token, socket }: ChannelInfoProps) => {
-    return (
-        <div className="channel-info">
-            {/* {channel.isDM ? <DMInfo /> : <Channel channel={selectedChannel} setChannel={setSelectedChannel} socket={socket} token={token}/>} LATER DMINFO TOEVOEGEN */}
-            <Channel channel={channel} setChannel={setChannel} socket={socket} token={token} />
-        </div>
-    );
+interface ChatInfoProps {
+  channelID: number | null;
+  friends: MemberData[];
+  setFriends: (friends: MemberData[]) => void;
+  socket: Socket;
+}
+
+const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
+  const [channel, setChannel] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchChannelInfo = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get<ChannelData>(`http://localhost:3001/chat/channel/${channelID}/${token}`);
+        setChannel(response.data);
+      } catch (error) {
+        emitter.emit('error', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      fetchChannelInfo();
+  }, [channelID]);
+
+  if (loading) {
+    return <div>Loading channel...</div>;
+  }
+
+  if (!channel) {
+    return <div>No channel data available.</div>;
+  }
+
+  return (
+    <div className="channel-info">
+      {channel.isDM ? (
+        <DM channel={channel} />
+      ) : (
+        <Channel
+          channel={channel}
+          friends={friends}
+          socket={socket}
+        />
+      )}
+    </div>
+  );
 };
 
-const ChatInfo = ({ channel, setChannel, friends, setFriends, socket, token }: ChatInfoProps) => {
-    return (
-        <div className="chat-info-container">
-            {channel === null
-                ? <Friends friends={friends} setFriends={setFriends} socket={socket} token={token} />
-                : <ChannelInfo channel={channel} setChannel={setChannel} token={token} socket={socket} />}
-        </div>
-    );
+const ChatInfo = ({ channelID, friends, setFriends, socket }: ChatInfoProps) => {
+  return (
+    <div className="chat-info-container">
+      {channelID === null ? (
+        <Friends friends={friends} setFriends={setFriends} socket={socket} />
+      ) : (
+        <ChannelInfo
+          channelID={channelID}
+          friends={friends}
+          socket={socket}
+        />
+      )}
+    </div>
+  );
 };
 
 export default ChatInfo;

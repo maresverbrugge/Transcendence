@@ -86,7 +86,6 @@ export class LoginService {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!response.data || !response.data['expires_in_seconds']) {
         return false;
       } else if (response.data['expires_in_seconds'] <= 0) {
@@ -108,6 +107,7 @@ export class LoginService {
       });
       return response.data.login;
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException('Error while getting intra name');
     }
   }

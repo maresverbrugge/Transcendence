@@ -8,6 +8,7 @@
     overflow-y: auto;
     padding-bottom: 50px; /* Space for the input box */
     box-sizing: border-box;
+    color: black;
 }
 
 .select-channel-message {

@@ -1,49 +1,64 @@
 import React, { useEffect } from 'react';
+import { Socket } from 'socket.io-client';
+
 import ChannelMemberList from './ChannelMemberList';
-import { ChannelData } from '../interfaces';
+import { ChannelData, MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface ChannelProps {
   channel: ChannelData;
-  setChannel: (channel: ChannelData | null) => void;
-  socket: any;
-  token: string;
+  friends: MemberData[];
+  socket: Socket;
 }
 
-const Channel = ({ channel, setChannel, socket, token }: ChannelProps) => {
+const Channel = ({ channel, friends, socket }: ChannelProps) => {
+  const token = localStorage.getItem('authenticationToken');
 
-    useEffect(() => {
-        if (channel && !channel.isPrivate) {
-            socket.emit('joinChannel', { channelID: channel.ID, token }); // token later uit storage halen
-        }
-
-        return () => {
-            if (channel && !channel.isPrivate) {
-                socket.emit('leaveChannel', { channelID: channel.ID, token });
-            }
-        };
-    }, [channel, socket, token]);
-
-    const leaveChannel = () => {
-        if (channel) {
-            socket.emit('leaveChannel', { channelID: channel.ID, token });
-            setChannel(null);
-        }
+  useEffect(() => {
+    const handleDisconnect = () => {
+      if (channel) {
+        socket.emit('leaveChannel', { channelID: channel.ID, token });
+      }
     };
 
-    return (
-        <div className="channel-container">
-            <div className="channel-header">
-                <h2>Channel: {channel?.name}</h2>
-                <ChannelMemberList
-                    channel={channel}
-                    setChannel={setChannel}
-                    token={token}
-                    socket={socket}
-                />
-            </div>
-            {channel?.isPrivate && (<button onClick={leaveChannel}>Leave Channel</button>)}
-        </div>
-    );
+    if (channel && !channel.isPrivate) {
+      socket.emit('joinChannel', { channelID: channel.ID, token });
+    }
+
+    socket.on('disconnect', handleDisconnect);
+
+    const handleBeforeUnload = () => {
+      handleDisconnect();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      if (channel && !channel.isPrivate) {
+        socket.emit('leaveChannel', { channelID: channel.ID, token});
+      }
+      socket.off('disconnect', handleDisconnect);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [channel, socket]);
+
+  const leaveChannel = () => {
+    socket.emit('leaveChannel', { channelID: channel.ID, token});
+    emitter.emit('selectChannel', null);
+  };
+
+  return (
+    <div className="channel-container">
+      <div className="channel-header">
+        <h2>Channel: {channel?.name}</h2>
+        <ChannelMemberList
+          channel={channel}
+          friends={friends}
+          socket={socket}
+        />
+      </div>
+      {channel.isPrivate && <button onClick={leaveChannel}>Leave Channel</button>}
+    </div>
+  );
 };
 
 export default Channel;
