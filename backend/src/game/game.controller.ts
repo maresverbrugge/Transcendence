@@ -15,7 +15,7 @@ export class GameController {
   async createGame(
     @Param('token') token: string,
     @Param('userid2') userid2: number) {
-      const userid1: number = await this.user.getUserIDByToken(token);
+      const userid1: number = await this.user.getUserIDFromCache(token);
       this.game.createGame(userid1, userid2);
   }
 }

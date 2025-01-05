@@ -42,7 +42,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
-    const memberID: number = await this.userService.getUserIDByToken(token);
+    const memberID: number = await this.userService.getUserIDFromCache(token);
 	const user = await this.prisma.user.findUnique({
 		where: {
 			ID: memberID,
@@ -102,7 +102,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
-      const userID = await this.userService.getUserIDByToken(token);
+      const userID = await this.userService.getUserIDFromCache(token);
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
       this.server.emit('userStatusChange', userID, 'IN_GAME');
     } catch (error) {

@@ -34,7 +34,7 @@
   
 	@SubscribeMessage('joinqueue')
 	async handleJoinQueue(client: any, token: string) {
-	  const userID = await this.userService.getUserIDByToken(token);
+	  const userID = await this.userService.getUserIDFromCache(token);
 	  if (this.queue.length >= 1)
 	  {
 		const otherID: number = this.queue.pop();
@@ -60,7 +60,7 @@
 
 	@SubscribeMessage('leavequeue')
 	async handleLeaveQueue(client: any, token: string) {
-	  const userID = await this.userService.getUserIDByToken(token);
+	  const userID = await this.userService.getUserIDFromCache(token);
 	  if (this.queue.indexOf(userID) >= 0)
 	  {
 		this.queue.splice(this.queue.indexOf(userID));
