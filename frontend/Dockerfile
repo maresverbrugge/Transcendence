@@ -1,31 +1,47 @@
-# frontend/Dockerfile
+# # Step 1: Build the React app using Node.js
+# FROM node:16-alpine as build
 
-# Base image is lightweight version of Node.js
-FROM node:16-alpine
+# # Set the working directory
+# WORKDIR /app
 
-# Set working directory
-# All commands will be executed in this directory
+# # Copy package.json and package-lock.json first
+# COPY package*.json ./
+
+# RUN apt-get update && apt-get upgrade -y && apt-get install -y npm  
+
+# # Install dependencies
+# RUN npm install
+
+# # Copy the rest of the source code
+# COPY . .
+
+# # Build the React app
+# RUN npm run build
+
+# # Step 2: Use Nginx to serve the static files
+# FROM nginx:stable-alpine
+
+# # Copy the built React app from the 'build' stage into Nginx's default directory
+# COPY --from=build /app/build /usr/share/nginx/html
+
+# # Expose the port Nginx will use to serve the app
+# EXPOSE 1024
+
+# # Start Nginx (default command for Nginx)
+# CMD ["nginx", "-g", "daemon off;"]
+
+
+
+FROM node:lts-alpine
+
+COPY ./     /app/
+
 WORKDIR /app
 
-# Copy package.json from host machine to container working directory
-# Install dependencies specified in package.json
-COPY package*.json ./
 RUN npm install
 
-# Copy the source code from host machine to container
-COPY . .
-
-# Build the frontend application
-# For React, this creates a production-ready build in the build directory
-RUN npm run build
-
-# Install the serve package globally to have a simple HTTP server to serve static files
 RUN npm install -g serve
 
-# Expose the application port
-# This is the port where the static files are served
-EXPOSE 3000
+RUN npm run build
 
-# Start the application
-# Runs the serve command to serve the static files from the build directory
 CMD ["serve", "-s", "build", "-l", "3000"]

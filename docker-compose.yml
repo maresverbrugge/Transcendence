@@ -1,28 +1,35 @@
+networks:
+  transcendence:
+
 services:
   backend:
     build: ./backend
     container_name: trans-backend
     volumes:
-    - /app/node_modules
-    env_file :
+      - /app/node_modules
+    env_file:
       - ./.env
     ports:
-      - "3001:3001"
+      - "4000:4000"
     depends_on:
       - database
+    networks:
+      - transcendence
     restart: always
 
   frontend:
     build: ./frontend
     container_name: trans-frontend
     volumes:
-    - /app/node_modules
-    env_file :
+      - /app/node_modules
+    env_file:
       - ./.env
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    networks:
+      - transcendence
     restart: always
 
   database:
@@ -30,11 +37,27 @@ services:
     container_name: trans-database
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file :
+    env_file:
       - ./.env
     ports:
       - "5432:5432"
+    networks:
+      - transcendence
     restart: always
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "1024:1024"
+    restart: unless-stopped
+    networks:
+      - transcendence
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data:
