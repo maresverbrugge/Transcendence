@@ -99,6 +99,7 @@ class Paddle {
 		// This next line will just add it to the <body> tag
 		document.body.appendChild(this.img);
 		this.img.style.top = `${this.topPosition}px`;
+		this.img.style.left = `${this.x - this.w / 2}px`;
 	}
   }
   left() {
