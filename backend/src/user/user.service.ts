@@ -4,11 +4,17 @@ import { User, Statistics, UserStatus, MatchStatus } from '@prisma/client';
 
 import { LoginService } from '../authentication/login/login.service';
 
-export interface UserAccount extends User {
+export interface UserAccount {
+  ID: number;
+  username: string;
+  Enabled2FA: boolean;
   avatarURL: string;
 }
 
-export interface UserProfile extends User {
+export interface UserProfile {
+  currentUserID: number;
+  profileID: number;
+  username: string;
   avatarURL: string;
   status: UserStatus;
 }
@@ -65,51 +71,73 @@ export class UserService {
     private readonly loginService: LoginService
   ) {}
 
-  async getUserIDByToken(token: string): Promise<number> {
-    const intraUsername = await this.loginService.getIntraName(token);
+  async getUserAccountByToken(token: string): Promise<UserAccount> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+
     const user = await this.prisma.user.findUnique({
-      where: {
-        intraUsername: intraUsername,
-      },
+      where: { ID: userID },
       select: {
         ID: true,
+        username: true,
+        Enabled2FA: true,
+        avatar: true,
       },
     });
-    if (!user) throw new NotFoundException('User not found');
-    return user.ID;
-  } //! make sure to catch where calling this function
-
-  async getUserAccountByToken(token: string): Promise<UserAccount> {
-    const intraName = await this.loginService.getIntraName(token);
-    // console.log("intraName = ", intraName);
-
-    if (!intraName) throw new NotFoundException('intraUsername not found');
-
-    const user = await this.prisma.user.findUnique({
-      where: { intraUsername: intraName },
-    });
-    // console.log("user = ", user);
 
     if (!user) throw new NotFoundException('User not found!');
 
-    // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
     const avatarURL = user.avatar
       ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
       : 'http://localhost:3001/images/default-avatar.png';
 
-    // console.log("avatarURL = ", avatarURL);
+    return {
+      ID: user.ID,
+      username: user.username,
+      Enabled2FA: user.Enabled2FA,
+      avatarURL,
+    };
+  }
+
+  async getUserProfileByUserID(profileUserID: number, token: string): Promise<UserProfile> {
+    const currentUserID = await this.loginService.getUserIDFromCache(token);
+
+    try {
+      const user = await this.prisma.user.findUnique({
+      where: { ID: profileUserID },
+      select: {
+        ID: true,
+        username: true,
+        avatar: true,
+        status: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const avatarURL = user.avatar
+      ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
+      : 'http://localhost:3001/images/default-avatar.png';
 
     return {
-      ...user,
-      avatarURL, // Attach either the user's avatar or the default avatar URL
+      currentUserID,
+      profileID: user.ID,
+      username: user.username,
+      status: user.status,
+      avatarURL,
     };
+    } catch (error)
+    {
+
+    }
   }
 
   async updateUsername(token: string, newUsername: string): Promise<User> {
     try {
-      const intraUsername = await this.loginService.getIntraName(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
       const updatedUser = await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: { username: newUsername },
       });
       return updatedUser;
@@ -119,17 +147,17 @@ export class UserService {
   }
 
   async updateAvatar(token: string, avatar: Buffer): Promise<User> {
-    const intraUsername = await this.loginService.getIntraName(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     return await this.prisma.user.update({
-      where: { intraUsername: intraUsername },
+      where: { ID: userID },
       data: { avatar },
     });
   }
 
   async toggle2FA(token: string, enable: boolean): Promise<User> {
-    const intraUsername = await this.loginService.getIntraName(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     return await this.prisma.user.update({
-      where: { intraUsername: intraUsername },
+      where: { ID: userID },
       data: { Enabled2FA: enable },
     });
   }
@@ -280,7 +308,6 @@ export class UserService {
 }
 
   async getLeaderboard(): Promise<LeaderboardData[]> {
-    console.log("hallootjes?");
     const leaderboard: LeaderboardEntry[] = await this.prisma.statistics.findMany({
       orderBy: { ladderRank: 'desc' },
       take: 10,
@@ -308,38 +335,14 @@ export class UserService {
       where: { userID },
     });
 
-    // console.log('allAchievements = ', allAchievements);
-    // console.log('userAchievements = ', userAchievements);
-
     const unlockedAchievementIDs = userAchievements.map((ua) => ua.achievementID);
 
     return allAchievements.map((achievement) => ({
       name: achievement.name,
       description: achievement.description,
-      iconURL: achievement.iconURL, // Always use the colored icon
-      unlocked: unlockedAchievementIDs.includes(achievement.ID), // Use this flag for dynamic styling
+      iconURL: achievement.iconURL,
+      unlocked: unlockedAchievementIDs.includes(achievement.ID),
     }));
-  }
-
-  async getUserProfileByUserID(userID: number, token: string): Promise<UserProfile> {
-    this.loginService.getUserIDFromCache(token);
-
-    const user = await this.prisma.user.findUnique({
-      where: { ID: userID },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const avatarURL = user.avatar
-      ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
-      : 'http://localhost:3001/images/default-avatar.png';
-
-    return {
-      ...user,
-      avatarURL,
-    };
   }
 
   async getFriendshipStatus(currentUserID: number, targetUserID: number): Promise<boolean> {

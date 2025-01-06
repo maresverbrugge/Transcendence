@@ -28,15 +28,16 @@ export class UserController {
     private readonly loginService: LoginService
   ) {}
 
-  @Get('userID/:token')
-  async getUserIDByToken(@Param('token') token: string): Promise<number> {
-    return this.userService.getUserIDByToken(token);
-  }
-
   @Get('account/:token')
   async getUserAccountByToken(@Param('token') token: string): Promise<UserAccount> {
     return this.userService.getUserAccountByToken(token);
   }
+
+  @Get('profile/:profileUserID/:token')
+  async getUserProfileByUserID(@Param('profileUserID', ParseIntPipe) profileUserID: number, @Param('token') token: string): Promise<UserProfile> {
+    return this.userService.getUserProfileByUserID(profileUserID, token);
+  }
+
 
   @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
@@ -83,11 +84,6 @@ export class UserController {
   @Get(':userID/achievements')
   async getUserAchievements(@Param('userID', ParseIntPipe) userID: number): Promise<AchievementData[]> {
     return this.userService.getUserAchievements(userID);
-  }
-
-  @Get('profile/:userID/:token')
-  async getUserProfileByUserID(@Param('userID', ParseIntPipe) userID: number, @Param('token') token: string): Promise<UserProfile> {
-    return this.userService.getUserProfileByUserID(userID, token);
   }
 
   @Get(':currentUserID/friend/:targetUserID')

@@ -8,13 +8,14 @@ import UserInfoAccordion from '../Shared/UserInfoAccordion';
 import Friends from '../Account/Friends'; // remove later, for testing
 
 interface UserData {
+  currentUserID: number;
+  profileID: number;
   username: string;
   avatarURL: string;
   status: string;
-  currentUserID: number;
 }
 
-const UserProfile = ({ userID }: { userID: number }) => {
+const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -22,7 +23,7 @@ const UserProfile = ({ userID }: { userID: number }) => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`http://localhost:3001/user/profile/${userID}/${token}`);
+        const response = await axios.get(`http://localhost:3001/user/profile/${profileUserID}/${token}`);
         // console.log("User data fetched: ", response.data); // for testing, romove later
         setUserData(response.data);
       } catch (error) {
@@ -33,7 +34,7 @@ const UserProfile = ({ userID }: { userID: number }) => {
     };
 
     fetchUserData();
-  }, [userID]);
+  }, [profileUserID]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -57,7 +58,7 @@ const UserProfile = ({ userID }: { userID: number }) => {
             <div className="card-body">
               <FriendActions
                 currentUserID={userData.currentUserID}
-                targetUserID={userID}
+                targetUserID={userData.profileID}
               />
             </div>
           </div>
@@ -67,7 +68,7 @@ const UserProfile = ({ userID }: { userID: number }) => {
         <div className="col-md-6">
           <div className="card shadow">
             <div className="card-body">
-              <UserInfoAccordion userID={userID} />
+              <UserInfoAccordion userID={userData.profileID} />
             </div>
           </div>
         </div>
@@ -75,7 +76,7 @@ const UserProfile = ({ userID }: { userID: number }) => {
         {/* Right Column remove later, for testing */}  
         <div className="col-md-3">
           <div className="card shadow">
-            <Friends userID={userID} />
+            <Friends userID={userData.profileID} />
           </div>
         </div>
       </div>
