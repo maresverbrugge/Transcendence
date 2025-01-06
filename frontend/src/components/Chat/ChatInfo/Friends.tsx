@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { Socket } from 'socket.io-client';
 import axios from 'axios';
+
 import './Friends.css';
 import { MemberData } from '../interfaces';
+import { emitter } from '../emitter';
 
 interface FriendProps {
-    key: string;
-    friend: MemberData;
-    socket: any;
-  }
+  key: number;
+  friend: MemberData;
+  socket: Socket;
+}
 
 interface FriendsProps {
   friends: MemberData[];
   setFriends: (friends: MemberData[]) => void;
-  socket: any;
-  token: string;
+  socket: Socket;
 }
 
 const Friend = ({ friend, socket }: FriendProps) => {
@@ -23,19 +25,19 @@ const Friend = ({ friend, socket }: FriendProps) => {
     const getStatusClass = (userStatus: string) => {
       switch (userStatus) {
         case 'ONLINE':
-          return 'friend-online';
+          return 'friend-afk';
         case 'OFFLINE':
           return 'friend-offline';
+        case 'IN_CHAT':
+          return 'friend-online';
         case 'IN_GAME':
-          return 'friend-ingame';
-        case 'AFK':
           return 'friend-afk';
         default:
           return 'friend-offline';
       }
     };
 
-    socket.on('userStatusChange', (userID: string, userStatus: string) => {
+    socket.on('userStatusChange', (userID: number, userStatus: string) => {
       if (friend.ID === userID) setStatus(getStatusClass(userStatus));
     });
 
@@ -49,21 +51,21 @@ const Friend = ({ friend, socket }: FriendProps) => {
   return <li className={status}>{friend.username}</li>;
 };
 
-const Friends = ({ friends, setFriends, socket, token }: FriendsProps) => {
+const Friends = ({ friends, setFriends, socket }: FriendsProps) => {
+  const token = localStorage.getItem('authenticationToken');
+
   useEffect(() => {
     const fetchFriends = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 404)
-          console.error('User not found');
-        else console.error('An error occurred', error);
+        emitter.emit('error', error);
       }
     };
 
     fetchFriends();
-  }, [setFriends, socket, token]);
+  }, [setFriends, socket]);
 
   return (
     <div className="friends-container">

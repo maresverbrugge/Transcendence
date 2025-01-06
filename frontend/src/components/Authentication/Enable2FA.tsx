@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls';
 
 const Enable2FA = () => {

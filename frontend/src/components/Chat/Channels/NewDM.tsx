@@ -1,75 +1,80 @@
 import React, { useState } from 'react';
-import { MemberData } from '../interfaces';
-import './NewChannel.css'; // Update the CSS file name if necessary
+import { Socket } from 'socket.io-client';
+import axios from 'axios';
+import { emitter } from '../emitter';
 
+import { MemberData } from '../interfaces';
+import './NewChannel.css';
 
 interface NewDMProps {
-    friends: MemberData[];
-    socket: any;
-    token: string;
-    setAlert: (message: string) => void;
+  friends: MemberData[];
+  socket: Socket;
 }
 
-const NewDM = ({ friends, socket, token, setAlert }: NewDMProps) => {
-    const [isCreating, setIsCreating] = useState<boolean>(false);
-    const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null); // For selecting a single friend
+const NewDM = ({ friends, socket }: NewDMProps) => {
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
+  const token = localStorage.getItem('authenticationToken');
 
-    const handleCreateDM = () => {
-        if (!selectedFriend) {
-            setAlert("Please select a friend to start a DM!");
-            return;
-        }
+  const handleCreateDM = async () => {
+    if (!selectedFriend) {
+      emitter.emit('alert', 'Please select a friend to start a DM!');
+      return;
+    }
 
-        const newDMData = {
-            name: '',
-            isPrivate: true,
-            isDM: true,
-            password: null,
-            token,
-            memberIDs: [selectedFriend.ID],
+    try {
+        const newChannelData = {
+          name: '',
+          isPrivate: true,
+          isDM: true,
+          password: null,
+          token,
+          memberIDs: [selectedFriend.ID],
         };
-
-        socket.emit('newChannel', newDMData);
+        const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
+        socket.emit('newChannel', response.data);
         resetForm();
-    };
+        emitter.emit('selectChannel', response.data.ID);
+    } catch (error) {
+        emitter.emit('error', error);
+    }
+  };
 
-    const resetForm = () => {
-        setIsCreating(false);
-        setSelectedFriend(null);  // Reset selected friend
-    };
+  const resetForm = () => {
+    setIsCreating(false);
+    setSelectedFriend(null);
+  };
 
-    return (
-        <>
-            {/* Always-visible button */}
-            <button className="new-dm-button" onClick={() => setIsCreating(true)}>
-                Create New DM
-            </button>
+  return (
+    <>
+      <button className="new-dm-button" onClick={() => setIsCreating(true)}>
+        Create New DM
+      </button>
 
-            {/* Overlay and form */}
-            {isCreating && (
-                <div className="new-channel-overlay">
-                    <div className="new-channel-form">
-                        <h3>Select a Friend for the DM</h3>
-                        <div>
-                            {friends.map((friend) => (
-                                <label key={friend.ID}>
-                                    <input
-                                        type="radio"
-                                        name="friendSelection"
-                                        checked={selectedFriend?.ID === friend.ID} // Safely check selectedFriend
-                                        onChange={() => setSelectedFriend(friend)} // Select a friend
-                                    />
-                                    {friend.username}
-                                </label>
-                            ))}
-                        </div>
-                        <button onClick={handleCreateDM}>Done</button>
-                        <button onClick={resetForm}>Cancel</button>
-                    </div>
-                </div>
-            )}
-        </>
-    );
+      {isCreating && (
+        <div className="new-channel-overlay">
+          <div className="new-channel-form">
+            <h3>Select a Friend for the DM</h3>
+            <div>
+              {friends.map((friend) => (
+                <label key={friend.ID}>
+                  <input
+                    type="radio"
+                    name="friendSelection"
+                    checked={selectedFriend?.ID === friend.ID}
+                    onChange={() => setSelectedFriend(friend)}
+                  />
+                  {friend.username}
+                </label>
+              ))}
+            </div>
+            <button onClick={handleCreateDM}>Done</button>
+            <button onClick={resetForm}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default NewDM;

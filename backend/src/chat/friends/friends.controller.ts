@@ -1,22 +1,29 @@
-import { Controller, Get, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-
+import { User } from '@prisma/client';
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 @Controller('chat/friends')
 export class FriendsController {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly loginService: LoginService,
+    private readonly errorHandlingService: ErrorHandlingService,
+  ) {}
 
-    constructor(private readonly prisma: PrismaService) {}
-
-    @Get(':token')
-    async getFriendList(@Param('token') token: string) {
+  @Get(':token')
+  async getFriendList(@Param('token') token: string): Promise<User[]> {
+    try {
+      const userID = await this.loginService.getUserIDFromCache(token);
       const user = await this.prisma.user.findUnique({
-        where: { websocketID: token }, //later veranderen naar token
+        where: { ID: userID },
         include: { friends: true },
       });
-    
-      if (!user)
-        throw new NotFoundException('User not found');
-    
+      if (!user) throw new NotFoundException('User not found');
       return user.friends;
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
     }
+  }
 }

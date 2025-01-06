@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Statistics, UserStatus, MatchStatus } from '@prisma/client';
-
 import { LoginService } from '../authentication/login/login.service';
 
 export interface UserAccount {

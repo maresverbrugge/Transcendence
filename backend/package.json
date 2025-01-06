@@ -29,6 +29,7 @@
     "@nestjs/platform-socket.io": "^10.4.4",
     "@nestjs/websockets": "^10.4.4",
     "@prisma/client": "^5.22.0",
+    "bcrypt": "^5.1.1",
     "cache-manager": "^5.7.6",
     "nestjs": "^0.0.1",
     "postgrejs": "^2.21.1",
