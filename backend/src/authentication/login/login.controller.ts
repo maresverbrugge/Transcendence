@@ -23,15 +23,15 @@ export class LoginController {
     await this.loginService.addUserToDatabase(user);
     const userID = await this.loginService.getUserIDByIntraUsername(user);
     const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
-    this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
+    await this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
   }
 
   @Post('offline')
   async offline(@Body() body: { token: string }) {
     const { token } = body;
     const userID = await this.loginService.getUserIDFromCache(token);
-    this.loginService.setUserStatusToOffline(userID);
-    this.loginService.removeUserFromCache(token);
+    await this.loginService.setUserStatusToOffline(userID);
+    await this.loginService.removeUserFromCache(token);
   }
 
   @Post('verify-token')
