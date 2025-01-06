@@ -148,6 +148,7 @@ export class LoginService {
   async getUserIDFromCache(token: string): Promise<number> {
     try {
       const userID = await this.cacheManager.get<number>(token);
+      console.log("userID = ", userID); // ! for debugging
       if (!userID) {
         throw new UnauthorizedException('User not logged in');
       }

@@ -38,7 +38,6 @@ export class UserController {
     return this.userService.getUserProfileByUserID(profileUserID, token);
   }
 
-
   @Post(':token/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(@Param('token') token: string, @UploadedFile() file: UploadedFileType): Promise<User> {
@@ -76,9 +75,9 @@ export class UserController {
     return this.userService.getMatchHistory(userID);
   }
 
-  @Get('leaderboard')
-  async getLeaderboard(): Promise<LeaderboardData[]> {
-    return this.userService.getLeaderboard();
+  @Get('leaderboard/:token')
+  async getLeaderboard(@Param('token') token: string): Promise<LeaderboardData[]> {
+    return this.userService.getLeaderboard(token);
   }
 
   @Get(':userID/achievements')

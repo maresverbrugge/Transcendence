@@ -4,14 +4,18 @@ import axios from 'axios';
 import { LeaderboardData } from '../interfaces';
 
 const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
+  // console.log('triggerRefresh:', triggerRefresh); // ! for debugging
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard`);
-        console.log('Leaderboard data fetched:', response.data);
+        const token = localStorage.getItem('authenticationToken');
+        console.log('token:', token); // ! for debugging
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard/${token}`);
+        console.log('after fetch leaderboard'); // ! for debugging
+        console.log('Leaderboard data fetched:', response.data); // ! for debugging
         setLeaderboardData(response.data);
       } catch (error) {
         console.error('Error fetching leaderboard data:', error);
