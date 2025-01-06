@@ -89,6 +89,17 @@ class Paddle {
 		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg";
 	if (skin === "option2")
 		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg";
+	if (this.skinPath != "")
+	{
+		this.img = document.createElement("img");
+		this.img.src = this.skinPath;
+		this.img.width = this.w;
+		this.img.height = this.h;
+
+		// This next line will just add it to the <body> tag
+		document.body.appendChild(this.img);
+		this.img.style.top = `${this.topPosition}px`;
+	}
   }
   left() {
     return this.x - this.w / 2;
@@ -112,16 +123,6 @@ class Paddle {
     this.context.beginPath();
     this.context.rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
     this.context.stroke();
-	if (this.skinPath != "")
-	{
-		this.img = document.createElement("img");
-		this.img.src = this.skinPath;
-		this.img.width = this.w;
-		this.img.height = this.h;
-
-		// This next line will just add it to the <body> tag
-		document.body.appendChild(this.img);
-	}
   }
 }
 
