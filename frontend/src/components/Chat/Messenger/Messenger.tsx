@@ -20,7 +20,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get<MessageData[]>(
-          `http://localhost:3001/chat/message/channel/${channelID}/${token}`
+          `${process.env.REACT_APP_URL_BACKEND}/chat/message/channel/${channelID}/${token}`
         );
         setMessages(response.data);
       } catch (error) {
@@ -34,7 +34,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
 
     const fetchMessage = async (messageID: number) => {
       try {
-        const response = await axios.get<MessageData>(`http://localhost:3001/chat/message/${messageID}/${token}`);
+        const response = await axios.get<MessageData>(`${process.env.REACT_APP_URL_BACKEND}/chat/message/${messageID}/${token}`);
         const newMessage = response.data;
   
         setMessages((prevMessages) => {

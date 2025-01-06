@@ -32,7 +32,7 @@ const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
       setLoading(true);
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get<ChannelData>(`http://localhost:3001/chat/channel/${channelID}/${token}`);
+        const response = await axios.get<ChannelData>(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${channelID}/${token}`);
         setChannel(response.data);
       } catch (error) {
         emitter.emit('error', error);

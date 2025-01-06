@@ -29,7 +29,7 @@ const AddMember = ({ channel, friends, socket }: AddMemberProps) => {
       token,
     };
     try {
-      await axios.post('http://localhost:3001/chat/channel/newMember', { newMemberData });
+      await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/newMember`, { newMemberData });
       socket.emit('updateChannel', selectedFriend.ID);
       resetForm();
     } catch (error) {

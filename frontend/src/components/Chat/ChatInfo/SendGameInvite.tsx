@@ -32,7 +32,7 @@ const SendGameInvite = ({ receiverUserID, socket }: SendGameInviteProps) => {
   const handleAcceptResponse = async () => {
     emitter.emit('alert', 'The other player has accepted your game invitation.')
     try {
-      const response = await axios.post(`http://localhost:3001/game/creategame/${token}/${receiverUserID}`, {});
+      const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/game/creategame/${token}/${receiverUserID}`, {});
       if (response.status === 201) {
         socket.emit('gameCreated', {receiverUserID, created: true, token});
         navigate('/game');

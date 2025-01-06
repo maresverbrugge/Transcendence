@@ -27,6 +27,7 @@ const ReceiveGameInvite = ({ socket }: ReceiveGameInviteProps) => {
   useEffect(() => {
 
     socket.on('gameInvite', (data: {senderUsername: string , senderUserID: number}) => {
+      console.log('check invite: ', data, inviteRef)
       if (!inviteRef.current) {
         setInvite(data);
         inviteRef.current = data;

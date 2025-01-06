@@ -35,7 +35,7 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
           token,
           memberIDs: isPrivate ? selectedMemberIDs : [],
         };
-        const response = await axios.post('http://localhost:3001/chat/channel', { newChannelData });
+        const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel`, { newChannelData });
         socket.emit('newChannel', response.data);
         resetForm();
         emitter.emit('selectChannel', response.data.ID)

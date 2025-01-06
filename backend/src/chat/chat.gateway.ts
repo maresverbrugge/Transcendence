@@ -31,7 +31,7 @@ type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave
 @WebSocketGateway({
   namespace: 'chat',
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.URL_FRONTEND,
     methods: ['GET', 'POST'],
     credentials: true,
   },

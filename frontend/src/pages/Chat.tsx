@@ -20,8 +20,10 @@ const Chat = () => {
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
+
+
       
-    const socketIo = io("ws://localhost:3001/chat", {
+    const socketIo = io(`ws://${process.env.REACT_APP_URL_BACKEND_NO_PROTOCOL}/chat`, {
       transports: ["websocket"],
       query: { token },
       withCredentials: true,
@@ -71,13 +73,14 @@ const Chat = () => {
       return;
     }
     try {
-      await axios.post(`http://localhost:3001/chat/channel/${newChannelID}/add-member`, { token: token} )
+      await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${newChannelID}/add-member`, { token: token} )
       setChannelID(newChannelID);
     } catch (error: any) {
       if (error?.status === 403) {
         setAlert(error?.response?.data?.message)
       }
       else setAlert('Oops! Something went wrong while selecting the channel. Please refresh and try again.')
+      console.log('check error', error)
     }
   };
 

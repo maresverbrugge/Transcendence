@@ -15,7 +15,7 @@ const DM = ({ channel }: DMProps) => {
         // this is wherea call is made to fetch information for the side panel of a DM,
         // work in progress, maybe a get request to Mares userprofile so i can display some information, or profile picture etc.
         // Mares, what do you think?
-        // const response = await axios.get<UserData>(`http://localhost:3001`)
+        // const response = await axios.get<UserData>(`${process.env.REACT_APP_URL_BACKEND}`)
         // setDMInfo(response.data)
         void channelID;
       } catch (error) {
