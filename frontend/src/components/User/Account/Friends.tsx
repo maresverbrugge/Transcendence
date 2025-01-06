@@ -15,7 +15,7 @@ const Friends = ({ userID }: { userID: number }) => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/user/${userID}/friends`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/friends`);
         setFriends(response.data);
       } catch (error) {
         console.error('Error fetching friends:', error);

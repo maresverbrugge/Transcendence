@@ -23,7 +23,7 @@ const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`http://localhost:3001/user/profile/${profileUserID}/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/profile/${profileUserID}/${token}`);
         // console.log("User data fetched: ", response.data); // for testing, romove later
         setUserData(response.data);
       } catch (error) {

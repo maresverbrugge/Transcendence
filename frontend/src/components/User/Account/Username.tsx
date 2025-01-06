@@ -42,7 +42,7 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
     setUploadStatus('saving');
     try {
       const token = localStorage.getItem('authenticationToken');
-      await axios.patch(`http://localhost:3001/user/${token}`, { username: tempUsername });
+      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/${token}`, { username: tempUsername });
       setPreviousUsername(username); // Update to new username
       setUsername(tempUsername); // Save old username for undo
       setIsEditing(false);
@@ -57,7 +57,7 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
   const handleUndo = async () => {
     try {
       const token = localStorage.getItem('authenticationToken');
-      await axios.patch(`http://localhost:3001/user/${token}`, { username: previousUsername }); // Update the database
+      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/${token}`, { username: previousUsername }); // Update the database
       setUsername(previousUsername); // Update local state
       setTempUsername(previousUsername);
       setPreviousUsername(username); // Keep track of the change

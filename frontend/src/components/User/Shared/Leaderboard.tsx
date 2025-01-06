@@ -10,7 +10,7 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/user/leaderboard`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard`);
         console.log('Leaderboard data fetched:', response.data);
         setLeaderboardData(response.data);
       } catch (error) {

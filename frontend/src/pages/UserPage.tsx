@@ -43,7 +43,7 @@ const UserPage = () => {
   return (parsedUserID === currentUserID || userID === undefined) ? (
     <UserAccount />
   ) : (
-    <UserProfile userID={parsedUserID} />
+    <UserProfile profileUserID={parsedUserID} />
   );
 };
 

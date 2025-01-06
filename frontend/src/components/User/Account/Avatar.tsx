@@ -59,12 +59,12 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
 
       try {
         const token = localStorage.getItem('authenticationToken');
-        await axios.post(`http://localhost:3001/user/${token}/avatar`, formData, {
+        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/${token}/avatar`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
         // Fetch updated avatar
-        const response = await axios.get(`http://localhost:3001/user/account/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/account/${token}`);
         const newAvatarURL = response.data.avatarURL;
         setAvatarURL(newAvatarURL);
         onAvatarUpdate(newAvatarURL);
@@ -78,7 +78,7 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
     }
   };
 
-  const isDefaultAvatar = avatarURL === 'http://localhost:3001/images/default-avatar.png';
+  const isDefaultAvatar = avatarURL === `${process.env.REACT_APP_URL_BACKEND}/images/default-avatar.png`;
 
   return (
     <div className="avatar-component d-flex flex-column align-items-center">
