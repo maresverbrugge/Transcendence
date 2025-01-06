@@ -234,8 +234,8 @@ const GameLogic = ({ gameID, socket, skin }) => {
 		  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
 	  }
     });
-    paddleLeft = new Paddle(15, height / 2, 30, 200, context, skin);
-    paddleRight = new Paddle(width - 15, height / 2, 30, 200, context, skin);
+    paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
+    paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
 	socket.on('pause', () => {
 		ball.speedX = 0;
 		ball.speedY = 0;
