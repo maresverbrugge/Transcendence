@@ -1,7 +1,7 @@
 // Game page that is shown when the user goes to localhost:3000/game
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 
 import GameControl from './GameControl';
@@ -9,8 +9,8 @@ import GameControl from './GameControl';
 const PaddleSelect = ({}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedPaddle, setSelectedPaddle] = useState<string>("default");
-  const [gameID, setGameID] = useState<number>(-1);
   const [showGame, setShowGame] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('authenticationToken');
@@ -25,14 +25,13 @@ const PaddleSelect = ({}) => {
 
     // Set socket instance in state
     setSocket(socketIo);
-    socketIo.emit('getGameID', token);
-    socketIo.on('gameID', (gameID: number) => {
-      setGameID(gameID);
-    });
+
+	socketIo.on('error', (gameID: number) => {
+		navigate('/landingpage');
+	  });
 
     return () => {
-      socketIo.off('token');
-      socketIo.off('getGameID');
+	  socketIo.off('error');
 	  socketIo.disconnect(); // Disconnect the socket when the component unmounts
   };
   }, []);
@@ -45,7 +44,7 @@ const PaddleSelect = ({}) => {
   return (
 	<div>
 		{showGame && (
-			<GameControl gameID={gameID} socket={socket} skin={selectedPaddle} />
+			<GameControl socket={socket} skin={selectedPaddle} />
 		)}
 		{!showGame && (
 			<div id="paddleselect">
@@ -55,12 +54,12 @@ const PaddleSelect = ({}) => {
 				</label>
 				<label>
 					<input type="radio" value="option1" checked={selectedPaddle === 'option1'} onChange={handleChange} />
-					<img className="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg"></img>
+					<img className="button-image" src="http://localhost:3001/images/pexels-lum3n-44775-406014.jpg"></img>
 					Radio 2
 				</label>
 				<label>
 					<input type="radio" value="option2" checked={selectedPaddle === 'option2'} onChange={handleChange} />
-					<img className="button-image" src="/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg"></img>
+					<img className="button-image" src="http://localhost:3001/images/pexels-pixabay-259915.jpg"></img>
 					Radio 3
 				</label>
 			</div>

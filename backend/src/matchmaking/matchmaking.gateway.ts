@@ -27,37 +27,34 @@ import { LoginService } from 'src/authentication/login/login.service';
 	private queue: number[] = [];
 	private logger: Logger = new Logger('GameGateway');
   
-	// @SubscribeMessage('message')
-	// handleMessage(@MessageBody() data: { sender: string; message: string }) {
-	//   this.logger.log(`Message received from ${data.sender}: ${data.message}`);
-	//   // Broadcast the message to all connected clients
-	//   this.server.emit('message', data);
-	// }
-  
 	@SubscribeMessage('joinqueue')
 	async handleJoinQueue(client: any, token: string) {
-	  const userID = await this.loginService.getUserIDFromCache(token);
-	  if (this.queue.length >= 1)
-	  {
-		const otherID: number = this.queue.pop();
-		// make game
-		await this.gameService.createGame(userID, otherID);
-		const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
-		const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
-		this.server.to(userSocketID).to(otherSocketID).emit('newGame');
-		await this.prismaService.user.update({
-			where: { ID: userID },
-			data: { status: UserStatus.IN_GAME },
-		});
-		await this.prismaService.user.update({
-			where: { ID: otherID },
-			data: { status: UserStatus.IN_GAME },
-		});
-	  }
-	  else
-	  {
-		this.queue.push(userID);
-	  }
+		try {
+			const userID = await this.loginService.getUserIDFromCache(token);
+			if (this.queue.length >= 1)
+			{
+			  const otherID: number = this.queue.pop();
+			  // make game
+			  await this.gameService.createGame(userID, otherID);
+			  const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
+			  const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
+			  this.server.to(userSocketID).to(otherSocketID).emit('newGame');
+			  await this.prismaService.user.update({
+				  where: { ID: userID },
+				  data: { status: UserStatus.IN_GAME },
+			  });
+			  await this.prismaService.user.update({
+				  where: { ID: otherID },
+				  data: { status: UserStatus.IN_GAME },
+			  });
+			}
+			else
+			{
+			  this.queue.push(userID);
+			}
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	@SubscribeMessage('leavequeue')

@@ -44,22 +44,28 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
-    const memberID: number = await this.loginService.getUserIDFromCache(token);
-	const user = await this.prisma.user.findUnique({
-		where: {
-			ID: memberID,
-		},
-		select: {
-			matches: {
-				select: {
-					matchID: true,
-					status: true,
+	try {
+		const memberID: number = await this.loginService.getUserIDFromCache(token);
+		const user = await this.prisma.user.findUnique({
+			where: {
+				ID: memberID,
+			},
+			select: {
+				matches: {
+					select: {
+						matchID: true,
+						status: true,
+					}
 				}
 			}
-		}
-	});
-	const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
-    client.emit('gameID', game.matchID);
+		});
+		const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
+		client.emit('gameID', game.matchID);
+	} catch (error) {
+		console.error('I was not able to find the game associated with this user, sorry about that');
+		console.error(error);
+		client.emit('error');
+	}
   }
 
   @SubscribeMessage('start')
@@ -99,16 +105,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('done')
   async handleGameEnd(client: Socket, gameID: number) {
-    await this.prisma.match.update({
-		where: {
-		  matchID: gameID,
-		},
-		data: {
-		  status: MatchStatus.FINISHED,
-		  updatedAt: new Date(),
-		},
-	  });
-	this.gameService.handleEnd(gameID);
+	try {
+		await this.prisma.match.update({
+			where: {
+			  matchID: gameID,
+			},
+			data: {
+			  status: MatchStatus.FINISHED,
+			  updatedAt: new Date(),
+			},
+		  });
+		this.gameService.handleEnd(gameID);
+	} catch (error) {
+		console.error("couldn't save game to the database, too bad");
+		console.error(error);
+		client.emit('error');
+	}
   }
 
   afterInit(server: Namespace) {

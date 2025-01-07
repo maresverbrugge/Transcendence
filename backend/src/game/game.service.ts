@@ -25,16 +25,21 @@ export class GameService {
     private readonly userService: UserService
   ) {}
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
-    const newGame = await this.prisma.match.create({
-      data: {
-        status: 'PENDING',
-		players: {
-            connect: [{ ID: userID1 }, { ID: userID2 }]
-          },
-      },
-    });
-    this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0});
-    return newGame;
+	try {
+		const newGame = await this.prisma.match.create({
+		  data: {
+			status: 'PENDING',
+			players: {
+				connect: [{ ID: userID1 }, { ID: userID2 }]
+			  },
+		  },
+		});
+		//add match to players matchhistory
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0});
+		return newGame;
+	} catch (error) {
+		console.error(error);
+	}
   }
 
   handleStart(gameID: number, server: Namespace) {
@@ -68,31 +73,11 @@ export class GameService {
   async handleScoreLeft(gameID: number) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     game.scoreLeft += 1;
-    await this.prisma.match.update({
-      where: {
-        matchID: gameID,
-      },
-      data: {
-        scoreLeft: {
-          increment: 1,
-        },
-      },
-    });
   }
 
   async handleScoreRight(gameID: number) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     game.scoreLeft += 1;
-    await this.prisma.match.update({
-      where: {
-        matchID: gameID,
-      },
-      data: {
-        scoreRight: {
-          increment: 1,
-        },
-      },
-    });
   }
 
   handleReverseSpeedY(gameID: number) {

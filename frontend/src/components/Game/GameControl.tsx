@@ -86,9 +86,9 @@ class Paddle {
     this.context = context;
 	this.skinPath = "";
 	if (skin === "option1")
-		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20240920204934.jpg";
+		this.skinPath = "http://localhost:3001/images/pexels-lum3n-44775-406014.jpg";
 	if (skin === "option2")
-		this.skinPath = "/home/jvan-hal/Desktop/Transcendence/frontend/src/data/IMG20241210093625.jpg";
+		this.skinPath = "http://localhost:3001/images/pexels-pixabay-259915.jpg";
 	if (this.skinPath != "")
 	{
 		this.img = document.createElement("img");
@@ -144,7 +144,8 @@ onkeydown = (event: KeyboardEvent) => {
   g_socket.emit('key', move, g_gameID, g_socket.id);
 };
 
-const GameLogic = ({ gameID, socket, skin }) => {
+const GameLogic = ({ socket, skin }) => {
+	const [gameID, setGameID] = useState<number>(-1);
   const navigate = useNavigate();
   const canvas: any = React.useRef();
   const width: number = 500;
@@ -192,6 +193,10 @@ const GameLogic = ({ gameID, socket, skin }) => {
     context.textAlign = 'center';
     context.lineWidth = 1;
     ball = new Ball(width / 2, height / 2, 50, context, gameID);
+	socket.on('gameID', (gameID: number) => {
+		setGameID(gameID);
+		g_gameID = gameID;
+	  });
     socket.on('ballSpeedY', (speed: string) => {
       ball.speedY = parseInt(speed);
     });
