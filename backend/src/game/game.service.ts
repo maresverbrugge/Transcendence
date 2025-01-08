@@ -15,6 +15,7 @@ interface MatchInstance
   paddleleftspeedy: number,
   scoreLeft: number,
   scoreRight: number,
+  firstPlayerReady: boolean,
 }
 
 @Injectable()
