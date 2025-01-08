@@ -24,6 +24,9 @@ export class LoginController {
     const userID = await this.loginService.getUserIDByIntraUsername(user);
     const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
     await this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
+    // console.log("token in ONLINE CONTROLLER =", token);
+    // console.log("userID in ONLINE CONTROLLER =", userID);
+    // console.log("expiresInSeconds in ONLINE CONTROLLER =", expiresInSeconds);
   }
 
   @Post('offline')

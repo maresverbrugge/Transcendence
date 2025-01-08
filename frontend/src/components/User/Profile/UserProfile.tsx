@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+import GoBackButton from '../../GoBackButton';
 import NameAvatarStatus from './NameAvatarStatus';
 import FriendActions from './FriendActions';
 import UserInfoAccordion from '../Shared/UserInfoAccordion';
-
-import Friends from '../Account/Friends'; // remove later, for testing
 
 interface UserData {
   currentUserID: number;
@@ -23,7 +22,7 @@ const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/profile/${profileUserID}/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${profileUserID}/${token}`);
         // console.log("User data fetched: ", response.data); // for testing, romove later
         setUserData(response.data);
       } catch (error) {
@@ -46,42 +45,39 @@ const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
 
   return (
     <div className="container my-5">
+      {/* Back Button */}
+      <GoBackButton />
       <div className="row g-4">
         {/* Left Column */}
-        <div className="col-md-3">
+        <div className="col-md-4">
           <div className="card shadow mb-4">
             <div className="card-body text-center">
+              {/* Display Name, Avatar, and Status */}
               <NameAvatarStatus username={userData.username} avatarURL={userData.avatarURL} status={userData.status} />
             </div>
           </div>
-          <div className="card shadow mb-4">
+          <div className="card shadow">
             <div className="card-body">
+              {/* Add Friend/Unfriend Button */}
               <FriendActions
-                currentUserID={userData.currentUserID}
                 targetUserID={userData.profileID}
               />
             </div>
           </div>
         </div>
 
-        {/* Middle Column */}
-        <div className="col-md-6">
+        {/* Right Column */}
+        <div className="col-md-8">
           <div className="card shadow">
             <div className="card-body">
+              {/* Accordion showing User Info */}
               <UserInfoAccordion userID={userData.profileID} />
             </div>
-          </div>
-        </div>
-
-        {/* Right Column remove later, for testing */}  
-        <div className="col-md-3">
-          <div className="card shadow">
-            <Friends userID={userData.profileID} />
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default UserProfile;

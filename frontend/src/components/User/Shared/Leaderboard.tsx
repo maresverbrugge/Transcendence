@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import { LeaderboardData } from '../interfaces';
 
 const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
-  // console.log('triggerRefresh:', triggerRefresh); // ! for debugging
+  const navigate = useNavigate();
+
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -12,9 +14,7 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
     const fetchLeaderboard = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        console.log('token:', token); // ! for debugging
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard/${token}`);
-        console.log('after fetch leaderboard'); // ! for debugging
         console.log('Leaderboard data fetched:', response.data); // ! for debugging
         setLeaderboardData(response.data);
       } catch (error) {
@@ -66,7 +66,14 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
                     className="rounded-circle me-2"
                     style={{ width: '40px', height: '40px' }}
                   />
-                  <span>{entry.username}</span>
+                  <span>
+                    <button
+                    onClick={() => navigate(`/profile/${entry.ID}`)}
+                    className="btn btn-link p-0"
+                    style={{ textDecoration: 'none' }}>
+                    {entry.username}
+                  </button>
+                  </span>
                 </div>
               </td>
               <td className="text-end">{entry.ladderRank} XP</td>

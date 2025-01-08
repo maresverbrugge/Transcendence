@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface FriendData {
   ID: number;
@@ -8,14 +9,17 @@ interface FriendData {
   status: string;
 }
 
-const Friends = ({ userID }: { userID: number }) => {
+const Friends = () => {
+  const navigate = useNavigate();
+
   const [friends, setFriends] = useState<FriendData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/friends`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/friends/${token}`);
         setFriends(response.data);
       } catch (error) {
         console.error('Error fetching friends:', error);
@@ -25,7 +29,7 @@ const Friends = ({ userID }: { userID: number }) => {
     };
 
     fetchFriends();
-  }, [userID]);
+  }, []);
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -80,7 +84,14 @@ return (
                     objectFit: 'cover',
                   }}
                 />
-                <span style={{ flex: 1 }}>{friend.username}</span>
+                <span style={{ flex: 1 }}>
+                  <button
+                    onClick={() => navigate(`/profile/${friend.ID}`)}
+                    className="btn btn-link p-0"
+                    style={{ textDecoration: 'none' }}>
+                    {friend.username}
+                  </button>
+                  </span>
               </div>
               <span className={`badge ${getStatusClass(friend.status)} ms-auto`}>
                 {friend.status.toLowerCase().replace('_', ' ')}

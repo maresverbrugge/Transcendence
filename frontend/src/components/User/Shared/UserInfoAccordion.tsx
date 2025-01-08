@@ -23,7 +23,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/stats`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/stats/${token}`);
         setStatisticsData(response.data);
       } catch (error) {
         console.error('Error fetching statistics:', error);
@@ -34,7 +35,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
 
     const fetchMatchHistory = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/match-history`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/match-history/${token}`);
         setMatchHistoryData(response.data);
       } catch (error) {
         console.error('Error fetching match history:', error);
@@ -45,7 +47,8 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
 
     const fetchAchievements = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/achievements`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/achievements/${token}`);
         // console.log('Fetched achievements:', response.data); // Testing, remove later
         setAchievementsData(response.data);
       } catch (error) {

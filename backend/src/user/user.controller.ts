@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
 
@@ -28,82 +28,80 @@ export class UserController {
     private readonly loginService: LoginService
   ) {}
 
+  @Get('getID/:token')
+  async getUserIDFromCache(@Param('token') token: string): Promise<number> {
+    return this.loginService.getUserIDFromCache(token);
+  }
+
   @Get('account/:token')
   async getUserAccountByToken(@Param('token') token: string): Promise<UserAccount> {
     return this.userService.getUserAccountByToken(token);
   }
 
-  @Get('profile/:profileUserID/:token')
+  @Get(':profileUserID/:token')
   async getUserProfileByUserID(@Param('profileUserID', ParseIntPipe) profileUserID: number, @Param('token') token: string): Promise<UserProfile> {
     return this.userService.getUserProfileByUserID(profileUserID, token);
   }
 
-  @Post(':token/avatar')
+  @Post('avatar/:token')
   @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(@Param('token') token: string, @UploadedFile() file: UploadedFileType): Promise<User> {
     const fileBuffer = file.buffer;
     return this.userService.updateAvatar(token, fileBuffer);
   }
 
-  @Get(':token')
-  async getUserIDFromCache(@Param('token') token: string): Promise<number> {
-    console.log("hier dan?");
-    console.log("token = ", token);
-    const userID = await this.loginService.getUserIDFromCache(token);
-    console.log("userID = ", userID);
-    return userID;
-    // return this.loginService.getUserIDFromCache(token);
-  }
-
-  @Patch(':token')
+  @Patch('username/:token')
   async changeUsername(@Param('token') token: string, @Body('username') newUsername: string): Promise<User> {
     return this.userService.updateUsername(token, newUsername);
   }
 
-  @Patch(':token/2fa')
-  async toggleTwoFactorAuth(@Param('token') token: string, @Body() { enable }: { enable: boolean }): Promise<User> {
-    return this.userService.toggle2FA(token, enable);
+  @Get('leaderboard/:token')
+  async getLeaderboardData(@Param('token') token: string): Promise<LeaderboardData[]> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+    if (!userID) throw new ForbiddenException('Not authorized');
+    return this.userService.getLeaderboard();
   }
 
-  @Get(':userID/stats')
-  async getUserStats(@Param('userID', ParseIntPipe) userID: number): Promise<StatisticsData> {
+  @Get(':userID/stats/:token')
+  async getUserStats(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<StatisticsData> {
+    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
+    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
     return this.userService.getUserStats(userID);
   }
 
-  @Get(':userID/match-history')
-  async getMatchHistory(@Param('userID', ParseIntPipe) userID: number): Promise<MatchHistoryData[]> {
+  @Get(':userID/match-history/:token')
+  async getMatchHistory(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<MatchHistoryData[]> {
+    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
+    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
     return this.userService.getMatchHistory(userID);
   }
 
-  @Get('leaderboard/:token')
-  async getLeaderboard(@Param('token') token: string): Promise<LeaderboardData[]> {
-    return this.userService.getLeaderboard(token);
-  }
-
-  @Get(':userID/achievements')
-  async getUserAchievements(@Param('userID', ParseIntPipe) userID: number): Promise<AchievementData[]> {
+  @Get(':userID/achievements/:token')
+  async getUserAchievements(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<AchievementData[]> {
+    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
+    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
     return this.userService.getUserAchievements(userID);
   }
 
-  @Get(':currentUserID/friend/:targetUserID')
+  @Get('friends/:token')
+  async getFriends(@Param('token') token: string): Promise<UserFriend[]> {
+    return this.userService.getFriends(token);
+  }
+
+  @Get(':targetUserID/friend/:token')
   async getFriendshipStatus(
-    @Param('currentUserID', ParseIntPipe) currentUserID: number,
-    @Param('targetUserID', ParseIntPipe) targetUserID: number
+    @Param('targetUserID', ParseIntPipe) targetUserID: number,
+    @Param('token') token: string
   ): Promise<{ isFriend: boolean }> {
-    const isFriend = await this.userService.getFriendshipStatus(currentUserID, targetUserID);
+    const isFriend = await this.userService.getFriendshipStatus(token, targetUserID);
     return { isFriend };
   }
 
-  @Patch(':currentUserID/friend/:targetUserID')
+  @Patch(':targetUserID/friend/:token')
   async toggleFriendship(
-    @Param('currentUserID', ParseIntPipe) currentUserID: number,
-    @Param('targetUserID', ParseIntPipe) targetUserID: number
+    @Param('targetUserID', ParseIntPipe) targetUserID: number,
+    @Param('token') token: string
   ): Promise<string> {
-    return this.userService.toggleFriendship(currentUserID, targetUserID);
-  }
-
-  @Get(':userID/friends')
-  async getFriends(@Param('userID', ParseIntPipe) userID: number): Promise<UserFriend[]> {
-    return this.userService.getFriends(userID);
+    return this.userService.toggleFriendship(token, targetUserID);
   }
 }

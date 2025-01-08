@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+import GoBackButton from '../../GoBackButton';
 import Username from './Username';
 import Avatar from './Avatar';
 import Toggle2FA from './Toggle2FA';
@@ -25,7 +26,7 @@ const UserAccount = () => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/account/${token}`);
-        console.log('Uuuuuser data fetched:', response.data);
+        console.log('User data fetched:', response.data);
         setUserData(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -61,6 +62,8 @@ const UserAccount = () => {
 
   return (
     <div className="container my-5">
+       {/* Back Button */}
+       <GoBackButton />
       <div className="row g-4">
         {/* Left Column */}
         <div className="col-md-3">
@@ -101,10 +104,10 @@ const UserAccount = () => {
           </div>
         </div>
 
-        {/* Right Column */}  
+        {/* Right Column */}
         <div className="col-md-3">
           <div className="card shadow">
-            <Friends userID={userData.ID} />
+            <Friends />
           </div>
         </div>
       </div>

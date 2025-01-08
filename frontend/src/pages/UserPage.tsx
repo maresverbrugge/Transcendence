@@ -16,8 +16,8 @@ const UserPage = () => {
       try {
         const token = localStorage.getItem('authenticationToken');
         if (token) {
-          const { data: id } = await axios.get<number>(`http://localhost:3001/user/${token}`);
-          setCurrentUserID(id);
+          const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/getID/${token}`);
+          setCurrentUserID(response.data);
         }
       } catch (error) {
         console.error('Error fetching current user ID:', error);
@@ -28,9 +28,6 @@ const UserPage = () => {
 
     fetchCurrentUserID();
   }, []);
-
-  console.log("parsedUserID = ", parsedUserID);
-  console.log("currentUserID = ", currentUserID);
 
   if (loading) {
     return <p>Loading...</p>;

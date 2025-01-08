@@ -59,7 +59,7 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
 
       try {
         const token = localStorage.getItem('authenticationToken');
-        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/${token}/avatar`, formData, {
+        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user//avatar${token}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 

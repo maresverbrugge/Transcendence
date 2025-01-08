@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException,  ForbiddenException, HttpCode } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, HttpCode } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Statistics, UserStatus, MatchStatus } from '@prisma/client';
@@ -32,9 +32,10 @@ export interface StatisticsData extends Statistics {
 }
 
 export interface LeaderboardData {
+  ID: number;
   username: string;
-  avatarURL: string;
   ladderRank: number;
+  avatarURL: string;
   rank: number;
 }
 
@@ -61,7 +62,7 @@ interface Match {
 }
 
 interface LeaderboardEntry {
-  user: { username: string; avatar: Buffer | null };
+  user: { ID: number, username: string; avatar: Buffer | null };
   ladderRank: number;
 }
 
@@ -72,6 +73,12 @@ export class UserService {
     private readonly loginService: LoginService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}
+
+  getAvatarURL(avatar: Buffer | null): string {
+    return avatar
+      ? `data:image/jpeg;base64,${avatar.toString('base64')}`
+      : 'http://localhost:3001/images/default-avatar.png';
+  }
 
   async getUserAccountByToken(token: string): Promise<UserAccount> {
     const userID = await this.loginService.getUserIDFromCache(token);
@@ -89,16 +96,14 @@ export class UserService {
 
       if (!user) throw new NotFoundException('User not found!');
 
-      const avatarURL = user.avatar
-        ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
-        : 'http://localhost:3001/images/default-avatar.png';
+      const avatarURL = this.getAvatarURL(user.avatar);
 
       return {
         ID: user.ID,
         username: user.username,
         Enabled2FA: user.Enabled2FA,
         avatarURL,
-      }; 
+      };
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
     }
@@ -119,10 +124,8 @@ export class UserService {
     });
 
     if (!user) throw new NotFoundException('User not found');
-  
-    const avatarURL = user.avatar
-      ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
-      : 'http://localhost:3001/images/default-avatar.png';
+
+    const avatarURL = this.getAvatarURL(user.avatar);
 
     return {
       currentUserID,
@@ -156,8 +159,8 @@ export class UserService {
 
     try {
       const updatedUserWithAvatar = await this.prisma.user.update({
-      where: { ID: userID },
-      data: { avatar },
+        where: { ID: userID },
+        data: { avatar: avatar },
       });
       return updatedUserWithAvatar;
     } catch (error) {
@@ -165,47 +168,26 @@ export class UserService {
     }
   }
 
-  async getLeaderboard(token: string): Promise<LeaderboardData[]> {
-    // console.log("in getLeaderboard"); // ! for debugging
-    const userID = await this.loginService.getUserIDFromCache(token);
-    console.log("in getLeaderboard userID = ", userID); // ! for debugging
-
-    if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
+  async getLeaderboard(): Promise<LeaderboardData[]> {
     try {
       const leaderboard: LeaderboardEntry[] = await this.prisma.statistics.findMany({
         orderBy: { ladderRank: 'desc' },
         take: 10,
         select: {
           user: {
-            select: { username: true, avatar: true },
+            select: { ID: true, username: true, avatar: true },
           },
           ladderRank: true,
         },
       });
 
       return leaderboard.map((entry, index) => ({
-        rank: index + 1,
+        ID: entry.user.ID,
         username: entry.user.username,
-        avatarURL: entry.user.avatar
-          ? `data:image/jpeg;base64,${entry.user.avatar.toString('base64')}`
-          : 'http://localhost:3001/images/default-avatar.png',
         ladderRank: entry.ladderRank,
+        avatarURL: this.getAvatarURL(entry.user.avatar),
+        rank: index + 1,
       }));
-    } catch (error) {
-      this.errorHandlingService.throwHttpException(error);
-    }
-  }
-
-  async toggle2FA(token: string, enable: boolean): Promise<User> {
-    const userID = await this.loginService.getUserIDFromCache(token);
-    if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
-
-    try {
-      const updatedUser2FA = await this.prisma.user.update({
-      where: { ID: userID },
-      data: { Enabled2FA: enable },
-    });
-    return updatedUser2FA;
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
     }
@@ -229,7 +211,6 @@ export class UserService {
         },
       });
 
-      // console.log("matches = ", matches);
       if (!matches || matches.length === 0) {
         return [];
       }
@@ -253,231 +234,239 @@ export class UserService {
         };
       });
     } catch (error) {
-    throw new NotFoundException('An error occurred while fetching match history.');
+      this.errorHandlingService.throwHttpException(error);
+    }
   }
-}
 
   async getUserAchievements(userID: number): Promise<AchievementData[]> {
-    const allAchievements = await this.prisma.achievement.findMany();
-    const userAchievements = await this.prisma.userAchievement.findMany({
-      where: { userID },
-    });
+    try {
+      const [allAchievements, userAchievements] = await Promise.all([
+        this.prisma.achievement.findMany(),
+        this.prisma.userAchievement.findMany({ where: { userID } }),
+      ]);
 
-    const unlockedAchievementIDs = userAchievements.map((ua) => ua.achievementID);
+      const unlockedAchievementIDs = new Set(userAchievements.map((ua) => ua.achievementID));
 
-    return allAchievements.map((achievement) => ({
-      name: achievement.name,
-      description: achievement.description,
-      iconURL: achievement.iconURL,
-      unlocked: unlockedAchievementIDs.includes(achievement.ID),
-    }));
-  }
-
-  async getFriendshipStatus(currentUserID: number, targetUserID: number): Promise<boolean> {
-    const friendship = await this.prisma.user.findFirst({
-      where: {
-        ID: currentUserID,
-        friends: {
-          some: { ID: targetUserID },
-        },
-      },
-    });
-    // console.log("friendship = ", Boolean(friendship));
-    return Boolean(friendship);
-  }
-
-  async toggleFriendship(currentUserID: number, targetUserID: number): Promise<string> {
-    const currentUser = await this.prisma.user.findUnique({
-      where: { ID: currentUserID },
-      include: { friends: true },
-    });
-
-    const targetUser = await this.prisma.user.findUnique({
-      where: { ID: targetUserID },
-      include: { friendsOf: true },
-    });
-
-    if (!currentUser || !targetUser) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Check if the current user is already friends with the target user
-    const isAlreadyFriend = currentUser.friends.some((friend) => friend.ID === targetUserID);
-
-    if (isAlreadyFriend) {
-      // Unfriend logic: remove targetUser from currentUser's friends
-      await this.prisma.user.update({
-        where: { ID: currentUserID },
-        data: {
-          friends: {
-            disconnect: { ID: targetUserID },
-          },
-        },
-      });
-
-      // Remove currentUser from targetUser's friendsOf
-      await this.prisma.user.update({
-        where: { ID: targetUserID },
-        data: {
-          friendsOf: {
-            disconnect: { ID: currentUserID },
-          },
-        },
-      });
-
-      return `You unfriended user ${targetUserID}`;
-    } else {
-      // Befriend logic: add targetUser to currentUser's friends
-      await this.prisma.user.update({
-        where: { ID: currentUserID },
-        data: {
-          friends: {
-            connect: { ID: targetUserID },
-          },
-        },
-      });
-
-      // Add currentUser to targetUser's friendsOf
-      await this.prisma.user.update({
-        where: { ID: targetUserID },
-        data: {
-          friendsOf: {
-            connect: { ID: currentUserID },
-          },
-        },
-      });
-
-      return `You befriended user ${targetUserID}`;
+      return allAchievements.map((achievement) => ({
+        name: achievement.name,
+        description: achievement.description,
+        iconURL: achievement.iconURL,
+        unlocked: unlockedAchievementIDs.has(achievement.ID),
+      }));
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
     }
   }
 
-  async getFriends(userID: number): Promise<UserFriend[]> {
-    const user = await this.prisma.user.findUnique({
-      where: { ID: userID },
-      include: {
-        friends: {
-          select: {
-            ID: true,
-            username: true,
-            avatar: true,
-            status: true,
+  async getFriends(token: string): Promise<UserFriend[]> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+    if (!userID) throw new NotFoundException('User Unauthorized.');
+     try {
+        const user = await this.prisma.user.findUnique({
+          where: { ID: userID },
+          include: {
+            friends: {
+              select: {
+                ID: true,
+                username: true,
+                avatar: true,
+                status: true,
+              },
+            },
           },
-        },
-      },
-    });
-  
-    if (!user || !user.friends) {
-      throw new NotFoundException('No friends found');
-    }
-  
-    return user.friends.map((friend) => ({
-      ID: friend.ID,
-      username: friend.username,
-      avatarURL: friend.avatar
-        ? `data:image/jpeg;base64,${friend.avatar.toString('base64')}`
-        : 'http://localhost:3001/images/default-avatar.png',
-      status: friend.status,
-    }));
-  }
-
-
-  // FOR LATER: REMOVE checkAndGrantXPAchievements from user.service.ts
-  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
-  async checkAndGrantXPAchievements(userID: number, playerRating: number): Promise<void> {
-    const xpAchievements = [
-      { name: 'Scored 100 XP', threshold: 100 },
-      { name: 'Scored 1000 XP', threshold: 1000 },
-    ];
-
-    for (const achievement of xpAchievements) {
-      if (playerRating >= achievement.threshold) {
-        const achievementData = await this.prisma.achievement.findUnique({
-          where: { name: achievement.name },
         });
 
-        if (!achievementData) {
-          throw new Error(`Achievement "${achievement.name}" not found.`);
+        if (!user || !user.friends) {
+          throw new NotFoundException('No friends found');
         }
 
-        const alreadyGranted = await this.prisma.userAchievement.findFirst({
-          where: { userID, achievementID: achievementData.ID },
-        });
-
-        if (!alreadyGranted) {
-          await this.prisma.userAchievement.create({
-            data: { userID, achievementID: achievementData.ID },
-          });
-          // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
-        }
+        return user.friends.map((friend) => ({
+          ID: friend.ID,
+          username: friend.username,
+          avatarURL: this.getAvatarURL(friend.avatar),
+          status: friend.status,
+        }));
+      } catch (error) {
+        this.errorHandlingService.throwHttpException(error);
       }
     }
+
+  async getFriendshipStatus(token: string, targetUserID: number): Promise<boolean> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+
+    try {
+      return (
+        (await this.prisma.user.count({
+          where: {
+            ID: userID,
+            friends: { some: { ID: targetUserID } },
+          },
+        })) > 0
+      );
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
   }
+
+  async toggleFriendship(token: string, targetUserID: number): Promise<string> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+
+    try {
+      const result = await this.prisma.$transaction(async (prisma) => {
+        const isFriend = await prisma.user.count({
+          where: {
+            ID: userID,
+            friends: { some: { ID: targetUserID } },
+          },
+        });
+
+        if (isFriend) {
+          await prisma.user.update({
+            where: { ID: userID },
+            data: { friends: { disconnect: { ID: targetUserID } } },
+          });
+
+          await prisma.user.update({
+            where: { ID: targetUserID },
+            data: { friendsOf: { disconnect: { ID: userID } } },
+          });
+
+          return `You unfriended user ${targetUserID}`;
+        } else {
+          await prisma.user.update({
+            where: { ID: userID },
+            data: { friends: { connect: { ID: targetUserID } } },
+          });
+
+          await prisma.user.update({
+            where: { ID: targetUserID },
+            data: { friendsOf: { connect: { ID: userID } } },
+          });
+
+          return `You befriended user ${targetUserID}`;
+        }
+      });
+
+      return result;
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
+
+
+
+
+
+
+
 
   // FOR LATER: REMOVE winRate and playerRating CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED
   async getUserStats(userID: number): Promise<StatisticsData> {
-    const statistics = await this.prisma.statistics.findUnique({
-      where: { userID: userID },
-    });
-    // console.log("statistics = ", statistics);
+    try {
+      const statistics = await this.prisma.statistics.findUnique({
+        where: { userID: userID },
+      });
 
-    if (!statistics) throw new NotFoundException('Statistics not found!');
+      if (!statistics) throw new NotFoundException('Statistics not found!');
 
-    // Calculate win rate and ladder rank -> we will later move this to game logic
-    const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
-    const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
+      // Calculate win rate and ladder rank -> we will later move this to game logic
+      const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
+      const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
-    // Update the ladder rank in the database -> we will later move this to game logic
-    await this.prisma.statistics.update({
-      where: { userID },
-      data: { ladderRank: playerRating },
-    });
+      // Update the ladder rank in the database -> we will later move this to game logic
+      await this.prisma.statistics.update({
+        where: { userID },
+        data: { ladderRank: playerRating },
+      });
 
-    // Check and grant XP-related achievements -> we will later move this to game logic
-    await this.checkAndGrantXPAchievements(userID, playerRating);
+      // Check and grant XP-related achievements -> we will later move this to game logic
+      await this.checkAndGrantXPAchievements(userID, playerRating);
 
-    return {
-      ...statistics,
-      winRate,
-      ladderRank: playerRating,
-    };
+      return {
+        ...statistics,
+        winRate,
+        ladderRank: playerRating,
+      };
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
   }
 
   // FOR LATER: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED
   // IN FUNCTION LOOKING SOMEWHAT LIKE THIS:
   async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<StatisticsData> {
-    // Fetch the current statistics
-    const statistics = await this.prisma.statistics.findUnique({
-      where: { userID },
-    });
+    try {
+      // Fetch the current statistics
+      const statistics = await this.prisma.statistics.findUnique({
+        where: { userID },
+      });
 
-    if (!statistics) {
-      throw new NotFoundException('Statistics not found.');
+      if (!statistics) {
+        throw new NotFoundException('Statistics not found.');
+      }
+
+      // Update gamesPlayed, wins, and totalScores based on the game result
+      const updatedStats = {
+        gamesPlayed: statistics.gamesPlayed + 1,
+        wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
+        totalScores: statistics.totalScores + gameResult.score,
+      };
+
+      // Calculate the new ladderRank (playerRating)
+      const winRate = updatedStats.gamesPlayed ? updatedStats.wins / updatedStats.gamesPlayed : 0;
+      const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
+
+      // Update the statistics in the database
+      const updatedStatistics = await this.prisma.statistics.update({
+        where: { userID },
+        data: { ...updatedStats, ladderRank: playerRating },
+      });
+
+      return {
+        ...updatedStatistics,
+        winRate,
+        ladderRank: playerRating,
+      };
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
     }
-
-    // Update gamesPlayed, wins, and totalScores based on the game result
-    const updatedStats = {
-      gamesPlayed: statistics.gamesPlayed + 1,
-      wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
-      totalScores: statistics.totalScores + gameResult.score,
-    };
-
-    // Calculate the new ladderRank (playerRating)
-    const winRate = updatedStats.gamesPlayed ? updatedStats.wins / updatedStats.gamesPlayed : 0;
-    const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
-
-    // Update the statistics in the database
-    const updatedStatistics = await this.prisma.statistics.update({
-      where: { userID },
-      data: { ...updatedStats, ladderRank: playerRating },
-    });
-
-    return {
-      ...updatedStatistics,
-      winRate,
-      ladderRank: playerRating,
-    };
   }
-  
+
+  // FOR LATER: REMOVE checkAndGrantXPAchievements from user.service.ts
+  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
+  async checkAndGrantXPAchievements(userID: number, playerRating: number): Promise<void> {
+    try {
+      const xpAchievements = [
+        { name: 'Scored 100 XP', threshold: 100 },
+        { name: 'Scored 1000 XP', threshold: 1000 },
+      ];
+
+      for (const achievement of xpAchievements) {
+        if (playerRating >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+            // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
+          }
+        }
+      }
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
 }

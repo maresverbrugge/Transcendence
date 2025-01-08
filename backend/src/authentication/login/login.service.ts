@@ -148,7 +148,6 @@ export class LoginService {
   async getUserIDFromCache(token: string): Promise<number> {
     try {
       const userID = await this.cacheManager.get<number>(token);
-      console.log("userID = ", userID); // ! for debugging
       if (!userID) {
         throw new UnauthorizedException('User not logged in');
       }
@@ -167,6 +166,9 @@ export class LoginService {
     } catch (error) {
       throw new InternalServerErrorException('Error while storing user in cache');
     }
+    // console.log("token in storeUserInCache =", token);
+    // console.log("userID in storeUserInCache =", userID);
+    // console.log("expiresInMilliseconds in storeUserInCache =", expiresInMilliseconds);
   }
 
   async removeUserFromCache(token: string): Promise<void> {

@@ -16,6 +16,7 @@ export interface MatchHistoryData {
 }
 
 export interface LeaderboardData {
+  ID: number;
   username: string;
   avatarURL: string;
   ladderRank: number;

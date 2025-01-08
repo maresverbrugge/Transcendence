@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function FriendActions({ currentUserID, targetUserID }: { currentUserID: number; targetUserID: number }) {
+const FriendActions = ({ targetUserID }: { targetUserID: number }) => {
   const [isFriend, setIsFriend] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchFriendshipStatus = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${currentUserID}/friend/${targetUserID}`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get(
+          `${process.env.REACT_APP_URL_BACKEND}/user/${targetUserID}/friend/${token}`
+        );
         setIsFriend(response.data.isFriend);
       } catch (error) {
         console.error('Error fetching friendship status:', error);
@@ -15,15 +19,23 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
     };
 
     fetchFriendshipStatus();
-  }, [currentUserID, targetUserID]);
+  }, [targetUserID]);
 
   const toggleFriendship = async () => {
+    if (loading) return;
+
+    const previousState = isFriend;
+    setLoading(true);
+    setIsFriend((prev) => !prev);
+
     try {
-      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/${currentUserID}/friend/${targetUserID}`);
-      setIsFriend((prev) => !prev); // Toggle friend state
-      // console.log(response.data);
+      const token = localStorage.getItem('authenticationToken');
+      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/${targetUserID}/friend/${token}`);
     } catch (error) {
       console.error('Error toggling friendship:', error);
+      setIsFriend(previousState);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,11 +44,12 @@ function FriendActions({ currentUserID, targetUserID }: { currentUserID: number;
       type="button"
       className={`btn w-100 btn-lg ${isFriend ? 'btn-outline-warning' : 'btn-outline-success'}`}
       onClick={toggleFriendship}
+      disabled={loading}
       style={{ padding: '8%', fontSize: '1.2rem' }}
     >
-      {isFriend ? 'Unfriend' : 'Add Friend'}
+      {loading ? 'Processing...' : isFriend ? 'Unfriend' : 'Add Friend'}
     </button>
   );
-}
+};
 
 export default FriendActions;
