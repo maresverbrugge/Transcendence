@@ -10,6 +10,7 @@ build/
 
 # Environment variables
 # .env
+.env
 
 # Docker-related files
 *.log
