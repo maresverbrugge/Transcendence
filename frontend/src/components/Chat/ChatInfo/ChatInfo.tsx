@@ -55,7 +55,10 @@ const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
   return (
     <div className="channel-info">
       {channel.isDM ? (
-        <DM channelID={channel.ID} />
+        <DM
+          channelID={channel.ID}
+          socket={socket}
+        />
       ) : (
         <Channel
           channel={channel}

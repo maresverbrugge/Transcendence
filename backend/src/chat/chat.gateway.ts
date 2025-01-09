@@ -172,7 +172,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         throw new NotFoundException('User not found')
       }
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_CHAT, websocketID: client.id}})
-      this.server.emit('userStatusChange', userID, 'IN_CHAT');
+      this.updateUserStatus(userID, 'IN_CHAT');
       await this.channelMemberService.addSocketToAllRooms(client, userID);
     } catch (error) {
       this.errorHandlingService.emitHttpException(error, client);
@@ -191,7 +191,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         data: { websocketID: null, status: UserStatus.ONLINE },
         select: {ID: true},
       });
-      this.server.emit('userStatusChange', user.ID, 'ONLINE');
+      this.updateUserStatus(user.ID, 'IN_CHAT');
     } catch (error) {
       this.errorHandlingService.emitHttpException(error, client);
     }
@@ -232,5 +232,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async deleteChannel(channelID: number): Promise<void> {
     await this.prisma.channel.delete({where: {ID: channelID}});
     this.server.emit('updateChannel');
+  }
+
+  updateUserStatus(userID: number, status: ('ONLINE' | 'OFFLINE' | 'IN_GAME' | 'IN_CHAT')): void {
+    this.server.emit('userStatusChange', userID, status);
   }
 }

@@ -4,7 +4,9 @@ import { LoginService } from './login.service';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly loginService: LoginService) {}
+  constructor(
+    private readonly loginService: LoginService,
+  ) {}
 
   @Post('get-token')
   async getToken(@Body() body: { code: string; state: string }) {
@@ -24,6 +26,7 @@ export class LoginController {
     const userID = await this.loginService.getUserIDByIntraUsername(user);
     const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
     this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
+    // this.chatGateway.updateUserStatus(userID, 'ONLINE');
   }
 
   @Post('offline')

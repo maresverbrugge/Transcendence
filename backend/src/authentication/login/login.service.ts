@@ -74,6 +74,7 @@ export class LoginService {
         where: { ID: userID },
         data: { status: UserStatus.OFFLINE },
       });
+      // this.chatGateway.updateUserStatus(userID, 'OFFLINE');
     } catch (error) {
       throw new InternalServerErrorException('Error while setting user status to offline');
     }
