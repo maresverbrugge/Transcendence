@@ -36,7 +36,6 @@ export class UserController {
 
   @Get('profile/:profileUserID/:token')
   async getUserProfileByUserID(@Param('profileUserID', ParseIntPipe) profileUserID: number, @Param('token') token: string): Promise<UserProfile> {
-    console.log("omggggg wtffff!");
     return this.userService.getUserProfileByUserID(profileUserID, token);
   }
 
@@ -53,29 +52,25 @@ export class UserController {
 
   @Get('leaderboard/:token')
   async getLeaderboardData(@Param('token') token: string): Promise<LeaderboardData[]> {
-    const userID = await this.loginService.getUserIDFromCache(token);
-    if (!userID) throw new ForbiddenException('Not authorized');
+    await this.loginService.getUserIDFromCache(token);
     return this.userService.getLeaderboard();
   }
 
   @Get(':userID/stats/:token')
   async getUserStats(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<StatisticsData> {
-    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
-    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
+    await this.loginService.getUserIDFromCache(token);
     return this.userService.getUserStats(userID);
   }
 
   @Get(':userID/match-history/:token')
   async getMatchHistory(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<MatchHistoryData[]> {
-    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
-    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
+    await this.loginService.getUserIDFromCache(token);
     return this.userService.getMatchHistory(userID);
   }
 
   @Get(':userID/achievements/:token')
   async getUserAchievements(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<AchievementData[]> {
-    const authenticatedCurrentUser = await this.loginService.getUserIDFromCache(token);
-    if (!authenticatedCurrentUser) throw new NotFoundException('User Unauthorized.');
+    await this.loginService.getUserIDFromCache(token);
     return this.userService.getUserAchievements(userID);
   }
 

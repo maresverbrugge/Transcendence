@@ -14,9 +14,8 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
     const fetchLeaderboard = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        console.log(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard/${token}`);
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard/${token}`);
-        console.log('Leaderboard data fetched:', response.data); // ! for debugging
+        // console.log('Leaderboard data fetched:', response.data); // for testing, romove later
         setLeaderboardData(response.data);
       } catch (error) {
         console.error('Error fetching leaderboard data:', error);
