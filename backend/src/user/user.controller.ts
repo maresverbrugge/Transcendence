@@ -1,26 +1,22 @@
 import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
+import { UsernameValidationPipe } from './pipes/username-validation.pipe';
+import { AvatarValidationPipe } from './pipes/avatar-validation.pipe';
 
 import {
-  UserService,
   UserAccount,
   UserProfile,
   UserFriend,
+  UploadedFileType,
   StatisticsData,
   LeaderboardData,
   MatchHistoryData,
   AchievementData,
-} from './user.service';
+} from './interfaces';
 
+import { UserService } from './user.service';
 import { LoginService } from '../authentication/login/login.service';
-
-interface UploadedFileType {
-  buffer: Buffer;
-  originalname: string;
-  mimetype: string;
-  size: number;
-}
 
 @Controller('user')
 export class UserController {
@@ -45,13 +41,12 @@ export class UserController {
 
   @Post('avatar/:token')
   @UseInterceptors(FileInterceptor('avatar'))
-  async uploadAvatar(@Param('token') token: string, @UploadedFile() file: UploadedFileType): Promise<User> {
-    const fileBuffer = file.buffer;
-    return this.userService.updateAvatar(token, fileBuffer);
+  async uploadAvatar(@Param('token') token: string, @UploadedFile(AvatarValidationPipe) file: UploadedFileType): Promise<User> {
+    return this.userService.updateAvatar(token, file.buffer);
   }
 
   @Patch('username/:token')
-  async changeUsername(@Param('token') token: string, @Body('username') newUsername: string): Promise<User> {
+  async changeUsername(@Param('token') token: string, @Body('username', UsernameValidationPipe) newUsername: string): Promise<User> {
     return this.userService.updateUsername(token, newUsername);
   }
 

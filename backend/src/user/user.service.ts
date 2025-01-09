@@ -1,70 +1,21 @@
 import { Injectable, NotFoundException, ForbiddenException, HttpCode } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, Statistics, UserStatus, MatchStatus } from '@prisma/client';
+import { User } from '@prisma/client';
 import { LoginService } from '../authentication/login/login.service';
 import { ErrorHandlingService } from '../error-handling/error-handling.service';
-
-export interface UserAccount {
-  ID: number;
-  username: string;
-  Enabled2FA: boolean;
-  avatarURL: string;
-}
-
-export interface UserProfile {
-  currentUserID: number;
-  profileID: number;
-  username: string;
-  avatarURL: string;
-  status: UserStatus;
-}
-
-export interface UserFriend {
-  ID: number;
-  username: string;
-  avatarURL: string;
-  status: UserStatus;
-}
-
-export interface StatisticsData extends Statistics {
-  winRate: number;
-}
-
-export interface LeaderboardData {
-  ID: number;
-  username: string;
-  ladderRank: number;
-  avatarURL: string;
-  rank: number;
-}
-
-export interface MatchHistoryData {
-  opponentID: number;
-  opponent: string;
-  scorePlayer1: number;
-  scorePlayer2: number;
-  result: string;
-}
-
-export interface AchievementData {
-  name: string;
-  description: string;
-  iconURL: string;
-  unlocked: boolean;
-}
-
-interface Match {
-  players: { ID: number; username: string }[];
-  scorePlayer1: number;
-  scorePlayer2: number;
-  status: MatchStatus;
-}
-
-interface LeaderboardEntry {
-  user: { ID: number, username: string; avatar: Buffer | null };
-  ladderRank: number;
-}
+import {
+  UserAccount,
+  UserProfile,
+  UserFriend,
+  UploadedFileType,
+  StatisticsData,
+  LeaderboardData,
+  LeaderboardEntry,
+  MatchHistoryData,
+  Match,
+  AchievementData,
+} from './interfaces';
 
 @Injectable()
 export class UserService {
@@ -158,11 +109,10 @@ export class UserService {
     if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
 
     try {
-      const updatedUserWithAvatar = await this.prisma.user.update({
+      return await this.prisma.user.update({
         where: { ID: userID },
-        data: { avatar: avatar },
+        data: { avatar },
       });
-      return updatedUserWithAvatar;
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
     }

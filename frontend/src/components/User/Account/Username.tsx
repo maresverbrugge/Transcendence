@@ -17,7 +17,9 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
   const validateUsername = (value: string): string | null => {
     if (!value.trim()) return 'Username cannot be empty!';
     if (value.length > 15) return 'Username must not exceed 15 characters!';
-    if (/[^a-zA-Z0-9-_]/.test(value)) return 'Username can only contain letters, numbers, dashes, and underscores.';
+    if (/[^a-zA-Z0-9À-ž!@#$%^&*()\-_=+[\]{};:'",.<>/?\\|`~ ]/.test(value)) {
+      return 'Username contains invalid characters.';
+    }
     return null;
   };
 
@@ -50,6 +52,9 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
       onUsernameUpdate(tempUsername); // Notify parent of the username change
     } catch (error) {
       console.error('Error updating username:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setValidationMessage(error.response.data.message); // Display backend validation error
+      }
       setUploadStatus('error');
     }
   };

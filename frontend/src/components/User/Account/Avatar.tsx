@@ -26,8 +26,13 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (previewURL) {
-        URL.revokeObjectURL(previewURL); // Revoke previous URL
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert('Invalid file type. Only JPEG and PNG are allowed.');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size exceeds 2MB limit.');
+        return;
       }
       setSelectedFile(file);
       setPreviewURL(URL.createObjectURL(file));
@@ -59,7 +64,7 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
 
       try {
         const token = localStorage.getItem('authenticationToken');
-        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user//avatar${token}`, formData, {
+        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/avatar${token}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -73,6 +78,9 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
         setUploadStatus('success');
       } catch (error) {
         setUploadStatus('error');
+        if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        }
         console.error('Error uploading avatar:', error);
       }
     }
