@@ -4,16 +4,22 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client'
 
 import { LoginService } from '../authentication//login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
-interface UserProfile extends User {
+interface UserProfile {
+  currentUserID: number;
+  profileID: number;
+  username: string;
   avatarURL: string;
+  status: UserStatus;
 }
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private readonly loginService: LoginService
+    private readonly loginService: LoginService,
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   async getUserIDByToken(token: string): Promise<number> {
@@ -95,25 +101,36 @@ export class UserService {
       });
     }
 
-    async getUserProfileByUserID(userID: number): Promise<UserProfile | null> {
-      const user = await this.prisma.user.findUnique({
-        where: { ID: userID },
-      });
-      // console.log("user = ", user);
-
-      if (!user) return null;
-
-      // console.log("FROM SERVICE.TS: user.avatar = ", user.avatar);
-      const avatarURL = user.avatar
-        ? `data:image/jpeg;base64,${user.avatar.toString('base64')}`
+    getAvatarURL(avatar: Buffer | null): string {
+      return avatar
+        ? `data:image/jpeg;base64,${avatar.toString('base64')}`
         : 'http://localhost:3001/images/default-avatar.png';
-      
-      // console.log("FROM SERVICE.TS: avatarURL = ", avatarURL);
-      
+    }
+
+    async getUserProfileByUserID(profileUserID: number, token: string): Promise<UserProfile> {
+      const currentUserID = await this.loginService.getUserIDFromCache(token);
+      try {
+        const user = await this.prisma.user.findUnique({
+        where: { ID: profileUserID },
+        select: {
+          ID: true,
+          username: true,
+          avatar: true,
+          status: true,
+        },
+      });
+      if (!user) throw new NotFoundException('User not found');
+      const avatarURL = this.getAvatarURL(user.avatar);
       return {
-        ...user,
-        avatarURL, // Attach either the user's avatar or the default avatar URL
+        currentUserID,
+        profileID: user.ID,
+        username: user.username,
+        status: user.status,
+        avatarURL,
       };
+      } catch (error) {
+        this.errorHandlingService.throwHttpException(error);
+      }
     }
 
     async createUser(socketID: string): Promise<User> {

@@ -93,6 +93,12 @@ export class ChannelController {
     return this.channelMemberService.getChannelMembers(channelID, token);
   }
 
+  @Get('/dm-info/:channelID/:token')
+  // async getDMInfo(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string): Promise<UserProfile> {
+  async getDMInfo(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string): Promise<any> { //later als userbranch is geupdate verwijderen voor bovestaande regel
+    return this.channelService.getDMInfo(channelID, token);
+  }
+
   @Post('/:channelID/verify-password')
   @HttpCode(200)
   async varifyPassword(

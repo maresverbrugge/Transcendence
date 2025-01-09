@@ -3,6 +3,15 @@ import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { User } from '@prisma/client';
+import { UserStatus } from '@prisma/client';
+
+interface UserProfile {
+  currentUserID: number;
+  profileID: number;
+  username: string;
+  avatarURL: string;
+  status: UserStatus;
+}
 
 @Controller('user')
 export class UserController {
@@ -16,6 +25,11 @@ export class UserController {
   @Post()
   async createUser(@Body() body: { username: string }): Promise<User> {
     return this.userService.createUser(body.username);
+  }
+
+  @Get('profile/:profileUserID/:token')
+  async getUserProfileByUserID(@Param('profileUserID', ParseIntPipe) profileUserID: number, @Param('token') token: string): Promise<UserProfile> {
+    return this.userService.getUserProfileByUserID(profileUserID, token);
   }
 
   // @Post(':token/avatar')

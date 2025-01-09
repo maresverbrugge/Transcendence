@@ -14,6 +14,7 @@ import { HashingService } from './hashing/hashing.service';
 import { GameInviteService } from './gameInvite/game-invite.service';
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   controllers: [FriendsController, ChannelController, UserController, MessageController],
@@ -27,6 +28,7 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
     HashingService,
     GameInviteService,
     LoginService,
+    UserService,
     ErrorHandlingService,
   ],
   exports: [],

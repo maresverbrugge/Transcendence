@@ -8,6 +8,7 @@ import { MessageService } from '../message/message.service';
 import { ChatGateway } from '../chat.gateway';
 import { HashingService } from '../hashing/hashing.service';
 import { LoginService } from 'src/authentication/login/login.service';
+import { UserService } from 'src/user/user.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 type ChannelResponse = {
@@ -53,6 +54,7 @@ export class ChannelService {
     private readonly channelMemberService: ChannelMemberService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway,
+    private readonly userService: UserService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
@@ -384,4 +386,22 @@ export class ChannelService {
       this.errorHandlingService.throwHttpException(error);
     }
   }
+
+  // async getDMInfo(channelID: number, token: string): Promise<UserProfile>
+  async getDMInfo(channelID: number, token: string): Promise<any> {
+    const userID = await this.loginService.getUserIDFromCache(token);
+    const channel = await this.prisma.channel.findUnique({
+      where: { ID: channelID },
+      select: { members: { select: { user: { select: { ID: true } } } } },
+    });
+    if (!channel || !channel.members) {
+      throw new NotFoundException("Channel not found or has no members");
+    }
+    const otherUser = channel.members.find(member => member.user.ID !== userID);
+    if (!otherUser) {
+      throw new Error("User not found");
+    }
+      return this.userService.getUserProfileByUserID(otherUser.user.ID, token);
+  }
+
 }
