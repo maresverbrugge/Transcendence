@@ -143,16 +143,20 @@ export class ChannelService {
     this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
   }
 
-  emitNewPrivateChannel(channel: ChannelWithMembersAndMessages): void {
+  async emitNewPrivateChannel(channel: ChannelWithMembersAndMessages): Promise<void> {
     channel.members.map(async (member) => {
-        const socket = await this.chatGateway.getWebSocketByUserID(member.userID);
+      const socket = await this.chatGateway.getWebSocketByUserID(member.userID);
+      if (socket && socket.connected) {
         this.addChannelMemberToChannel(channel.ID, socket);
         socket.emit('updateChannel');
+      }
     });
   }
 
-  emitNewChannel(server: Namespace, channel: ChannelWithMembersAndMessages): void {
-    if (channel.isPrivate) this.emitNewPrivateChannel(channel);
+  async emitNewChannel(server: Namespace, channel: ChannelWithMembersAndMessages): Promise<void> {
+    if (channel.isPrivate) {
+      await this.emitNewPrivateChannel(channel);
+    }
     else server.emit('updateChannel');
   }
 
@@ -353,7 +357,7 @@ export class ChannelService {
 
   async updateChannel(userID) {
     const socket = await this.chatGateway.getWebSocketByUserID(userID);
-    if (socket) socket.emit('updateChannel');
+    if (socket && socket.connected) socket.emit('updateChannel');
   }
 
   async isPrivateChannel(channelID: number): Promise<boolean> {

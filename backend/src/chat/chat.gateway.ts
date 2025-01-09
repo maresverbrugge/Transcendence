@@ -56,7 +56,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('newChannel')
   async handleNewChannel(client: Socket, channel: ChannelWithMembersAndMessages): Promise<void> {
     try {
-      this.channelService.emitNewChannel(this.server, channel);
+      await this.channelService.emitNewChannel(this.server, channel);
     } catch (error) {
       this.errorHandlingService.emitHttpException(error, client);
     }
@@ -200,15 +200,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async addSocketToRoom(userID: number, channelID: number): Promise<void> {
     const socket = await this.getWebSocketByUserID(userID);
     const user = await this.prisma.user.findUnique({where: {ID: userID}, select: {username: true}});
-    this.channelService.joinChannel(channelID, socket, user.username);
+    if (socket && socket.connected) this.channelService.joinChannel(channelID, socket, user.username);
   }
 
-  async getWebSocketByUserID(userID: number): Promise<Socket> {
+  async getWebSocketByUserID(userID: number): Promise<Socket | null> {
     try {
       const user = await this.prisma.user.findUnique({ where: { ID: userID }, select: { websocketID: true } });
       if (!user) throw new NotFoundException('User not found');
       const socket: Socket = this.server.sockets.get(user.websocketID);
-      if (!socket?.connected) throw new NotFoundException('Websocket not found');
+      if (! socket || !socket.connected) {
+        return null;
+      }
       return socket;
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);

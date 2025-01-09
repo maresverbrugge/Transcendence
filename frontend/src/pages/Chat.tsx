@@ -58,12 +58,11 @@ const Chat = () => {
 
   const handleError = (error: any) => {
     if (error?.status === 403 || error?.status === 400) {
-      setAlert(error?.response?.data?.message)
-    }
-    else if (error?.status === 401) {
+      if (error?.response?.data?.message) setAlert(error.response.data.message)
+      else if (error?.response?.message) setAlert(error.response.message)
+    } else if (error?.status === 401) {
       navigate('/logout');
-    }
-    else
+    } else
       setAlert('An unexpected error occurred');
   }
 
@@ -75,12 +74,8 @@ const Chat = () => {
     try {
       await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${newChannelID}/add-member`, { token: token} )
       setChannelID(newChannelID);
-    } catch (error: any) {
-      if (error?.status === 403) {
-        setAlert(error?.response?.data?.message)
-      }
-      else setAlert('Oops! Something went wrong while selecting the channel. Please refresh and try again.')
-      console.log('check error', error)
+    } catch (error) {
+      emitter.emit('error', error);
     }
   };
 

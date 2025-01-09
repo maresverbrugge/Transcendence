@@ -21,7 +21,7 @@ export class GameInviteService {
             select: {username: true}
         })
         const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
-        if (receiver.connected) {
+        if (receiver && receiver.connected) {
             receiver.emit('gameInvite', {senderUsername: sender.username, senderUserID: senderID});
         } else {
             client.emit('gameInviteResponse', {accepted: false, message: 'user not available', receiverUserID});
@@ -32,7 +32,7 @@ export class GameInviteService {
         const senderID = await this.loginService.getUserIDFromCache(token);
         try {
             const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
-            if (receiver.connected) {
+            if (receiver && receiver.connected) {
                 receiver.emit('cancelGameInvite', {senderUserID: senderID});
             }
         } catch (error) {
@@ -45,7 +45,7 @@ export class GameInviteService {
     async declineGameInvite(senderUserID: number, message: string, token): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
         const sender = await this.chatGateway.getWebSocketByUserID(senderUserID);
-        if (sender.connected) {
+        if (sender && sender.connected) {
             sender.emit('gameInviteResponse', {accepted: false, message, receiverUserID: receiverID});
         }
     }
@@ -53,7 +53,7 @@ export class GameInviteService {
     async acceptGameInvite(senderUserID: number, token): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
         const sender = await this.chatGateway.getWebSocketByUserID(senderUserID);
-        if (sender.connected) {
+        if (sender && sender.connected) {
             sender.emit('gameInviteResponse', {accepted: true, message: '', receiverUserID: receiverID});
         }
     }
@@ -61,7 +61,7 @@ export class GameInviteService {
     async handleGameCreated(receiverUserID: number, created: boolean, token: string): Promise<void> {
         const senderID = await this.loginService.getUserIDFromCache(token)
         const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
-        if (receiver.connected) {
+        if (receiver && receiver.connected) {
             receiver.emit('gameCreated', {created, senderID});
         }
     }
