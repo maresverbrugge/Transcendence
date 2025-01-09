@@ -33,7 +33,6 @@ export class UserService {
 
   async getUserAccountByToken(token: string): Promise<UserAccount> {
     const userID = await this.loginService.getUserIDFromCache(token);
-    if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
     try {
       const user = await this.prisma.user.findUnique({
         where: { ID: userID },
@@ -62,7 +61,7 @@ export class UserService {
 
   async getUserProfileByUserID(profileUserID: number, token: string): Promise<UserProfile> {
     const currentUserID = await this.loginService.getUserIDFromCache(token);
-    if (!currentUserID) throw new ForbiddenException('Not authorized'); // is this necessary?
+
     try {
       const user = await this.prisma.user.findUnique({
       where: { ID: profileUserID },
@@ -92,7 +91,7 @@ export class UserService {
 
   async updateUsername(token: string, newUsername: string): Promise<User> {
     const userID = await this.loginService.getUserIDFromCache(token);
-    if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
+
     try {
       const updatedUserWithUsername = await this.prisma.user.update({
         where: { ID: userID },
@@ -106,7 +105,6 @@ export class UserService {
 
   async updateAvatar(token: string, avatar: Buffer): Promise<User> {
     const userID = await this.loginService.getUserIDFromCache(token);
-    if (!userID) throw new ForbiddenException('Not authorized'); // is this necessary?
 
     try {
       return await this.prisma.user.update({

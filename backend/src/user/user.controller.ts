@@ -34,8 +34,9 @@ export class UserController {
     return this.userService.getUserAccountByToken(token);
   }
 
-  @Get(':profileUserID/:token')
+  @Get('profile/:profileUserID/:token')
   async getUserProfileByUserID(@Param('profileUserID', ParseIntPipe) profileUserID: number, @Param('token') token: string): Promise<UserProfile> {
+    console.log("omggggg wtffff!");
     return this.userService.getUserProfileByUserID(profileUserID, token);
   }
 
