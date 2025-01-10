@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './SendGameInvite.css'
 import GameInvitePopup from './GameInvitePopup';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface SendGameInviteProps {
     receiverUserID: number;

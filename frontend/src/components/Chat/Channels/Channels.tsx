@@ -9,7 +9,7 @@ import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
 import { ChannelData, MemberData } from '../interfaces';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface ChannelsProps {
   selectedChannelID: number | null;

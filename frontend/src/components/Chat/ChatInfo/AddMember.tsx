@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import { MemberData, ChannelData } from '../interfaces';
 import './AddMember.css';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface AddMemberProps {
   channel: ChannelData;

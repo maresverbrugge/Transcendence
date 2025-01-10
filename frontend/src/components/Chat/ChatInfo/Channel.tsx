@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 
 import ChannelMemberList from './ChannelMemberList';
 import { ChannelData, MemberData } from '../interfaces';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface ChannelProps {
   channel: ChannelData;

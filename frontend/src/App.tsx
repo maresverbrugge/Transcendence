@@ -10,11 +10,13 @@ import LogOut from './components/Authentication/LogOut';
 import UserAccount from './pages/UserAccount';
 import UserProfile from './pages/UserProfile';
 import Chat from './pages/Chat';
+import ErrorHandler from './components/ErrorHandler';
 // import GameApp from './pages/game';
 
 const App = () => {
 	return (
 		<Router>
+		  <ErrorHandler/>
 		  <Routes>
 			<Route path="/" element={<Login />} />
 			<Route path="/login/redirect" element={<LoginRedirect />} />

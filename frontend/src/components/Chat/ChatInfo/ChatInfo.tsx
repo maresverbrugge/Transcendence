@@ -7,7 +7,7 @@ import { ChannelData, MemberData } from '../interfaces';
 import Channel from './Channel';
 import DM from './DM';
 import axios from 'axios';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 
 interface ChannelInfoProps {

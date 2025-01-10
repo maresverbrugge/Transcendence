@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
 import './NewChannel.css';
 import axios from 'axios';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 import { MemberData } from '../interfaces';
 

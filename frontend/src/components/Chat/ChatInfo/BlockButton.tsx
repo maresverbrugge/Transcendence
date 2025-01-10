@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface BlockButtonProps {
   userID: number;

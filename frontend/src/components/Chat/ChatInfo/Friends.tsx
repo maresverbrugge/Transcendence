@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import './Friends.css';
 import { MemberData } from '../interfaces';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface FriendProps {
   key: number;
