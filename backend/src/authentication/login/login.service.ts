@@ -4,12 +4,14 @@ import {
   NotFoundException,
   UnauthorizedException,
   Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/common/cache';
 import { Cache } from 'cache-manager';
 import axios from 'axios';
 import { UserStatus } from '@prisma/client';
+import { GatewayService } from 'src/chat/gateway/gateway.service';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 
@@ -17,6 +19,8 @@ import { UserStatus } from '@prisma/client';
 export class LoginService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => GatewayService))
+    private readonly gatewayService: GatewayService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
   ) {}
 
@@ -74,7 +78,7 @@ export class LoginService {
         where: { ID: userID },
         data: { status: UserStatus.OFFLINE },
       });
-      // this.chatGateway.updateUserStatus(userID, 'OFFLINE');
+      this.gatewayService.updateUserStatus(userID, 'OFFLINE');
     } catch (error) {
       throw new InternalServerErrorException('Error while setting user status to offline');
     }

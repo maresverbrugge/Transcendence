@@ -1,17 +1,18 @@
-import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
-import { ChatGateway } from '../chat.gateway';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginService } from 'src/authentication/login/login.service';
+import { GatewayService } from '../gateway/gateway.service';
 
 @Injectable()
 export class GameInviteService {
 
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => LoginService))
         private readonly loginService: LoginService,
-        @Inject(forwardRef(() => ChatGateway))
-        private readonly chatGateway: ChatGateway,
+        @Inject(forwardRef(() => GatewayService))
+        private readonly gatewayService: GatewayService,
       ) {}
     
     async sendGameInvite(client: Socket, receiverUserID: number, token: string): Promise<void> {
@@ -20,7 +21,7 @@ export class GameInviteService {
             where: {ID: senderID},
             select: {username: true}
         })
-        const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
+        const receiver = await this.gatewayService.getWebSocketByUserID(receiverUserID);
         if (receiver && receiver.connected) {
             receiver.emit('gameInvite', {senderUsername: sender.username, senderUserID: senderID});
         } else {
@@ -31,7 +32,7 @@ export class GameInviteService {
     async cancelGameInvite(receiverUserID: number, token: string): Promise<void> {
         const senderID = await this.loginService.getUserIDFromCache(token);
         try {
-            const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
+            const receiver = await this.gatewayService.getWebSocketByUserID(receiverUserID);
             if (receiver && receiver.connected) {
                 receiver.emit('cancelGameInvite', {senderUserID: senderID});
             }
@@ -44,7 +45,7 @@ export class GameInviteService {
 
     async declineGameInvite(senderUserID: number, message: string, token): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
-        const sender = await this.chatGateway.getWebSocketByUserID(senderUserID);
+        const sender = await this.gatewayService.getWebSocketByUserID(senderUserID);
         if (sender && sender.connected) {
             sender.emit('gameInviteResponse', {accepted: false, message, receiverUserID: receiverID});
         }
@@ -52,7 +53,7 @@ export class GameInviteService {
 
     async acceptGameInvite(senderUserID: number, token): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
-        const sender = await this.chatGateway.getWebSocketByUserID(senderUserID);
+        const sender = await this.gatewayService.getWebSocketByUserID(senderUserID);
         if (sender && sender.connected) {
             sender.emit('gameInviteResponse', {accepted: true, message: '', receiverUserID: receiverID});
         }
@@ -60,7 +61,7 @@ export class GameInviteService {
 
     async handleGameCreated(receiverUserID: number, created: boolean, token: string): Promise<void> {
         const senderID = await this.loginService.getUserIDFromCache(token)
-        const receiver = await this.chatGateway.getWebSocketByUserID(receiverUserID);
+        const receiver = await this.gatewayService.getWebSocketByUserID(receiverUserID);
         if (receiver && receiver.connected) {
             receiver.emit('gameCreated', {created, senderID});
         }

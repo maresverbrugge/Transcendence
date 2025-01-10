@@ -1,16 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { ChatGateway } from '../chat.gateway';
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GatewayService } from '../gateway/gateway.service';
 
 @Injectable()
 export class BlockedUserService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
-    private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => GatewayService))
+    private readonly gatewayService: GatewayService,
     private readonly errorHandlingservice: ErrorHandlingService,
   ) {}
 
@@ -68,7 +70,7 @@ export class BlockedUserService {
     const userID = await this.loginService.getUserIDFromCache(token);
     if (action === 'block') await this.block(targetUserID, userID);
     else await this.unblock(targetUserID, userID);
-    const socket = await this.chatGateway.getWebSocketByUserID(userID);
-    if (socket && socket.connected) this.chatGateway.emitToSocket('reloadMessages', socket)
+    const socket = await this.gatewayService.getWebSocketByUserID(userID);
+    if (socket && socket.connected) this.gatewayService.emitToSocket('reloadMessages', socket)
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, UserStatus } from '@prisma/client'
@@ -18,6 +18,7 @@ interface UserProfile {
 export class UserService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}

@@ -5,11 +5,11 @@ import { Channel, ChannelMember, User, Message } from '@prisma/client';
 
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
-import { ChatGateway } from '../chat.gateway';
 import { HashingService } from '../hashing/hashing.service';
 import { LoginService } from 'src/authentication/login/login.service';
 import { UserService } from 'src/user/user.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GatewayService } from '../gateway/gateway.service';
 
 type ChannelResponse = {
     ID: number;
@@ -47,13 +47,14 @@ type newChannelData = {
 export class ChannelService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
     private readonly messageService: MessageService,
     private readonly hashingService: HashingService,
     @Inject(forwardRef(() => ChannelMemberService))
     private readonly channelMemberService: ChannelMemberService,
-    @Inject(forwardRef(() => ChatGateway))
-    private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => GatewayService))
+    private readonly gatewayService: GatewayService,
     private readonly userService: UserService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}
@@ -96,7 +97,7 @@ export class ChannelService {
 
   addChannelMemberToChannel(channelID: number, socket: Socket): void {
     if (socket.connected) {
-        this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
+        this.gatewayService.emitToRoom('updateChannelMember', String(channelID));
         socket.join(String(channelID));
     }
   }
@@ -123,7 +124,7 @@ export class ChannelService {
         data: {isOwner: true, isAdmin: true},
       })
     } else {
-      await this.chatGateway.deleteChannel(channelID);
+      await this.gatewayService.deleteChannel(channelID);
     }
   }
 
@@ -142,12 +143,12 @@ export class ChannelService {
       await this.assignNewOwner(channelID);
     socket.leave(String(channelID));
     socket.emit('updateChannel');
-    this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
+    this.gatewayService.emitToRoom('updateChannelMember', String(channelID));
   }
 
   async emitNewPrivateChannel(channel: ChannelWithMembersAndMessages): Promise<void> {
     channel.members.map(async (member) => {
-      const socket = await this.chatGateway.getWebSocketByUserID(member.userID);
+      const socket = await this.gatewayService.getWebSocketByUserID(member.userID);
       if (socket && socket.connected) {
         this.addChannelMemberToChannel(channel.ID, socket);
         socket.emit('updateChannel');
@@ -302,7 +303,7 @@ export class ChannelService {
           select: { isAdmin: true },
         });
         if (!channelMember?.isAdmin) throw new ForbiddenException('You dont have Admin rights');
-        await this.chatGateway.addSocketToRoom(newMemberData.memberID, newMemberData.channelID);
+        await this.gatewayService.addSocketToRoom(newMemberData.memberID, newMemberData.channelID);
         return this.channelMemberService.createChannelMember(newMemberData.memberID, newMemberData.channelID);
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
@@ -358,7 +359,7 @@ export class ChannelService {
   }
 
   async updateChannel(userID) {
-    const socket = await this.chatGateway.getWebSocketByUserID(userID);
+    const socket = await this.gatewayService.getWebSocketByUserID(userID);
     if (socket && socket.connected) socket.emit('updateChannel');
   }
 
