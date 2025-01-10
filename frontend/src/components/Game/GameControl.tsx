@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 
 let g_socket: Socket;
 let g_gameID: number;
+let g_token: string;
 let end: number = 0;
 let paddleLeft: Paddle;
 let paddleRight: Paddle;
@@ -98,9 +99,9 @@ class Paddle {
 
 		// This next line will just add it to the <body> tag
 		document.body.appendChild(this.img);
-		this.img.style.position = absolute;
-		this.img.style.top = `${this.topPosition}px`;
-		this.img.style.left = `${this.x - this.w / 2}px`;
+		this.img.setAttribute("style", "position:absolute;");;
+		this.img.style.top = `${(window.innerHeight / 2) - (this.h / 2)}px`;
+		this.img.style.left = `${this.x + (window.innerWidth / 2 - 250) - 20}px`;
 	}
   }
   left() {
@@ -142,10 +143,10 @@ onkeydown = (event: KeyboardEvent) => {
   if (event.key === 'ArrowDown') {
     move = 'down';
   }
-  g_socket.emit('key', move, g_gameID, g_socket.id);
+  g_socket.emit('key', move, g_gameID, g_token);
 };
 
-const GameLogic = ({ socket, skin }) => {
+const GameLogic = ({ socket, skin, token }) => {
 	const [gameID, setGameID] = useState<number>(-1);
   const navigate = useNavigate();
   const canvas: any = React.useRef();
@@ -153,6 +154,7 @@ const GameLogic = ({ socket, skin }) => {
   const height: number = 500;
   let ball: Ball;
   g_socket = socket;
+  g_token = token;
   const draw = (ctx, socket) => {
     ctx.clearRect(0, 0, width, height);
     ball.move(width, height);
@@ -263,6 +265,10 @@ const GameLogic = ({ socket, skin }) => {
       frameId = window.requestAnimationFrame(render);
     };
     render();
+	const onBeforeUnload = (ev) => {
+		//user left the page
+	  };
+	window.addEventListener("beforeunload", onBeforeUnload);
 
     return () => {
       window.cancelAnimationFrame(frameId);
@@ -271,6 +277,7 @@ const GameLogic = ({ socket, skin }) => {
       socket.off('left up');
       socket.off('right down');
       socket.off('left down');
+	  window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, []);
 

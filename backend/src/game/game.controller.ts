@@ -1,4 +1,4 @@
-import { Controller, Post, Param, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Param, InternalServerErrorException } from '@nestjs/common';
 import { GameService } from 'src/game/game.service';
 import { LoginService } from 'src/authentication/login/login.service';
 
@@ -14,6 +14,8 @@ export class GameController {
     @Param('token') token: string,
     @Param('userid2') userid2: number) {
       const userid1: number = await this.login.getUserIDFromCache(token);
-      this.game.createGame(userid1, userid2);
+      const game = await this.game.createGame(userid1, userid2);
+	  if (game == null)
+		throw new InternalServerErrorException('Error starting the game');
   }
 }

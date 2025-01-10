@@ -1,8 +1,8 @@
 // Game page that is shown when the user goes to localhost:3000/game
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+// import { emitter } from '../emitter'; // not final place
 
 import GameControl from './GameControl';
 
@@ -10,10 +10,11 @@ const PaddleSelect = ({}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedPaddle, setSelectedPaddle] = useState<string>("default");
   const [showGame, setShowGame] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [token, setToken] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem('authenticationToken');
+	setToken(token);
     const socketIo: Socket = io('{process.env.REACT_APP_URL_BACKEND}/game', {
       transports: ['websocket'],
       query: { token }, // Hier de token uit localstorage halen
@@ -27,7 +28,7 @@ const PaddleSelect = ({}) => {
     setSocket(socketIo);
 
 	socketIo.on('error', (gameID: number) => {
-		navigate('/landingpage');
+		// emitter.emit('error', error);
 	  });
 
     return () => {
@@ -44,7 +45,7 @@ const PaddleSelect = ({}) => {
   return (
 	<div>
 		{showGame && (
-			<GameControl socket={socket} skin={selectedPaddle} />
+			<GameControl socket={socket} skin={selectedPaddle} token={token} />
 		)}
 		{!showGame && (
 			<div id="paddleselect">

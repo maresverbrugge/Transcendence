@@ -1,9 +1,9 @@
 // Game page that is shown when the user goes to localhost:3000/game
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
 import PaddleSelect from '../components/Game/PaddleSelect';
+// import { emitter } from '../emitter'; // not final place
 
 const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -29,6 +29,10 @@ const Game = () => {
     socketIo.on('newgame', () => {
       setJoinedGame(true);
     });
+
+	socketIo.on('error', (gameID: number) => {
+		// emitter.emit('error', error);
+	  });
 
     // Set socket instance in state
     setSocket(socketIo);

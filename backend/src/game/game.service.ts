@@ -3,6 +3,7 @@ import { Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { User, Match } from '@prisma/client';
+import { LoginService } from 'src/authentication/login/login.service';
 
 interface MatchInstance
 {
@@ -16,6 +17,7 @@ interface MatchInstance
   scoreLeft: number,
   scoreRight: number,
   firstPlayerReady: boolean,
+  finished: boolean,
 }
 
 @Injectable()
@@ -23,7 +25,8 @@ export class GameService {
   private matches: MatchInstance[] = [];
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+	private readonly loginService: LoginService,
   ) {}
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
 	try {
@@ -36,10 +39,11 @@ export class GameService {
 		  },
 		});
 		//add match to players matchhistory
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false, finished: false});
 		return newGame;
 	} catch (error) {
 		console.error(error);
+		return null;
 	}
   }
 
@@ -50,6 +54,8 @@ export class GameService {
 	server.emit('ballSpeedY', game.ballspeedy);
 	server.emit('ballSpeedX', game.ballspeedx);
   }
+
+  //detect if gamecontrol component unmounted while finished == false, then send a notification to the other player
 
 //   handleReconnection(gameID: number, server: Namespace) {
 //     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
@@ -91,8 +97,8 @@ export class GameService {
     game.ballspeedx *= -1;
   }
 
-  async handleKey(move: string, socketID: string, gameID: number) {
-    const playerID: number = await this.userService.getUserIDBySocketID(socketID);
+  async handleKey(move: string, token: string, gameID: number) {
+    const playerID = await this.loginService.getUserIDFromCache(token);
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
     if (game.rightPlayerID === playerID) {
       if (move === 'up')
