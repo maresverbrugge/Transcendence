@@ -28,7 +28,7 @@ export class UserService {
   getAvatarURL(avatar: Buffer | null): string {
     return avatar
       ? `data:image/jpeg;base64,${avatar.toString('base64')}`
-      : 'http://localhost:3001/images/default-avatar.png';
+      : `${process.env.URL_BACKEND}/images/default-avatar.png`;
   }
 
   async getUserAccountByToken(token: string): Promise<UserAccount> {
@@ -243,14 +243,13 @@ export class UserService {
     const userID = await this.loginService.getUserIDFromCache(token);
 
     try {
-      return (
-        (await this.prisma.user.count({
-          where: {
-            ID: userID,
-            friends: { some: { ID: targetUserID } },
-          },
-        })) > 0
-      );
+      const userCount = await this.prisma.user.count({
+        where: {
+          ID: userID,
+          friends: { some: { ID: targetUserID } },
+        },
+      });
+      return userCount > 0;
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
     }

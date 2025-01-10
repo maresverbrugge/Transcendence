@@ -166,9 +166,6 @@ export class LoginService {
     } catch (error) {
       throw new InternalServerErrorException('Error while storing user in cache');
     }
-    // console.log("token in storeUserInCache =", token);
-    // console.log("userID in storeUserInCache =", userID);
-    // console.log("expiresInMilliseconds in storeUserInCache =", expiresInMilliseconds);
   }
 
   async removeUserFromCache(token: string): Promise<void> {

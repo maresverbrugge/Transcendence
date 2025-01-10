@@ -16,6 +16,5 @@ export class AppModule implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.achievementService.initializeAchievements();
-    // console.log('Predefined achievements have been initialized.');
   }
 }
