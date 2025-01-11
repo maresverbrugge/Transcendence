@@ -22,7 +22,7 @@ import { LoginService } from '../authentication/login/login.service';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    @Inject(forwardRef(() => loginService))
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService
   ) {}
 

@@ -22,7 +22,7 @@ const Chat = () => {
 
 
       
-    const socketIo = io(`ws://${process.env.REACT_APP_URL_BACKEND_NO_PROTOCOL}/chat`, {
+    const socketIo = io(`${process.env.REACT_APP_URL_BACKEND_WS}/chat`, {
       transports: ["websocket"],
       query: { token },
       withCredentials: true,

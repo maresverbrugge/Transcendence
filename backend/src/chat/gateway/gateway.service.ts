@@ -49,7 +49,7 @@ export class GatewayService {
             data: { websocketID: null, status: UserStatus.ONLINE },
             select: {ID: true},
         });
-        this.updateUserStatus(user.ID, 'IN_CHAT');
+        this.updateUserStatus(user.ID, 'ONLINE');
     }
 
     async addSocketToRoom(userID: number, channelID: number): Promise<void> {
