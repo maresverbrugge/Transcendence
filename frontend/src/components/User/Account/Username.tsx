@@ -1,118 +1,171 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
 
-function Username({ currentUsername }: { currentUsername: string }) {
+interface UsernameProps {
+  currentUsername: string;
+  onUsernameUpdate: (newUsername: string) => void;
+}
+
+const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
   const [username, setUsername] = useState<string>(currentUsername);
+  const [tempUsername, setTempUsername] = useState<string>(currentUsername);
+  const [previousUsername, setPreviousUsername] = useState<string>(currentUsername);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const [buttonVisible, setButtonVisible] = useState<boolean>(true); // Controls button visibility
-  const [inputError, setInputError] = useState<string | null>(null);
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+
+  const validateUsername = (value: string): string | null => {
+    if (!value.trim()) return 'Username cannot be empty!';
+    if (value.length > 15) return 'Username must not exceed 15 characters!';
+    if (/[^a-zA-Z0-9À-ž!@#$%^&*()\-_=+[\]{};:'",.<>/?\\|`~ ]/.test(value)) {
+      return 'Username contains invalid characters.';
+    }
+    return null;
+  };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newUsername = e.target.value;
-    setUsername(newUsername);
-
-    // Basic validation
-    if (!newUsername.trim()) {
-      setInputError("Username cannot be empty!");
-    } else if (newUsername.length > 20) {
-      setInputError("Username cannot exceed 20 characters.");
-    } else {
-      setInputError(null);
-    }
+    const value = e.target.value;
+    setTempUsername(value);
+    const validationError = validateUsername(value);
+    setValidationMessage(validationError);
   };
 
   const handleCancel = () => {
-    setUsername(currentUsername);
+    setTempUsername(username);
+    setValidationMessage(null);
     setIsEditing(false);
-    setInputError(null);
-    setUploadStatus('idle');
-    setButtonVisible(false);
   };
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (inputError || !username.trim()) {
-      setInputError("Please fix the errors before saving.");
+  const handleSave = async () => {
+    if (validationMessage || !tempUsername.trim()) {
+      setValidationMessage('Please resolve validation errors before saving.');
       return;
     }
-
-    setUploadStatus('uploading');
-    setButtonVisible(false);
-
+    setUploadStatus('saving');
     try {
       const token = localStorage.getItem('authenticationToken');
-      await axios.patch(`http://localhost:3001/user/${token}`, {
-        username: username.trim(),
-      });
-
-      setUploadStatus('success');
+      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/username/${token}`, { username: tempUsername });
+      setPreviousUsername(username); // Update to new username
+      setUsername(tempUsername); // Save old username for undo
       setIsEditing(false);
-
-      // Fetch updated username (optional, if needed)
-      // const response = await axios.get(`http://localhost:3001/user/${token}`);
-      // setUsername(response.data.username);
-
-    } catch (err) {
+      setUploadStatus('success');
+      onUsernameUpdate(tempUsername); // Notify parent of the username change
+    } catch (error) {
+      console.error('Error updating username:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setValidationMessage(error.response.data.message); // Display backend validation error
+      }
       setUploadStatus('error');
-      console.error('Error updating username:', err);
+    }
+  };
+
+  const handleUndo = async () => {
+    try {
+      const token = localStorage.getItem('authenticationToken');
+      await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/username/${token}`, { username: previousUsername }); // Update the database
+      setUsername(previousUsername); // Update local state
+      setTempUsername(previousUsername);
+      setPreviousUsername(username); // Keep track of the change
+      setUploadStatus('success');
+      onUsernameUpdate(previousUsername); // Notify parent to refresh
+    } catch (error) {
+      console.error('Error resetting username:', error);
+      setUploadStatus('error');
     }
   };
 
   return (
     <div className="username-component d-flex flex-column align-items-center">
-      {/* Displaying Current Username */}
-      {!isEditing ? (
-        <div>
+      {isEditing ? (
+        <>
+          {/* Input Field with Validation */}
+          <div className="mb-2 w-100" style={{ maxWidth: '22ch' }}>
+            <input
+              type="text"
+              value={tempUsername}
+              onChange={handleInputChange}
+              className={`form-control text-center ${
+                validationMessage ? 'is-invalid' : tempUsername.trim() ? 'is-valid' : ''
+              }`}
+              placeholder="Enter new name"
+              style={{
+                width: '100%',
+                paddingInline: '5%',
+                boxSizing: 'border-box',
+              }}
+            />
+
+            {validationMessage ? (
+              <div
+                className="invalid-feedback text-center"
+                style={{
+                  width: '100%',
+                  maxWidth: '90%',
+                  margin: '0 auto',
+                  padding: '0.5%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {validationMessage}
+              </div>
+            ) : (
+              tempUsername.trim() && (
+                <div
+                  className="valid-feedback text-center"
+                  style={{
+                    width: '100%',
+                    maxWidth: '90%',
+                    margin: '0 auto',
+                    padding: '0.5%',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  Username looks good!
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Cancel and Save Buttons */}
+          <div className="mt-1">
+            <button type="button" className="btn btn-danger btn-sm me-2" onClick={handleCancel}>
+              Cancel
+            </button>
+
+            <button className="btn btn-warning btn-sm" onClick={handleSave}>
+              {uploadStatus === 'saving' ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
           <h2>{username}</h2>
+          {/* Edit Button */}
           <button
-            className="btn btn-outline-primary btn-sm mb-2"
-            onClick={() => setIsEditing(true)}>
+            className="btn btn-outline-primary btn-sm mb-3"
+            onClick={() => {
+              setIsEditing(true);
+              setUploadStatus('idle');
+            }}
+          >
             Edit Username
           </button>
-        </div>
-      ) : (
-        <div>
-          <label htmlFor="username-input" className="form-label">
-            Update your username
-          </label>
-          <input
-            id="username-input"
-            type="text"
-            value={username}
-            onChange={handleInputChange}
-            className={`form-control ${inputError ? 'is-invalid' : ''}`}
-            placeholder="Enter new username"
-          />
-          {inputError && <div className="invalid-feedback">{inputError}</div>}
 
-          {/* Conditional Buttons */}
-          {buttonVisible && (
-            <div className="mt-3 d-flex gap-2 justify-content-between">
-              <button
-                className="btn btn-danger btn-sm me-2"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-warning btn-sm me-2"
-                onClick={handleSubmit}
-                disabled={uploadStatus === 'uploading'}
-              >
-                {uploadStatus === 'uploading' ? 'Saving...' : 'Save'}
-              </button>
-            </div>
+          {/* Undo Button */}
+          {uploadStatus === 'success' && (
+            <button className="btn btn-outline-danger btn-sm" onClick={handleUndo}>
+              Reset
+            </button>
           )}
-        </div>
+        </>
       )}
 
-      {/* Upload Feedback */}
-      {uploadStatus === 'uploading' && <p className="text-info mb-2">Uploading...</p>}
-      {uploadStatus === 'success' && <p className="text-success mb-2">Username updated successfully!</p>}
-      {uploadStatus === 'error' && <p className="text-danger mb-2">Failed to update username. Please try again.</p>}
+      {/* Status Messages */}
+      {uploadStatus === 'saving' && <p className="text-info mt-3">Saving...</p>}
+      {uploadStatus === 'error' && <p className="text-danger mt-3">Failed to update username. Please try again.</p>}
+      {uploadStatus === 'success' && <p className="text-success mt-3">Username updated successfully!</p>}
     </div>
   );
-}
+};
 
 export default Username;
