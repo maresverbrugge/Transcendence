@@ -8,16 +8,15 @@ import GameControl from './GameControl';
 
 const PaddleSelect = ({}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [selectedPaddle, setSelectedPaddle] = useState<string>("default");
+  const [selectedPaddle, setSelectedPaddle] = useState<string>("");
   const [showGame, setShowGame] = useState<boolean>(false);
-  const [token, setToken] = useState<string>("");
+  const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-    const token = localStorage.getItem('authenticationToken');
-	setToken(token);
-    const socketIo: Socket = io('{process.env.REACT_APP_URL_BACKEND}/game', {
-      transports: ['websocket'],
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/game`, { // localhost veranderen naar react_app_var
+      transports: ['websocket', 'polling'],
       query: { token }, // Hier de token uit localstorage halen
+	  withCredentials: true,
     });
 
 	socketIo.on('connect_error', (error) => {
@@ -39,6 +38,7 @@ const PaddleSelect = ({}) => {
 
   function handleChange(event) {
     setSelectedPaddle(event.target.value);
+	socket.emit('getGameID', token);
 	setShowGame(true);
   }
 
@@ -51,17 +51,17 @@ const PaddleSelect = ({}) => {
 			<div id="paddleselect">
 				<label>
 					<input type="radio" value="default" checked={selectedPaddle === 'default'} onChange={handleChange} />
-					Radio 1
+					Default
 				</label>
 				<label>
 					<input type="radio" value="option1" checked={selectedPaddle === 'option1'} onChange={handleChange} />
 					<img className="button-image" src="http://localhost:3001/images/pexels-lum3n-44775-406014.jpg"></img>
-					Radio 2
+					Doggo
 				</label>
 				<label>
 					<input type="radio" value="option2" checked={selectedPaddle === 'option2'} onChange={handleChange} />
 					<img className="button-image" src="http://localhost:3001/images/pexels-pixabay-259915.jpg"></img>
-					Radio 3
+					Bricks
 				</label>
 			</div>
 		)}

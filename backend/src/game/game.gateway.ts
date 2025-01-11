@@ -18,9 +18,8 @@ import { LoginService } from 'src/authentication/login/login.service';
 @WebSocketGateway({
   namespace: 'game',
   cors: {
-    origin: process.env.REACT_APP_URL_FRONTEND, // Update with your client's origin
+    origin: 'http://localhost:3000', // Update with your client's origin
     methods: ['GET', 'POST'],
-    transports: ['websocket'],
     credentials: true,
   },
 })
@@ -44,6 +43,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
+	console.log('getting gameID')
 	try {
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
 		const user = await this.prisma.user.findUnique({
@@ -129,7 +129,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-      console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
       const userID = await this.loginService.getUserIDFromCache(token);

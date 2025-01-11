@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
@@ -143,10 +143,13 @@ onkeydown = (event: KeyboardEvent) => {
   if (event.key === 'ArrowDown') {
     move = 'down';
   }
-  g_socket.emit('key', move, g_gameID, g_token);
+  if (move)
+  	g_socket.emit('key', move, g_gameID, g_token);
 };
 
 const GameLogic = ({ socket, skin, token }) => {
+	const canvasRef = useRef(null);
+	const [context, setContext] = useState<any>(null);
 	const [gameID, setGameID] = useState<number>(-1);
   const navigate = useNavigate();
   const canvas: any = React.useRef();
@@ -155,8 +158,8 @@ const GameLogic = ({ socket, skin, token }) => {
   let ball: Ball;
   g_socket = socket;
   g_token = token;
-  const draw = (ctx, socket) => {
-    ctx.clearRect(0, 0, width, height);
+  const draw = (context, socket) => {
+    context.clearRect(0, 0, width, height);
     ball.move(width, height);
     ball.display();
     paddleLeft.display(height);
@@ -169,11 +172,11 @@ const GameLogic = ({ socket, skin, token }) => {
       ball.speedX = -ball.speedX;
 	  socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
     }
-    ctx.fillText(scoreRight, width / 2 + 30, 30); // Right side score
-    ctx.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
+    context.fillText(scoreRight, width / 2 + 30, 30); // Right side score
+    context.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
     if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
       socket.emit('done', g_gameID);
-      ctx.fillText("You've won, nice game!", width / 2, height / 2);
+      context.fillText("You've won, nice game!", width / 2, height / 2);
       end = 1;
       ball.x = width / 2;
       ball.y = height / 2;
@@ -186,85 +189,92 @@ const GameLogic = ({ socket, skin, token }) => {
   };
 
   useEffect(() => {
-    socket.emit('start', gameID);
-    g_gameID = gameID;
-    const context: any = canvas.current.getContext('2d');
-    let frameCount: number = 0;
-    let frameId: number;
-    context.strokeStyle = 'black';
-    context.font = '80 px Arial';
-    context.textAlign = 'center';
-    context.lineWidth = 1;
-    ball = new Ball(width / 2, height / 2, 50, context, gameID);
-	socket.on('gameID', (gameID: number) => {
-		setGameID(gameID);
-		g_gameID = gameID;
-	  });
-    socket.on('ballSpeedY', (speed: string) => {
-      ball.speedY = parseInt(speed);
-    });
-	socket.on('ballSpeedX', (speed: string) => {
-		ball.speedX = parseInt(speed);
-	  });
-    socket.on('right up', () => {
-      console.log('right player up');
-      paddleRight.y -= 3;
-	  if (paddleRight.skinPath != "")
-	  {
-		  paddleRight.topPosition -= 3;
-		  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-	  }
-    });
-    socket.on('left up', () => {
-      console.log('left player up');
-      paddleLeft.y -= 3;
-	  if (paddleRight.skinPath != "")
-	  {
-		  paddleLeft.topPosition -= 3;
-		  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-	  }
-    });
-    socket.on('right down', () => {
-      console.log('right player down');
-      paddleRight.y += 3;
-	  if (paddleRight.skinPath != "")
-	  {
-		  paddleRight.topPosition += 3;
-		  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-	  }
-    });
-    socket.on('left down', () => {
-      console.log('left player down');
-      paddleLeft.y += 3;
-	  if (paddleRight.skinPath != "")
-	  {
-		  paddleLeft.topPosition += 3;
-		  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-	  }
-    });
-    paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
-    paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-	socket.on('pause', () => {
-		ball.speedX = 0;
-		ball.speedY = 0;
-	  });
+	let frameCount: number = 0;
+	let frameId: number;
+	const ctx: any = canvas.current.getContext('2d');
 
-	socket.on('disconnect', () => {
-		console.log('game paused');
-		ball.speedX = 0;
-		ball.speedY = 0;
-	  });
-
-	socket.on('connect'), () => {
-		socket.emit('reconnected', gameID);
+	if (ctx) {
+	  setContext(ctx);
 	}
-
-    const render = () => {
-      frameCount++;
-      draw(context, socket);
-      frameId = window.requestAnimationFrame(render);
-    };
-    render();
+	if (context)
+	{
+		context.strokeStyle = 'black';
+		context.font = '80 px Arial';
+		context.textAlign = 'center';
+		context.lineWidth = 1;
+		ball = new Ball(width / 2, height / 2, 50, context, gameID);
+		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
+		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
+		socket.emit('start', gameID);
+		g_gameID = gameID;
+		socket.on('gameID', (gameID: number) => {
+			setGameID(gameID);
+			g_gameID = gameID;
+		  });
+		socket.on('ballSpeedY', (speed: string) => {
+		  ball.speedY = parseInt(speed);
+		});
+		socket.on('ballSpeedX', (speed: string) => {
+			ball.speedX = parseInt(speed);
+		});
+		socket.on('right up', () => {
+		  console.log('right player up');
+		  paddleRight.y -= 3;
+		  if (paddleRight.skinPath != "")
+		  {
+			  paddleRight.topPosition -= 3;
+			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+		  }
+		});
+		socket.on('left up', () => {
+		  console.log('left player up');
+		  paddleLeft.y -= 3;
+		  if (paddleRight.skinPath != "")
+		  {
+			  paddleLeft.topPosition -= 3;
+			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+		  }
+		});
+		socket.on('right down', () => {
+		  console.log('right player down');
+		  paddleRight.y += 3;
+		  if (paddleRight.skinPath != "")
+		  {
+			  paddleRight.topPosition += 3;
+			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
+		  }
+		});
+		socket.on('left down', () => {
+		  console.log('left player down');
+		  paddleLeft.y += 3;
+		  if (paddleRight.skinPath != "")
+		  {
+			  paddleLeft.topPosition += 3;
+			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+		  }
+		});
+		socket.on('pause', () => {
+			ball.speedX = 0;
+			ball.speedY = 0;
+		  });
+	
+		socket.on('disconnect', () => {
+			console.log('game paused');
+			ball.speedX = 0;
+			ball.speedY = 0;
+		  });
+	
+		socket.on('connect'), () => {
+			socket.emit('reconnected', gameID);
+		}
+	
+		const render = () => {
+		  frameCount++;
+		  draw(context, socket);
+		  frameId = window.requestAnimationFrame(render);
+		};
+		render();
+	}
 	const onBeforeUnload = (ev) => {
 		//user left the page
 	  };
@@ -279,7 +289,7 @@ const GameLogic = ({ socket, skin, token }) => {
       socket.off('left down');
 	  window.removeEventListener("beforeunload", onBeforeUnload);
     };
-  }, []);
+  }, [context]);
 
   return (
     <div>

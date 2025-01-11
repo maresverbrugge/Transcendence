@@ -9,14 +9,15 @@ interface MatchInstance
 {
   ID: number,
   leftPlayerID: number,
+  leftSocketID: string,
   rightPlayerID: number,
+  rightSocketID: string,
   ballspeedx: number,
   ballspeedy: number,
   paddlerightspeedy: number,
   paddleleftspeedy: number,
   scoreLeft: number,
   scoreRight: number,
-  firstPlayerReady: boolean,
   finished: boolean,
 }
 
@@ -30,6 +31,10 @@ export class GameService {
   ) {}
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
 	try {
+		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
+		const socketRight = await this.userService.getSocketIDByUserID(userID2);
+		if (this.matches.find((instance) => instance.leftSocketID === socketLeft)).rightSocketID === socketRight)
+			return;
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',
@@ -39,7 +44,8 @@ export class GameService {
 		  },
 		});
 		//add match to players matchhistory
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false, finished: false});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, finished: false});
+		console.log(this.matches)
 		return newGame;
 	} catch (error) {
 		console.error(error);
@@ -49,23 +55,19 @@ export class GameService {
 
   handleStart(gameID: number, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-    game.ballspeedy = Math.floor(Math.random() * 6 - 3);
-    game.ballspeedx = 5;
-	server.emit('ballSpeedY', game.ballspeedy);
-	server.emit('ballSpeedX', game.ballspeedx);
+	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
+	game.ballspeedx = 5;
+	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
+	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedX', game.ballspeedx);
   }
 
   //detect if gamecontrol component unmounted while finished == false, then send a notification to the other player
 
-//   handleReconnection(gameID: number, server: Namespace) {
-//     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-// 	const socketLeft = this.userService.getWebSocketByUserID(server, game.leftPlayerID);
-// 	const socketRight = this.userService.getWebSocketByUserID(server, game.rightPlayerID);
-// 	socketLeft.emit('ballSpeedY', game.ballspeedy);
-// 	socketLeft.emit('ballSpeedX', game.ballspeedx);
-// 	socketRight.emit('ballSpeedY', game.ballspeedy);
-// 	socketRight.emit('ballSpeedX', game.ballspeedx);
-//   }
+  handleReconnection(gameID: number, server: Namespace) {
+    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
+	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedX', game.ballspeedx);
+  }
 
   map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
 	return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);

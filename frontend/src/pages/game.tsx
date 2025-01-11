@@ -7,7 +7,7 @@ import PaddleSelect from '../components/Game/PaddleSelect';
 
 const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [token, setToken] = useState<string | null>(null); //tijdelijke oplossing voor Token
+  const token = localStorage.getItem('authenticationToken');
   const [inQueue, setInQueue] = useState<boolean>(false);
   const [joinedGame, setJoinedGame] = useState<boolean>(false);
 
@@ -19,14 +19,14 @@ const Game = () => {
     }
 
     // Initialize socket connection
-    const token: string = localStorage.getItem('authenticationToken');
-	setToken(token);
-    const socketIo: Socket = io('{process.env.REACT_APP_URL_BACKEND}/matchmaking', {
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/matchmaking`, { // localhost veranderen naar react_app_var
       transports: ['websocket', 'polling'],
       query: { token }, // Hier de token uit localstorage halen
+	  withCredentials: true,
     });
 
-    socketIo.on('newgame', () => {
+    socketIo.on('newGame', () => {
+		console.log('a new game is there');
       setJoinedGame(true);
     });
 
@@ -59,19 +59,22 @@ const Game = () => {
   }
 
   return (
-    <div className="games-startup">
-		{inQueue && (
-			<button onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
+	<div>
+		{joinedGame && (
+			<PaddleSelect/>
 		)}
-		{!inQueue && (
-			<button onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
+		{!joinedGame && (
+			<div className="games-startup">
+				{inQueue && (
+					<button onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
+				)}
+				{!inQueue && (
+					<button onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
+				)}
+				<label>Join the queue to play.</label>
+			</div>
 		)}
-
-      {/* Display assigned game */}
-      <div className="game-details">
-        {joinedGame ? <PaddleSelect/> : <p>Join the queue to play.</p>}
-      </div>
-    </div>
+	</div>
   );
 };
 
