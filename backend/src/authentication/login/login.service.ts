@@ -59,6 +59,9 @@ export class LoginService {
             intraUsername: user,
             Enabled2FA: false,
             status: UserStatus.ONLINE,
+            statistics: {
+              create: {},
+            },
           },
         });
       } else {
