@@ -205,10 +205,10 @@ const GameLogic = ({ socket, skin, token }) => {
 		ball = new Ball(width / 2, height / 2, 50, context, gameID);
 		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
 		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-		socket.emit('start', gameID);
-		g_gameID = gameID;
 		socket.on('gameID', (gameID: number) => {
 			setGameID(gameID);
+			g_gameID = gameID;
+			socket.emit('start', gameID);
 			g_gameID = gameID;
 		  });
 		socket.on('ballSpeedY', (speed: string) => {

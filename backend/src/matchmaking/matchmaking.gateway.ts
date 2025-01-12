@@ -52,7 +52,6 @@ import { LoginService } from 'src/authentication/login/login.service';
 			}
 			else
 			{
-				console.log('joined the queue')
 			  this.queue.push(userID);
 			}
 		} catch (error) {

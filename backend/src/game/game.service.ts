@@ -33,8 +33,6 @@ export class GameService {
 	try {
 		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
 		const socketRight = await this.userService.getSocketIDByUserID(userID2);
-		if (this.matches.find((instance) => instance.leftSocketID === socketLeft)).rightSocketID === socketRight)
-			return;
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',
@@ -44,6 +42,26 @@ export class GameService {
 		  },
 		});
 		//add match to players matchhistory
+		const user = await this.prisma.user.update({
+			where: {
+				ID: userID1,
+			},
+			data: {
+				matches: {
+					connect: { matchID: newGame.matchID }
+				  },
+			  },
+		});
+		const user2 = await this.prisma.user.update({
+			where: {
+				ID: userID2,
+			},
+			data: {
+				matches: {
+					connect: { matchID: newGame.matchID }
+				  },
+			  },
+		});
 		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, finished: false});
 		console.log(this.matches)
 		return newGame;
@@ -53,7 +71,14 @@ export class GameService {
 	}
   }
 
+  getGameID(playerID: number): number {
+	var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
+	console.log(game.ID)
+	return game.ID;
+  }
+
   handleStart(gameID: number, server: Namespace) {
+	console.log(gameID)
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 	game.ballspeedx = 5;
@@ -121,5 +146,9 @@ export class GameService {
     game.ballspeedx = 0;
 	game.paddleleftspeedy = 0;
 	game.paddlerightspeedy = 0;
+	setTimeout(() => {
+		const index = this.matches.indexOf(game);
+		this.matches.splice(index, 1);
+	  }, 2000);
   }
 }

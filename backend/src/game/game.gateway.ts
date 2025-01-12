@@ -46,21 +46,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	console.log('getting gameID')
 	try {
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
-		const user = await this.prisma.user.findUnique({
-			where: {
-				ID: memberID,
-			},
-			select: {
-				matches: {
-					select: {
-						matchID: true,
-						status: true,
-					}
-				}
-			}
-		});
-		const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
-		client.emit('gameID', game.matchID);
+		console.log(memberID)
+		return this.gameService.getGameID(memberID);
+		// const user = await this.prisma.user.findUnique({
+		// 	where: {
+		// 		ID: memberID,
+		// 	},
+		// 	select: {
+		// 		matches: {
+		// 			select: {
+		// 				matchID: true,
+		// 				status: true,
+		// 			}
+		// 		}
+		// 	}
+		// });
+		// const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
+		// client.emit('gameID', game.matchID);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
 		console.error(error);
