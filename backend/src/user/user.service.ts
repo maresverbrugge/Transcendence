@@ -1,5 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, HttpCode, Inject, forwardRef } from '@nestjs/common';
-import { Socket, Namespace } from 'socket.io';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { LoginService } from '../authentication/login/login.service';
@@ -8,7 +7,6 @@ import {
   UserAccount,
   UserProfile,
   UserFriend,
-  UploadedFileType,
   StatisticsData,
   LeaderboardData,
   LeaderboardEntry,

@@ -10,6 +10,7 @@ import { LoginService } from 'src/authentication/login/login.service';
 import { UserService } from 'src/user/user.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';
+import { UserProfile } from 'src/user/interfaces';
 
 type ChannelResponse = {
     ID: number;
@@ -388,8 +389,7 @@ export class ChannelService {
     }
   }
 
-  // async getDMInfo(channelID: number, token: string): Promise<UserProfile>
-  async getDMInfo(channelID: number, token: string): Promise<any> {
+  async getDMInfo(channelID: number, token: string): Promise<UserProfile> {
     const userID = await this.loginService.getUserIDFromCache(token);
     const channel = await this.prisma.channel.findUnique({
       where: { ID: channelID },
