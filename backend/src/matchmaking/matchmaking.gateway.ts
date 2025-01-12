@@ -40,7 +40,6 @@ import { LoginService } from 'src/authentication/login/login.service';
 					throw new InternalServerErrorException('Error creating the game');
 				const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
 				const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
-				this.gameService.createGame(userID, otherID);
 				this.server.to(userSocketID).to(otherSocketID).emit('newGame');
 				await this.prismaService.user.update({
 					where: { ID: userID },
