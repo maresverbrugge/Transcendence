@@ -5,9 +5,9 @@ import { ChannelMember, User } from '@prisma/client';
 
 import { ChannelService } from '../channel/channel.service';
 import { MessageService } from '../message/message.service';
-import { ChatGateway } from '../chat.gateway';
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GatewayService } from '../gateway/gateway.service';
 
 type ChannelMemberResponse = ChannelMember & {
   user: Pick<User, 'ID' | 'username' | 'websocketID'>;
@@ -19,14 +19,15 @@ type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave
 export class ChannelMemberService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
-    @Inject(forwardRef(() => ChatGateway))
-    private readonly chatGateway: ChatGateway,
     @Inject(forwardRef(() => ChannelService))
     private readonly channelService: ChannelService,
     private readonly errorHandlingService: ErrorHandlingService,
+    @Inject(forwardRef(() => GatewayService))
+    private readonly gatewayService: GatewayService,
   ) {}
 
   async getChannelMember(channelMemberID: number): Promise<ChannelMemberResponse> {
@@ -172,7 +173,7 @@ export class ChannelMemberService {
         throw new ForbiddenException(`You are kicked from this channel. Try again in ${secondsLeft} seconds.`);
       } else {
         await this.updateChannelMember(channelMember.ID, { isBanned: false, banUntil: null });
-        this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
+        this.gatewayService.emitToRoom('updateChannelMember', String(channelID));
       }
     }
   }
@@ -236,7 +237,7 @@ export class ChannelMemberService {
         socket.emit('updateChannel');
       }
     }
-    this.chatGateway.emitToRoom('updateChannelMember', String(channelID));
+    this.gatewayService.emitToRoom('updateChannelMember', String(channelID));
   }
 
   async addSocketToAllRooms(socket: Socket, userID: number): Promise<void> {

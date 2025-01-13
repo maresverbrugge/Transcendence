@@ -1,10 +1,14 @@
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 
 import { LoginService } from './login.service';
+import { GatewayService } from 'src/chat/gateway/gateway.service';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly loginService: LoginService) {}
+  constructor(
+    private readonly loginService: LoginService,
+    private readonly gatewayService: GatewayService,
+  ) {}
 
   @Post('get-token')
   async getToken(@Body() body: { code: string; state: string }) {
@@ -24,6 +28,7 @@ export class LoginController {
     const userID = await this.loginService.getUserIDByIntraUsername(user);
     const expiresInSeconds = await this.loginService.getExpiresInSeconds(token);
     await this.loginService.storeUserInCache(token, userID, expiresInSeconds * 1000);
+    this.gatewayService.updateUserStatus(userID, 'ONLINE');
   }
 
   @Post('offline')

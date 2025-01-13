@@ -6,7 +6,7 @@ import Confirm from '../../Confirm';
 import { ChannelData, MemberData } from '../interfaces';
 import AddMember from './AddMember';
 import BlockButton from './BlockButton';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 import SendGameInvite from './SendGameInvite';
 
 interface ChannelMemberListProps {
@@ -27,7 +27,7 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
   useEffect(() => {
     const fetchCurrentMemberID = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/chat/channel/memberID/${channel.ID}/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/memberID/${channel.ID}/${token}`);
         setCurrentMemberID(parseInt(response.data));
       } catch (error) {
         emitter.emit('error', error);
@@ -36,7 +36,7 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
 
     const fetchChannelMembers = async () => {
         try {
-            const response = await axios.get(`http://localhost:3001/chat/channel/members/${channel.ID}/${token}`);
+            const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/members/${channel.ID}/${token}`);
             setMembers(response.data);
         } catch (error) {
             emitter.emit('error', error);
@@ -45,7 +45,7 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
 
     const fetchBlockedUserIDs = async () => {
       try {
-        const response = await axios.get<number[]>(`http://localhost:3001/chat/blockedUser/IDs/${token}`);
+        const response = await axios.get<number[]>(`${process.env.REACT_APP_URL_BACKEND}/chat/blockedUser/IDs/${token}`);
         setBlockedUserIDs(response.data);
       } catch (error) {
         emitter.emit('error', error);
