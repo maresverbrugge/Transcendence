@@ -64,8 +64,6 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
     fetchAchievements();
   }, [userID]);
 
-  // console.log('State achievementsData:', achievementsData); // Testing, remove later
-
   const renderContent = (loading: boolean, data: any, Component: any, noDataMessage: string) => {
     if (loading) {
       return (
