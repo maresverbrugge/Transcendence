@@ -10,7 +10,8 @@ import LogOut from './components/Authentication/LogOut';
 import UserPage from './pages/UserPage';
 import Chat from './pages/Chat';
 import ErrorHandler from './components/ErrorHandler';
-import Leaderboard from './components/User/Shared/Leaderboard';
+import LeaderboardPage
+from './pages/LeaderboardPage';
 
 const App = () => (
   <Router>
@@ -25,7 +26,7 @@ const App = () => (
       <Route path="/profile" element={<ProtectedRoute element={<UserPage />} />} />
       <Route path="/profile/:userID" element={<ProtectedRoute element={<UserPage />} />} />
       <Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-      <Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />
+      <Route path="/leaderboard/" element={<ProtectedRoute element={<LeaderboardPage />} />} />
     </Routes>
   </Router>
 );

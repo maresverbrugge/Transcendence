@@ -11,9 +11,7 @@ const GoBackButton = () => {
   return (
     <button
       onClick={handleGoBack}
-      className="btn btn-outline-primary position-absolute top-0 start-0 m-3"
-      style={{ zIndex: 1050 }}
-    >
+      className="btn btn-outline-primary position-absolute top-0 start-0 m-3">
       &larr; Back to Main Page
     </button>
   );

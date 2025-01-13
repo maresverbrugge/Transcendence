@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { emitter } from '../components/emitter';
 
 import UserAccount from '../components/User/Account/UserAccount';
 import UserProfile from '../components/User/Profile/UserProfile';
@@ -20,7 +21,7 @@ const UserPage = () => {
           setCurrentUserID(response.data);
         }
       } catch (error) {
-        console.error('Error fetching current user ID:', error);
+        emitter.emit("error", error);
       } finally {
         setLoading(false);
       }

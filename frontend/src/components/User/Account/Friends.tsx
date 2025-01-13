@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { emitter } from '../../emitter';
 
 interface FriendData {
   ID: number;
@@ -22,7 +23,7 @@ const Friends = () => {
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/friends/${token}`);
         setFriends(response.data);
       } catch (error) {
-        console.error('Error fetching friends:', error);
+        emitter.emit("error", error);
       } finally {
         setLoading(false);
       }
@@ -87,10 +88,24 @@ return (
                 <span style={{ flex: 1 }}>
                   <button
                     onClick={() => navigate(`/profile/${friend.ID}`)}
-                    className="btn btn-link p-0"
-                    style={{ textDecoration: 'none' }}>
+                    className="btn btn-link p-0 text-decoration-none"
+                    style={{
+                      fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
+                      color: 'white', // Default primary color
+                      textDecoration: 'none', // Remove underline
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--bs-primary)' // Change color on hover
+                      e.currentTarget.style.textDecoration = 'underline'; // Optional underline
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'white'; // Revert to primary color
+                      e.currentTarget.style.textDecoration = 'none'; // Remove underline
+                    }}
+                  >
                     {friend.username}
                   </button>
+
                   </span>
               </div>
               <span className={`badge ${getStatusClass(friend.status)} ms-auto`}>

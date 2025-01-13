@@ -34,11 +34,24 @@ const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData
               <td>
                   <button
                     onClick={() => navigate(`/profile/${match.opponentID}`)}
-                    className="btn btn-link p-0"
-                    style={{ textDecoration: 'none' }}
+                    className="btn btn-link p-0 text-decoration-none"
+                    style={{
+                      fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
+                      color: 'white', // Default primary color
+                      textDecoration: 'none', // Remove underline
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--bs-primary)' // Change color on hover
+                      e.currentTarget.style.textDecoration = 'underline'; // Optional underline
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'white'; // Revert to primary color
+                      e.currentTarget.style.textDecoration = 'none'; // Remove underline
+                    }}
                   >
                     {match.opponent}
                   </button>
+
                 </td>
             </tr>
           ))}

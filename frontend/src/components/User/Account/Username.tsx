@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
+import { emitter } from '../../emitter';
 
 interface UsernameProps {
   currentUsername: string;
@@ -51,8 +52,7 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
       setUploadStatus('success');
       onUsernameUpdate(tempUsername); // Notify parent of the username change
     } catch (error) {
-      console.error('Error updating username:', error);
-      if (error.response && error.response.data && error.response.data.message) {
+      if (error?.response?.data?.message) {
         setValidationMessage(error.response.data.message); // Display backend validation error
       }
       setUploadStatus('error');
@@ -69,7 +69,6 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
       setUploadStatus('success');
       onUsernameUpdate(previousUsername); // Notify parent to refresh
     } catch (error) {
-      console.error('Error resetting username:', error);
       setUploadStatus('error');
     }
   };

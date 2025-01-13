@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { emitter } from '../../emitter';
 
 const FriendActions = ({ targetUserID }: { targetUserID: number }) => {
   const [isFriend, setIsFriend] = useState<boolean | null>(null);
@@ -9,12 +10,10 @@ const FriendActions = ({ targetUserID }: { targetUserID: number }) => {
     const fetchFriendshipStatus = async () => {
       try {
         const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(
-          `${process.env.REACT_APP_URL_BACKEND}/user/${targetUserID}/friend/${token}`
-        );
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${targetUserID}/friend/${token}`);
         setIsFriend(response.data.isFriend);
       } catch (error) {
-        console.error('Error fetching friendship status:', error);
+        emitter.emit("error", error);
       }
     };
 
@@ -32,7 +31,7 @@ const FriendActions = ({ targetUserID }: { targetUserID: number }) => {
       const token = localStorage.getItem('authenticationToken');
       await axios.patch(`${process.env.REACT_APP_URL_BACKEND}/user/${targetUserID}/friend/${token}`);
     } catch (error) {
-      console.error('Error toggling friendship:', error);
+      emitter.emit("error", error);
       setIsFriend(previousState);
     } finally {
       setLoading(false);

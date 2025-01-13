@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { emitter } from '../../emitter';
 
 import { disableTwoFactor } from '../../Utils/apiCalls';
 
@@ -24,6 +25,7 @@ const Toggle2FA = ({ twoFactorAuthenticationEnabled }: { twoFactorAuthentication
       alert('Two-factor authentication has been disabled successfully.');
     } catch (error) {
       console.error('Error while disabling 2FA:', error);
+      emitter.emit("error", error);
     }
   };
 
