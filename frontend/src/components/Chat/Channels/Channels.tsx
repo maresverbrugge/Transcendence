@@ -9,7 +9,7 @@ import AlertMessage from '../../AlertMessage';
 import NewChannel from './NewChannel';
 import NewDM from './NewDM';
 import { ChannelData, MemberData } from '../interfaces';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface ChannelsProps {
   selectedChannelID: number | null;
@@ -28,7 +28,7 @@ const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await axios.get<ChannelData[]>(`http://localhost:3001/chat/channel/all/${token}`);
+        const response = await axios.get<ChannelData[]>(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/all/${token}`);
         setChannels(response.data);
         if (selectedChannelID && !response.data.some((channel) => channel.ID === selectedChannelID)) {
           emitter.emit('selectChannel', null)
@@ -81,7 +81,7 @@ const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
 
   const handlePasswordSubmit = async (password: string) => {
     try {
-      const response = await axios.post(`http://localhost:3001/chat/channel/${selectedChannelForPassword}/verify-password`, { password })
+      const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${selectedChannelForPassword}/verify-password`, { password })
       if (response.status ===  200) {
         emitter.emit('selectChannel', selectedChannelForPassword);
         setPasswordPromptVisible(false);

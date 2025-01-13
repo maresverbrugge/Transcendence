@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors, Inject, forwardRef } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
 import { UsernameValidationPipe } from './pipes/username-validation.pipe';
@@ -20,7 +20,9 @@ import { LoginService } from '../authentication/login/login.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService,
+  constructor(
+    private readonly userService: UserService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService
   ) {}
 

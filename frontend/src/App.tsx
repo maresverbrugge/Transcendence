@@ -9,10 +9,12 @@ import ProtectedRoute from './components/Authentication/ProtectedRoute';
 import LogOut from './components/Authentication/LogOut';
 import UserPage from './pages/UserPage';
 import Chat from './pages/Chat';
+import ErrorHandler from './components/ErrorHandler';
 import Leaderboard from './components/User/Shared/Leaderboard';
 
 const App = () => (
   <Router>
+	<ErrorHandler/>
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login/redirect" element={<LoginRedirect />} />
