@@ -20,21 +20,44 @@ const AlertMessage = ({ message, onClose }: AlertMessageProps) => {
   }, []);
 
   return (
-    <div className="alert-overlay">
-      <div
-        className="alert-box"
-        ref={alertBoxRef}
-        tabIndex={0} // Makes the div focusable
-        onKeyDown={handleKeyDown}
-        role="alertdialog" // Improves accessibility
-        aria-label="Alert message" // Screen reader description
-        aria-describedby="alert-message"
-      >
-        <p id="alert-message">{message}</p>
-        <button onClick={onClose}>OK</button>
-      </div>
-    </div>
+    <>
+      {message && (
+        <>
+          {/* Transparent overlay */}
+          <div
+            className="alert-overlay"
+            onClick={onClose}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",  // Transparent black overlay
+              zIndex: 9998,  // Ensure it's below the alert box
+            }}
+          />
+          {/* Alert box */}
+          <div 
+            className="alert alert-dismissible alert-warning"
+            style={{
+              zIndex: 9999,  // Ensure it's above the overlay
+            }}
+          >
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="Close"
+              onClick={onClose}
+            />
+            <h4 className="alert-heading">Alert!</h4>
+            <p className="mb-0">{message}</p>
+          </div>
+        </>
+      )}
+    </>
   );
+  
 };
 
 export default AlertMessage;

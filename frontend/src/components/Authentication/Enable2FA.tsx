@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls';
 
 const Enable2FA = () => {
@@ -11,7 +12,7 @@ const Enable2FA = () => {
 
   useEffect(() => {
     if (navigateToAccount) {
-      navigate('/account');
+      navigate('/profile');
     }
   }, [navigateToAccount, navigate]);
 
@@ -26,7 +27,7 @@ const Enable2FA = () => {
       const verified = response.data;
       if (!verified) throw new Error('Invalid one-time password');
       await enableTwoFactor(token);
-      navigate('/account');
+      navigate('/profile');
     } catch (error) {
       console.error('Error verifying one-time password:', error);
       setErrorMessage('Error verifying one-time password. Please try again.');

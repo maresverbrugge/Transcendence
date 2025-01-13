@@ -6,7 +6,7 @@ import { ChannelData, MemberData } from '../interfaces';
 import Channel from './Channel';
 import DM from './DM';
 import axios from 'axios';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 
 interface ChannelInfoProps {
@@ -30,7 +30,8 @@ const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
     const fetchChannelInfo = async () => {
       setLoading(true);
       try {
-        const response = await axios.get<ChannelData>(`http://localhost:3001/chat/channel/${channelID}`);
+        const token = localStorage.getItem('authenticationToken');
+        const response = await axios.get<ChannelData>(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${channelID}/${token}`);
         setChannel(response.data);
       } catch (error) {
         emitter.emit('error', error);
@@ -53,7 +54,10 @@ const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
   return (
     <div className="channel-info">
       {channel.isDM ? (
-        <DM channel={channel} />
+        <DM
+          channelID={channel.ID}
+          socket={socket}
+        />
       ) : (
         <Channel
           channel={channel}

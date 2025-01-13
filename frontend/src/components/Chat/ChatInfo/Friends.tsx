@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import { MemberData } from '../interfaces';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface FriendProps {
   key: number;
@@ -56,7 +56,7 @@ const Friends = ({ friends, setFriends, socket }: FriendsProps) => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/chat/friends/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/chat/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
         emitter.emit('error', error);

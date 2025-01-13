@@ -1,20 +1,24 @@
-import { Injectable, InternalServerErrorException, NotFoundException, HttpException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { UserService } from '../../user/user.service';
-import { ChatGateway } from '../chat.gateway';
+import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GatewayService } from '../gateway/gateway.service';
 
 @Injectable()
 export class BlockedUserService {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService,
-    private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => LoginService))
+    private readonly loginService: LoginService,
+    @Inject(forwardRef(() => GatewayService))
+    private readonly gatewayService: GatewayService,
+    private readonly errorHandlingservice: ErrorHandlingService,
   ) {}
 
   async getBlockedUserIDsByToken(token: string): Promise<number[]> {
     try {
-      const userID = await this.userService.getUserIDByToken(token);
+      const userID = await this.loginService.getUserIDFromCache(token);
       const user = await this.prisma.user.findUnique({
         where: { ID: userID },
         select: { blockedUsers: { select: { blockedID: true } } },
@@ -24,8 +28,7 @@ export class BlockedUserService {
         return blockedUser.blockedID;
       });
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('An unexpected error accurred', error.message);
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -38,7 +41,7 @@ export class BlockedUserService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException('Failed to block user', error.message);
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -59,16 +62,15 @@ export class BlockedUserService {
         },
       });
     } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('Failed to unblock user', error.message);
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
   async blockUnblock(targetUserID: number, token: string, action: 'block' | 'unblock'): Promise<void> {
-    const userID = await this.userService.getUserIDByToken(token);
+    const userID = await this.loginService.getUserIDFromCache(token);
     if (action === 'block') await this.block(targetUserID, userID);
     else await this.unblock(targetUserID, userID);
-    const socket = await this.chatGateway.getWebSocketByUserID(userID);
-    if (socket) this.chatGateway.emitToSocket('reloadMessages', socket)
+    const socket = await this.gatewayService.getWebSocketByUserID(userID);
+    if (socket && socket.connected) this.gatewayService.emitToSocket('reloadMessages', socket)
   }
 }

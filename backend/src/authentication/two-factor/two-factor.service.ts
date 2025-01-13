@@ -7,14 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TwoFactorService {
   constructor(private prisma: PrismaService) {}
 
-  async getQRCode(intraUsername: string): Promise<any> {
+  async getQRCode(userID: number): Promise<any> {
     try {
       const secret = speakeasy.generateSecret({
         name: 'Transcendancing Queens',
       });
       const dataURL = await qrcode.toDataURL(secret.otpauth_url);
       await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: { secretKey: secret.ascii },
       });
       return dataURL;
@@ -56,10 +56,10 @@ export class TwoFactorService {
     }
   }
 
-  async enableTwoFactor(intraUsername: string): Promise<void> {
+  async enableTwoFactor(userID: number): Promise<void> {
     try {
       await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: { Enabled2FA: true },
       });
     } catch (error) {
@@ -67,10 +67,10 @@ export class TwoFactorService {
     }
   }
 
-  async disableTwoFactor(intraUsername: string): Promise<void> {
+  async disableTwoFactor(userID: number): Promise<void> {
     try {
       await this.prisma.user.update({
-        where: { intraUsername: intraUsername },
+        where: { ID: userID },
         data: {
           secretKey: null,
           Enabled2FA: false,
