@@ -65,7 +65,7 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
 
       try {
         const token = localStorage.getItem('authenticationToken');
-        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/avatar${token}`, formData, {
+        await axios.post(`${process.env.REACT_APP_URL_BACKEND}/user/avatar/${token}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -87,19 +87,18 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
   const isDefaultAvatar = avatarURL === `${process.env.REACT_APP_URL_BACKEND}/images/default-avatar.png`;
 
   return (
-    <div className="avatar-component d-flex flex-column align-items-center">
+    <div className="avatar-component d-flex flex-column align-items-center p-2">
       {/* Avatar Display */}
       <img
         src={previewURL || avatarURL}
         alt={`${username}'s Avatar`}
         className="rounded-circle mb-3"
         style={{
-          width: '120px',
-          height: '120px',
+          width: '10vw',
+          height: '10vw',
           objectFit: previewURL ? 'cover' : isDefaultAvatar ? 'contain' : 'cover',
           backgroundColor: isDefaultAvatar ? '#f8f9fa' : 'transparent',
-          padding: isDefaultAvatar ? '5px' : '0',
-          boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+          padding: isDefaultAvatar ? '2%' : '0',
         }}
       />
 
@@ -109,19 +108,19 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
       {uploadStatus === 'error' && <p className="text-danger mb-2">Upload failed. Try again.</p>}
 
       {/* File Input */}
-      <form onSubmit={handleSubmit} className="text-center">
-        <label className="btn btn-outline-primary btn-sm mb-2">
-          Pick New Avatar
+      <form onSubmit={handleSubmit} className="text-center  w-100">
+        <label className="btn btn-outline-primary btn-lg w-100 mb-2">
+          Choose New Avatar
           <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" hidden />
         </label>
 
         {/* Conditional Buttons */}
         {previewURL && buttonVisible && (
-          <div className="mt-2">
-            <button type="button" className="btn btn-danger btn-sm me-2" onClick={handleCancel}>
+          <div className="d-flex justify-content-center gap-2 mt-2">
+            <button type="button" className="btn btn-danger btn-lg" onClick={handleCancel}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-warning btn-sm">
+            <button type="submit" className="btn btn-warning btn-lg">
               Upload Avatar
             </button>
           </div>
