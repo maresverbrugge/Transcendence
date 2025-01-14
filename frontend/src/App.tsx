@@ -9,10 +9,13 @@ import ProtectedRoute from './components/Authentication/ProtectedRoute';
 import LogOut from './components/Authentication/LogOut';
 import UserPage from './pages/UserPage';
 import Chat from './pages/Chat';
-import Leaderboard from './components/User/Shared/Leaderboard';
+import ErrorHandler from './components/ErrorHandler';
+import LeaderboardPage
+from './pages/LeaderboardPage';
 
 const App = () => (
   <Router>
+	<ErrorHandler/>
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login/redirect" element={<LoginRedirect />} />
@@ -23,7 +26,7 @@ const App = () => (
       <Route path="/profile" element={<ProtectedRoute element={<UserPage />} />} />
       <Route path="/profile/:userID" element={<ProtectedRoute element={<UserPage />} />} />
       <Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-      <Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />
+      <Route path="/leaderboard/" element={<ProtectedRoute element={<LeaderboardPage />} />} />
     </Routes>
   </Router>
 );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { emitter } from '../emitter';
+import { emitter } from '../../emitter';
 
 interface BlockButtonProps {
   userID: number;
@@ -18,7 +18,7 @@ const BlockButton = ({ userID, blockedUserIDs }: BlockButtonProps) => {
   const handleToggleBlock = async () => {
     const action = isBlocked ? 'unblock' : 'block';
     try {
-      await axios.post(`http://localhost:3001/chat/blockedUser/${token}/${action}`, { userID });
+      await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/blockedUser/${token}/${action}`, { userID });
       setIsBlocked(!isBlocked);
     } catch (error) {
       emitter.emit('error', error);

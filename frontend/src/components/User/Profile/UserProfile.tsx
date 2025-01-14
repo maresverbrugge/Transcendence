@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { emitter } from '../../emitter';
 import GoBackButton from '../../GoBackButton';
 import NameAvatarStatus from './NameAvatarStatus';
 import FriendActions from './FriendActions';
@@ -26,7 +26,7 @@ const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
         // console.log("User data UserProfile fetched: ", response.data); // for testing, remove later
         setUserData(response.data);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        emitter.emit("error", error);
       } finally {
         setLoading(false);
       }

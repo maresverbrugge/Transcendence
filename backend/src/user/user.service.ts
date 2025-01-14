@@ -1,5 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, HttpCode } from '@nestjs/common';
-import { Socket, Namespace } from 'socket.io';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { LoginService } from '../authentication/login/login.service';
@@ -8,7 +7,6 @@ import {
   UserAccount,
   UserProfile,
   UserFriend,
-  UploadedFileType,
   StatisticsData,
   LeaderboardData,
   LeaderboardEntry,
@@ -21,6 +19,7 @@ import {
 export class UserService {
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}

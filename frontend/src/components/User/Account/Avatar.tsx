@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { emitter } from '../../emitter';
 
 interface AvatarProps {
   username: string;
@@ -77,11 +78,8 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
         setSelectedFile(null);
         setUploadStatus('success');
       } catch (error) {
+        emitter.emit("error", error);
         setUploadStatus('error');
-        if (error.response?.data?.message) {
-          alert(error.response.data.message);
-        }
-        console.error('Error uploading avatar:', error);
       }
     }
   };

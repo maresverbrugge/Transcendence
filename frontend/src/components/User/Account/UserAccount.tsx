@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { emitter } from '../../emitter';
 import GoBackButton from '../../GoBackButton';
 import Username from './Username';
 import Avatar from './Avatar';
@@ -29,7 +29,7 @@ const UserAccount = () => {
         // console.log('User data UserAccount fetched:', response.data); // for testing, remove later
         setUserData(response.data);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        emitter.emit("error", error);
       } finally {
         setLoading(false);
       }
@@ -90,7 +90,7 @@ const UserAccount = () => {
           </div>
           <div className="card shadow mb-4">
             <div className="card-body">
-              <LogOutButton />
+              <LogOutButton buttonStyle="btn-outline-danger" />
             </div>
           </div>
         </div>
