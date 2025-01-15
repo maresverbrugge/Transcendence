@@ -79,10 +79,6 @@ import { LoginService } from 'src/authentication/login/login.service';
 			let token = client.handshake.query.token;
 			if (Array.isArray(token)) token = token[0];
 			const userID = await this.loginService.getUserIDFromCache(token);
-			const user = await this.prismaService.user.findUnique({where: {ID: userID}, select: {ID: true}});
-			if (!user) {
-			  throw new NotFoundException('User not found')
-			}
 			await this.prismaService.user.update({where: {ID: userID}, data: {websocketID: client.id}})
 		  } catch (error) {
 			// this.errorHandlingService.emitHttpException(error, client);
@@ -98,7 +94,6 @@ import { LoginService } from 'src/authentication/login/login.service';
 			await this.prismaService.user.update({
 			  where: { ID: user.ID },
 			  data: { websocketID: null, status: UserStatus.ONLINE },
-			  select: {ID: true},
 			});
 		  } catch (error) {
 			// this.errorHandlingService.emitHttpException(error, client);

@@ -209,9 +209,13 @@ const GameLogic = ({ socket, skin, token }) => {
 			setGameID(gameID);
 			g_gameID = gameID;
 			socket.emit('start', gameID);
-			g_gameID = gameID;
+			// socket.emit('updateSocket', token, gameID);
+			// setTimeout(() => {
+			// 	socket.emit('start', gameID);
+			//   }, 2000);
 		  });
 		socket.on('ballSpeedY', (speed: string) => {
+			console.log(speed)
 		  ball.speedY = parseInt(speed);
 		});
 		socket.on('ballSpeedX', (speed: string) => {

@@ -43,26 +43,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
-	console.log('getting gameID')
 	try {
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
-		console.log(memberID)
-		return this.gameService.getGameID(memberID);
-		// const user = await this.prisma.user.findUnique({
-		// 	where: {
-		// 		ID: memberID,
-		// 	},
-		// 	select: {
-		// 		matches: {
-		// 			select: {
-		// 				matchID: true,
-		// 				status: true,
-		// 			}
-		// 		}
-		// 	}
-		// });
-		// const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
-		// client.emit('gameID', game.matchID);
+		const gameID: number = this.gameService.getGameID(memberID);
+		client.emit('gameID', gameID);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
 		console.error(error);
@@ -70,8 +54,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
   }
 
+
+  @SubscribeMessage('updateSocket')
+  async handleUpdateSocket(client: Socket, token: string, gameID: number) {
+	this.gameService.updateSocket(gameID, token, client.id);
+  }
+
   @SubscribeMessage('start')
   handleGameStart(client: Socket, gameID: number) {
+	console.log(gameID)
     this.gameService.handleStart(gameID, this.server);
   }
 
@@ -106,23 +97,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('done')
-  async handleGameEnd(client: Socket, gameID: number) {
-	try {
-		await this.prisma.match.update({
-			where: {
-			  matchID: gameID,
-			},
-			data: {
-			  status: MatchStatus.FINISHED,
-			  updatedAt: new Date(),
-			},
-		  });
-		this.gameService.handleEnd(gameID);
-	} catch (error) {
-		console.error("couldn't save game to the database, too bad");
-		console.error(error);
-		client.emit('error');
-	}
+  handleGameEnd(client: Socket, gameID: number) {
+	this.gameService.handleEnd(gameID, client);
   }
 
   afterInit(server: Namespace) {

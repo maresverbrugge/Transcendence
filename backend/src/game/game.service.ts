@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Namespace } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { User, Match } from '@prisma/client';
+import { User, Match, MatchStatus } from '@prisma/client';
 import { LoginService } from 'src/authentication/login/login.service';
 
 interface MatchInstance
@@ -18,7 +18,6 @@ interface MatchInstance
   paddleleftspeedy: number,
   scoreLeft: number,
   scoreRight: number,
-  finished: boolean,
 }
 
 @Injectable()
@@ -62,7 +61,7 @@ export class GameService {
 				  },
 			  },
 		});
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, finished: false});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0});
 		console.log(this.matches)
 		return newGame;
 	} catch (error) {
@@ -71,15 +70,25 @@ export class GameService {
 	}
   }
 
+  async updateSocket(gameID: number, token: string, socketid: string) {
+	var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	const memberID: number = await this.loginService.getUserIDFromCache(token);
+	console.log(socketid)
+	// if (game.leftPlayerID === memberID)
+	// 	game.leftSocketID = socketid;
+	// else if (game.rightPlayerID === memberID)
+	// 	game.rightSocketID = socketid;
+  }
+
   getGameID(playerID: number): number {
 	var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
-	console.log(game.ID)
 	return game.ID;
   }
 
   handleStart(gameID: number, server: Namespace) {
 	console.log(gameID)
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	console.log(game)
 	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 	game.ballspeedx = 5;
 	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
@@ -140,15 +149,26 @@ export class GameService {
     }
   }
 
-  handleEnd(gameID: number): void {
-    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-    game.ballspeedy = 0;
-    game.ballspeedx = 0;
-	game.paddleleftspeedy = 0;
-	game.paddlerightspeedy = 0;
-	setTimeout(() => {
-		const index = this.matches.indexOf(game);
-		this.matches.splice(index, 1);
-	  }, 2000);
+  async handleEnd(gameID: number, client: Socket): Promise<void> {
+	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	  try {
+		  await this.prisma.match.update({
+			  where: {
+				  matchID: gameID,
+				},
+				data: {
+					status: MatchStatus.FINISHED,
+					updatedAt: new Date(),
+					scoreLeft: game.scoreLeft,
+					scoreRight: game.scoreRight,
+				},
+			});
+		} catch (error) {
+			console.error("couldn't save game to the database, too bad");
+			console.error(error);
+			client.emit('error');
+		}
+	const index = this.matches.indexOf(game);
+	this.matches.splice(index, 1);
   }
 }
