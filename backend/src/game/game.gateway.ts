@@ -8,7 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Socket, Namespace } from 'socket.io';
+import { Socket, Server, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { User, UserStatus, Match, MatchStatus } from '@prisma/client';
@@ -31,7 +31,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	private readonly loginService: LoginService
   ) {}
 
-  @WebSocketServer() server: Namespace;
+  @WebSocketServer() server: Server;
   private logger: Logger = new Logger('GameGateway');
 
   // @SubscribeMessage('message')

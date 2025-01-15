@@ -86,7 +86,6 @@ export class GameService {
   }
 
   handleStart(gameID: number, server: Namespace) {
-	console.log(gameID)
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	console.log(game)
 	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
