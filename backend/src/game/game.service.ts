@@ -87,9 +87,10 @@ export class GameService {
 
   handleStart(gameID: number, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	console.log(game)
 	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 	game.ballspeedx = 5;
+	console.log(game.leftSocketID)
+	console.log(game.rightSocketID)
 	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
 	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedX', game.ballspeedx);
   }

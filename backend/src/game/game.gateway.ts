@@ -34,13 +34,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('GameGateway');
 
-  // @SubscribeMessage('message')
-  // handleMessage(@MessageBody() data: { sender: string; message: string }) {
-  //   this.logger.log(`Message received from ${data.sender}: ${data.message}`);
-  //   // Broadcast the message to all connected clients
-  //   this.server.emit('message', data);
-  // }
-
   @SubscribeMessage('getGameID')
   async handleGetGameID(client: Socket, token: string) {
 	try {
@@ -57,7 +50,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('updateSocket')
   async handleUpdateSocket(client: Socket, token: string, gameID: number) {
-	this.gameService.updateSocket(gameID, token, client.id);
+	await this.gameService.updateSocket(gameID, token, client.id);
+	client.join(client.id);
   }
 
   @SubscribeMessage('start')
@@ -107,6 +101,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket): Promise<void> {
     try {
+	console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
       const userID = await this.loginService.getUserIDFromCache(token);
