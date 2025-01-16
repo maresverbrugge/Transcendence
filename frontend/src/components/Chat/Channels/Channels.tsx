@@ -3,22 +3,39 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import PasswordPrompt from './PasswordPrompt';
 
-import AlertMessage from '../../AlertMessage';
-import NewChannel from './NewChannel';
-import NewDM from './NewDM';
 import { ChannelData, MemberData } from '../interfaces';
 import { emitter } from '../../emitter';
 
 interface ChannelsProps {
   selectedChannelID: number | null;
-  friends: MemberData[];
   socket: Socket;
 }
 
-const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
+interface ChannelListItemProps {
+  channel: ChannelData;
+  handleClickChannel: (channelID: number) => void;
+  unreadCounts: number;
+}
+
+const ChannelListItem = ({ channel, handleClickChannel, unreadCounts}: ChannelListItemProps) => {
+  return (
+    <li key={channel.ID} className="list-group-item d-flex justify-content-between align-items-center">
+      <button
+        className="btn btn-link text-decoration-none p-0"
+        onClick={() => handleClickChannel(channel.ID)}
+      >
+        {channel.name || `Channel ${channel.ID}`}
+      </button>
+      {unreadCounts > 0 && (
+        <span className="badge bg-primary rounded-pill">{unreadCounts}</span>
+      )}
+    </li>
+  )
+}
+
+const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
-  const [showBannedAlert, setShowBannedAlert] = useState<string | null>(null);
   const [passwordPromptVisible, setPasswordPromptVisible] = useState<boolean>(false);
   const [selectedChannelForPassword, setSelectedChannelForPassword] = useState<number | null>(null);
   const token = localStorage.getItem('authenticationToken');
@@ -63,8 +80,6 @@ const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
     };
   }, [selectedChannelID, socket]);
 
-  const handleCloseBannedAlert = () => setShowBannedAlert(null);
-
   const handleClickChannel = (channelID: number) => {
     var channel = channels.find((ch) => ch.ID === channelID);
     if (channelID === selectedChannelID) channel = null;
@@ -92,73 +107,75 @@ const Channels = ({ selectedChannelID, friends, socket }: ChannelsProps) => {
   };
 
   return (
-    <div className="channels-container">
-      {showBannedAlert && <AlertMessage message={showBannedAlert} onClose={handleCloseBannedAlert} />}
+    <div className="col-md-3">
+      <div className="card shadow h-100">
+        <div className="card-body p-2">
+          <div className="d-flex flex-column h-100">
 
-      <div className="channels-list">
-        <h2>Available Channels</h2>
+            {/* Top Section */}
+            <div>
+              <h2>Available Channels</h2>
+            </div>
+        
+            {/* Public Channels */}
+            <div className="flex-grow-1">
+              {channels.some((channel) => !channel.isPrivate) && (
+                <div className="mb-4">
+                  <h3>Public Channels</h3>
+                  <ul className="list-group">
+                    {channels
+                      .filter((channel) => !channel.isPrivate)
+                      .map((channel) => (
+                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
+                      ))}
+                  </ul>
+                </div>
+              )}
 
-        {channels.some((channel) => !channel.isPrivate) && (
-          <>
-            <h3>Public</h3>
-            <ul>
-              {channels
-                .filter((channel) => !channel.isPrivate)
-                .map((channel) => (
-                  <li key={channel.ID}>
-                    <button onClick={() => handleClickChannel(channel.ID)}>
-                      {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
-                    </button>
-                  </li>
-                ))}
-            </ul>
-          </>
-        )}
+              {/* Private Channels */}
+              {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
+                <div className="mb-4">
+                  <h3>Private Channels</h3>
+                  <ul className="list-group">
+                    {channels
+                      .filter((channel) => channel.isPrivate && !channel.isDM)
+                      .map((channel) => (
+                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
+                      ))}
+                  </ul>
+                </div>
+              )}
+        
+              {/* Direct Messages */}
+              {channels.some((channel) => channel.isDM) && (
+                <div className="mb-4">
+                  <h3>Direct Messages</h3>
+                  <ul className="list-group">
+                    {channels
+                      .filter((channel) => channel.isDM)
+                      .map((channel) => (
+                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
+                      ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+        
+            {/* Create New Channel Button */}
+            <button type="button" className="btn btn-success" onClick={() => emitter.emit('createChannel')}>
+              New Channel
+            </button>
+        
+            {/* Password Prompt */}
+            {passwordPromptVisible && (
+              <PasswordPrompt onClose={() => setPasswordPromptVisible(false)} onSubmit={handlePasswordSubmit} />
+            )}
 
-        {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
-          <>
-            <h3>Private</h3>
-            <ul>
-              {channels
-                .filter((channel) => channel.isPrivate && !channel.isDM)
-                .map((channel) => (
-                  <li key={channel.ID}>
-                    <button onClick={() => handleClickChannel(channel.ID)}>
-                      {channel.name || `Channel ${channel.ID}`}
-                      {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
-                    </button>
-                  </li>
-                ))}
-            </ul>
-          </>
-        )}
-
-        <NewChannel friends={friends} socket={socket} />
+          </div>
+        </div>
       </div>
-
-      <div className="direct-messages">
-        <h2>Direct Messages</h2>
-        <ul>
-          {channels
-            .filter((channel) => channel.isDM)
-            .map((channel) => (
-              <li key={channel.ID}>
-                <button onClick={() => handleClickChannel(channel.ID)}>
-                  {channel.name || `Channel ${channel.ID}`}
-                  {unreadCounts[channel.ID] > 0 && ` (${unreadCounts[channel.ID]} unread messages)`}
-                </button>
-              </li>
-            ))}
-        </ul>
-        <NewDM friends={friends} socket={socket} />
-      </div>
-
-      {passwordPromptVisible && (
-        <PasswordPrompt onClose={() => setPasswordPromptVisible(false)} onSubmit={handlePasswordSubmit} />
-      )}
     </div>
-  );
+  );  
 };
 
 export default Channels;

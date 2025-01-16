@@ -84,7 +84,7 @@ export class MessageService {
         join: `${username} has joined the channel.`,
         leave: `${username} has left the channel.`,
       };
-      return this.prisma.message.create({
+      return await this.prisma.message.create({
         data: {
           content: actionMessageMap[action],
           senderName: 'actionLog',

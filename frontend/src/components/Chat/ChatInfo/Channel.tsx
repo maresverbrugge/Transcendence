@@ -16,7 +16,7 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
 
   useEffect(() => {
     const handleDisconnect = () => {
-      if (channel) {
+      if (channel && !channel.isPrivate) {
         socket.emit('leaveChannel', { channelID: channel.ID, token });
       }
     };

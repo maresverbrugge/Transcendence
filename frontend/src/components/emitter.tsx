@@ -5,6 +5,7 @@ type Events = {
   error: any;
   alert: string;
   acceptGameInvite: void;
+  createChannel: void;
 };
 
 export const emitter = mitt<Events>();
