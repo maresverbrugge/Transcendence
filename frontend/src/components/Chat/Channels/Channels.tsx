@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-import PasswordPrompt from './PasswordPrompt';
 
-import { ChannelData, MemberData } from '../interfaces';
+import { ChannelData } from '../interfaces';
 import { emitter } from '../../emitter';
 
 interface ChannelsProps {
@@ -19,9 +18,9 @@ interface ChannelListItemProps {
 
 const ChannelListItem = ({ channel, handleClickChannel, unreadCounts}: ChannelListItemProps) => {
   return (
-    <li key={channel.ID} className="list-group-item d-flex justify-content-between align-items-center">
+    <li key={channel.ID} className="list-group-item align-items-center p-1">
       <button
-        className="btn btn-link text-decoration-none p-0"
+        className="btn btn-link text-decoration-none p-1 pt-0 pb-0"
         onClick={() => handleClickChannel(channel.ID)}
       >
         {channel.name || `Channel ${channel.ID}`}
@@ -36,8 +35,6 @@ const ChannelListItem = ({ channel, handleClickChannel, unreadCounts}: ChannelLi
 const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
   const [channels, setChannels] = useState<ChannelData[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
-  const [passwordPromptVisible, setPasswordPromptVisible] = useState<boolean>(false);
-  const [selectedChannelForPassword, setSelectedChannelForPassword] = useState<number | null>(null);
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
@@ -84,98 +81,100 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
     var channel = channels.find((ch) => ch.ID === channelID);
     if (channelID === selectedChannelID) channel = null;
     if (channel?.passwordEnabled) {
-      setSelectedChannelForPassword(channelID);
-      setPasswordPromptVisible(true);
+      emitter.emit('showPasswordPrompt', channelID);
     }
     else {
       emitter.emit('selectChannel', channel ? channel.ID : null);
     }
   };
 
-  const handlePasswordSubmit = async (password: string) => {
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${selectedChannelForPassword}/verify-password`, { password })
-      if (response.status ===  200) {
-        emitter.emit('selectChannel', selectedChannelForPassword);
-        setPasswordPromptVisible(false);
-      } else {
-        emitter.emit('alert', 'Incorrect password');
-      }
-    } catch (error) {
-      emitter.emit('error', error);
-    }
-  };
-
   return (
-    <div className="col-md-3">
-      <div className="card shadow h-100">
-        <div className="card-body p-2">
-          <div className="d-flex flex-column h-100">
+    <div
+      className="col-md-3 card shadow h-100"
+      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      <div className="card-body p-0 pt-3 pb-3" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-            {/* Top Section */}
-            <div>
-              <h2>Available Channels</h2>
-            </div>
-        
+          {/* Top Section */}
+          <div className="mb-3 text-center">
+            <h2>Available Channels</h2>
+          </div>
+
+          {/* Scrollable Lists */}
+          <div style={{ flexGrow: 1, overflowY: 'auto'}}>
             {/* Public Channels */}
-            <div className="flex-grow-1">
-              {channels.some((channel) => !channel.isPrivate) && (
-                <div className="mb-4">
-                  <h3>Public Channels</h3>
-                  <ul className="list-group">
-                    {channels
-                      .filter((channel) => !channel.isPrivate)
-                      .map((channel) => (
-                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
-                      ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Private Channels */}
-              {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
-                <div className="mb-4">
-                  <h3>Private Channels</h3>
-                  <ul className="list-group">
-                    {channels
-                      .filter((channel) => channel.isPrivate && !channel.isDM)
-                      .map((channel) => (
-                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
-                      ))}
-                  </ul>
-                </div>
-              )}
-        
-              {/* Direct Messages */}
-              {channels.some((channel) => channel.isDM) && (
-                <div className="mb-4">
-                  <h3>Direct Messages</h3>
-                  <ul className="list-group">
-                    {channels
-                      .filter((channel) => channel.isDM)
-                      .map((channel) => (
-                        <ChannelListItem channel={channel} handleClickChannel={handleClickChannel} unreadCounts={unreadCounts[channel.ID]} />
-                      ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-        
-            {/* Create New Channel Button */}
-            <button type="button" className="btn btn-success" onClick={() => emitter.emit('createChannel')}>
-              New Channel
-            </button>
-        
-            {/* Password Prompt */}
-            {passwordPromptVisible && (
-              <PasswordPrompt onClose={() => setPasswordPromptVisible(false)} onSubmit={handlePasswordSubmit} />
+            {channels.some((channel) => !channel.isPrivate) && (
+              <div className="mb-3 text-center">
+                <h3>Public Channels</h3>
+                <ul className="list-group">
+                  {channels
+                    .filter((channel) => !channel.isPrivate)
+                    .map((channel) => (
+                      <ChannelListItem
+                        key={channel.ID}
+                        channel={channel}
+                        handleClickChannel={handleClickChannel}
+                        unreadCounts={unreadCounts[channel.ID]}
+                      />
+                    ))}
+                </ul>
+              </div>
             )}
 
+            {/* Private Channels */}
+            {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
+              <div className="mb-3 text-center">
+                <h3>Private Channels</h3>
+                <ul className="list-group">
+                  {channels
+                    .filter((channel) => channel.isPrivate && !channel.isDM)
+                    .map((channel) => (
+                      <ChannelListItem
+                        key={channel.ID}
+                        channel={channel}
+                        handleClickChannel={handleClickChannel}
+                        unreadCounts={unreadCounts[channel.ID]}
+                      />
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Direct Messages */}
+            {channels.some((channel) => channel.isDM) && (
+              <div className="mb-3 text-center">
+                <h3>Direct Messages</h3>
+                <ul className="list-group">
+                  {channels
+                    .filter((channel) => channel.isDM)
+                    .map((channel) => (
+                      <ChannelListItem
+                        key={channel.ID}
+                        channel={channel}
+                        handleClickChannel={handleClickChannel}
+                        unreadCounts={unreadCounts[channel.ID]}
+                      />
+                    ))}
+                </ul>
+              </div>
+            )}
           </div>
+
+          {/* Create New Channel Button */}
+
+          <button
+            type="button"
+            className="btn btn-success"
+            style={{ marginTop: 'auto' }}
+            onClick={() => emitter.emit('createChannel')}
+          >
+            New Channel
+          </button>
         </div>
       </div>
     </div>
-  );  
+  )
 };
 
 export default Channels;

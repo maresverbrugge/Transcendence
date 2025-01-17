@@ -48,8 +48,8 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
 
   return (
     <div className="channel-container">
-      <div className="channel-header">
-        <h2>Channel: {channel?.name}</h2>
+      <div className="channel-header text-center">
+        <h2>{(channel?.name) ? channel.name : `Channel ${channel?.ID}`}</h2>
         <ChannelMemberList
           channel={channel}
           friends={friends}

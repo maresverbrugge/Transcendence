@@ -10,6 +10,7 @@ import { emitter } from '../components/emitter';
 import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
 import GoBackButton from '../components/GoBackButton';
 import NewChannel from '../components/Chat/Channels/NewChannel';
+import PasswordPrompt from '../components/Chat/Channels/PasswordPrompt';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -67,38 +68,26 @@ const Chat = () => {
   if (!socket) return <p>Loading...</p>;
 
   return (
-    <div className="container my-5 h-100">
+    <div className="container pt-5">
       {/* Overlays */}
       <NewChannel friends={friends} socket={socket}/>
       <GoBackButton />
-      <ReceiveGameInvite socket={socket} />
-    <div className="row g-4" style={{ height: '90%' }}>
+      <ReceiveGameInvite socket={socket}/>
+      <PasswordPrompt/>
 
-    {/* Left Column */}
-        <Channels selectedChannelID={channelID} socket={socket} />
-  
+      <div className="row g-4" style={{ height: '87%' }}>
+        
+        {/* Left Column */}
+        <Channels selectedChannelID={channelID} socket={socket}/>
+    
         {/* Middle Column */}
-        <div className="col-md-6">
-          <div className="card shadow">
-            <div
-              className="card-body p-2"
-              style={{
-                minHeight: '150px', // Start small when empty
-                maxHeight: '100vh',  // Stop growing beyond this point
-                overflowY: 'auto',  // Enable scrolling if needed
-                paddingRight: '5px', // Optional: Avoid cutoff
-                paddingLeft: '5px',
-              }}
-            >
-              <Messenger channelID={channelID} socket={socket} />
-            </div>
-          </div>
-        </div>
-  
+      
+        <Messenger channelID={channelID} socket={socket} />
+
         {/* Right Column */}
         <div className="col-md-3">
           <div className="card shadow h-100">
-            <div className="card-body p-2">
+            <div className="card-body p-0 pt-3 pb-3">
               <ChatInfo
                 channelID={channelID}
                 friends={friends}
