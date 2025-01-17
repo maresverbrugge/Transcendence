@@ -31,7 +31,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	private readonly loginService: LoginService
   ) {}
 
-  @WebSocketServer() server: Server;
+  @WebSocketServer() server: Namespace;
   private logger: Logger = new Logger('GameGateway');
 
   @SubscribeMessage('getGameID')

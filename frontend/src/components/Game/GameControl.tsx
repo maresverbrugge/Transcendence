@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
+import './Game.css'
 
 let g_socket: Socket;
 let g_gameID: number;
@@ -151,6 +152,7 @@ const GameLogic = ({ socket, skin, token }) => {
 	const canvasRef = useRef(null);
 	const [context, setContext] = useState<any>(null);
 	const [gameID, setGameID] = useState<number>(-1);
+	const [theme, setTheme] = useState<string>('dark');
   const navigate = useNavigate();
   const canvas: any = React.useRef();
   const width: number = 500;
@@ -160,6 +162,8 @@ const GameLogic = ({ socket, skin, token }) => {
   g_token = token;
   const draw = (context, socket) => {
     context.clearRect(0, 0, width, height);
+	context.strokeStyle = theme === 'dark' ? 'white' : 'black';
+	context.fillStyle = theme === 'dark' ? 'white' : 'black';
     ball.move(width, height);
     ball.display();
     paddleLeft.display(height);
@@ -198,10 +202,6 @@ const GameLogic = ({ socket, skin, token }) => {
 	}
 	if (context)
 	{
-		context.strokeStyle = 'black';
-		context.font = '80 px Arial';
-		context.textAlign = 'center';
-		context.lineWidth = 1;
 		ball = new Ball(width / 2, height / 2, 50, context, gameID);
 		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
 		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
@@ -293,11 +293,16 @@ const GameLogic = ({ socket, skin, token }) => {
       socket.off('left down');
 	  window.removeEventListener("beforeunload", onBeforeUnload);
     };
-  }, [context]);
+  }, [context, theme]);
+
+  const toggleDarkMode = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   return (
-    <div>
-      <canvas ref={canvas} height="500" width="500" style={{ border: '1px solid black' }} />
+	  <div>
+      <canvas ref={canvas} height="500" width="500" className={theme} style={{ border: '1px solid black' }} />
+	  <button onClick={() => toggleDarkMode()}>{`switch up the colours`}</button>
     </div>
   );
 };
