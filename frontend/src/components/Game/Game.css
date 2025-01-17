@@ -18,3 +18,8 @@
 	stroke: white;
     background-color: #000000;
 }
+
+button {
+	left: 5;
+	top: 5;
+  }

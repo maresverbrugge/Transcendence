@@ -85,14 +85,16 @@ export class GameService {
 	return game.ID;
   }
 
-  handleStart(gameID: number, server: Namespace) {
+  async handleStart(gameID: number, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 	game.ballspeedx = 5;
-	console.log(game.leftSocketID)
-	console.log(game.rightSocketID)
-	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
-	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedX', game.ballspeedx);
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID);
+	console.log(socketLeft);
+	console.log(socketRight);
+	server.to(socketLeft).to(socketRight).emit('ballSpeedY', game.ballspeedy);
+	server.to(socketLeft).to(socketRight).emit('ballSpeedX', game.ballspeedx);
   }
 
   //detect if gamecontrol component unmounted while finished == false, then send a notification to the other player
