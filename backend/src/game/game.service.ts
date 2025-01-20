@@ -93,8 +93,8 @@ export class GameService {
 	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID);
 	console.log(socketLeft);
 	console.log(socketRight);
-	server.to(socketLeft).to(socketRight).emit('ballSpeedY', game.ballspeedy);
-	server.to(socketLeft).to(socketRight).emit('ballSpeedX', game.ballspeedx);
+	server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
+	server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
   }
 
   //detect if gamecontrol component unmounted while finished == false, then send a notification to the other player
