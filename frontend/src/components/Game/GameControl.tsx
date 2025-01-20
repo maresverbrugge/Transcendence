@@ -151,159 +151,83 @@ const GameLogic = ({ socket, skin, token }) => {
 	const canvasRef = useRef(null);
 	const [context, setContext] = useState<any>(null);
 	const [gameID, setGameID] = useState<number>(-1);
-	const [theme, setTheme] = useState<string>('dark');
-  const navigate = useNavigate();
-  const canvas: any = React.useRef();
-  const width: number = 500;
-  const height: number = 500;
-  let ball: Ball;
-  g_socket = socket;
-  g_token = token;
-  const draw = (context, socket) => {
-    context.clearRect(0, 0, width, height);
-	context.strokeStyle = theme === 'dark' ? 'white' : 'black';
-	context.fillStyle = theme === 'dark' ? 'white' : 'black';
-    ball.move(width, height);
-    ball.display();
-    paddleLeft.display(height);
-    paddleRight.display(height);
-    if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-      ball.speedX = -ball.speedX;
-	  socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
-    }
-    if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-      ball.speedX = -ball.speedX;
-	  socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
-    }
-    context.fillText(scoreRight, width / 2 + 30, 30); // Right side score
-    context.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
-    if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
-      socket.emit('done', g_gameID);
-      context.fillText("You've won, nice game!", width / 2, height / 2);
-      end = 1;
-      ball.x = width / 2;
-      ball.y = height / 2;
-      ball.speedX = 0;
-      ball.speedY = 0;
-	  setTimeout(() => {
-		navigate('/landingpage');
-	  }, 2000);
-    }
-  };
-
-  useEffect(() => {
-	let frameCount: number = 0;
-	let frameId: number;
-	const ctx: any = canvas.current.getContext('2d');
-
-	if (ctx) {
-	  setContext(ctx);
-	}
-	if (context)
-	{
-		ball = new Ball(width / 2, height / 2, 50, context, gameID);
-		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
-		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-		socket.on('gameID', (gameID: number) => {
-			setGameID(gameID);
-			g_gameID = gameID;
-			socket.emit('start', gameID);
-			// socket.emit('updateSocket', token, gameID);
-			// setTimeout(() => {
-			// 	socket.emit('start', gameID);
-			//   }, 2000);
-		  });
-		socket.on('ballSpeedY', (speed: string) => {
-			console.log(speed)
-		  ball.speedY = parseInt(speed);
-		});
-		socket.on('ballSpeedX', (speed: string) => {
-			ball.speedX = parseInt(speed);
-		});
-		socket.on('right up', () => {
-		  console.log('right player up');
-		  paddleRight.y -= 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleRight.topPosition -= 3;
-			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-		  }
-		});
-		socket.on('left up', () => {
-		  console.log('left player up');
-		  paddleLeft.y -= 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleLeft.topPosition -= 3;
-			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-		  }
-		});
-		socket.on('right down', () => {
-		  console.log('right player down');
-		  paddleRight.y += 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleRight.topPosition += 3;
-			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-		  }
-		});
-		socket.on('left down', () => {
-		  console.log('left player down');
-		  paddleLeft.y += 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleLeft.topPosition += 3;
-			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-		  }
-		});
-		socket.on('pause', () => {
-			ball.speedX = 0;
-			ball.speedY = 0;
-		  });
-	
-		socket.on('disconnect', () => {
-			console.log('game paused');
-			ball.speedX = 0;
-			ball.speedY = 0;
-		  });
-	
-		socket.on('connect'), () => {
-			socket.emit('reconnected', gameID);
+	const navigate = useNavigate();
+	const canvas: any = React.useRef();
+	const width: number = 500;
+	const height: number = 500;
+	let ball: Ball;
+	g_socket = socket;
+	g_token = token;
+	const draw = (context, socket) => {
+		context.clearRect(0, 0, width, height);
+		context.strokeStyle = 'black';
+		context.fillStyle = 'black';
+		ball.move(width, height);
+		ball.display();
+		paddleLeft.display(height);
+		paddleRight.display(height);
+		if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
+			ball.speedX = -ball.speedX;
+			socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
 		}
-	
-		const render = () => {
-		  frameCount++;
-		  draw(context, socket);
-		  frameId = window.requestAnimationFrame(render);
+		if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
+			ball.speedX = -ball.speedX;
+			socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
+		}
+		context.fillText(scoreRight, width / 2 + 30, 30); // Right side score
+		context.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
+		if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
+			socket.emit('done', g_gameID);
+			context.fillText("You've won, nice game!", width / 2, height / 2);
+			end = 1;
+			ball.x = width / 2;
+			ball.y = height / 2;
+			ball.speedX = 0;
+			ball.speedY = 0;
+			setTimeout(() => {
+				navigate('/landingpage');
+			}, 2000);
+		}
+	};
+
+	useEffect(() => {
+		let frameCount: number = 0;
+		let frameId: number;
+		const ctx: any = canvas.current.getContext('2d');
+
+		if (ctx) {
+			setContext(ctx);
+		}
+		if (context)
+		{
+			ball = new Ball(width / 2, height / 2, 50, context, gameID);
+			paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
+			paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
+			socket.on('gameID', (gameID: number) => {
+				setGameID(gameID);
+				g_gameID = gameID;
+				console.log(gameID);
+				socket.emit('start', gameID);
+			  });
+			const render = () => {
+				frameCount++;
+				draw(context, socket);
+				frameId = window.requestAnimationFrame(render);
+			};
+			render();
+		}
+
+		return () => {
+			socket.off('gameID');
+			window.cancelAnimationFrame(frameId);
 		};
-		render();
-	}
-	const onBeforeUnload = (ev) => {
-		//user left the page
-	  };
-	window.addEventListener("beforeunload", onBeforeUnload);
+	}, [context]);
 
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      socket.off('ballSpeedY');
-      socket.off('right up');
-      socket.off('left up');
-      socket.off('right down');
-      socket.off('left down');
-	  window.removeEventListener("beforeunload", onBeforeUnload);
-    };
-  }, [context, theme]);
-
-  const toggleDarkMode = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-
-  return (
-	  <div>
-      <canvas ref={canvas} height="500" width="500" className={theme} style={{ border: '1px solid black' }} />
-	  <button onClick={() => toggleDarkMode()}>{`switch up the colours`}</button>
-    </div>
-  );
+	return (
+		<div>
+			<canvas ref={canvas} height="500" width="500" style={{ border: '1px solid black' }} />
+		</div>
+	);
 };
 
 export default GameLogic;

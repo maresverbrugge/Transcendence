@@ -13,7 +13,7 @@ const PaddleSelect = ({}) => {
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND_WS}/game`, { // localhost veranderen naar react_app_var
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/game`, { // localhost veranderen naar react_app_var
       transports: ['websocket', 'polling'],
       query: { token }, // Hier de token uit localstorage halen
 	  withCredentials: true,
