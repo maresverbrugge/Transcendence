@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import Channels from '../components/Chat/Channels/Channels';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
-import { MemberData } from '../components/Chat/interfaces';
+import { FriendData } from '../components/Chat/interfaces';
 import axios from 'axios';
 import { emitter } from '../components/emitter';
 import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
@@ -15,7 +15,7 @@ import PasswordPrompt from '../components/Chat/Channels/PasswordPrompt';
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [channelID, setChannelID] = useState<number | null>(null);
-  const [friends, setFriends] = useState<MemberData[]>([]);
+  const [friends, setFriends] = useState<FriendData[]>([]);
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
@@ -76,27 +76,9 @@ const Chat = () => {
       <PasswordPrompt/>
 
       <div className="row g-4" style={{ height: '87%' }}>
-        
-        {/* Left Column */}
         <Channels selectedChannelID={channelID} socket={socket}/>
-    
-        {/* Middle Column */}
-      
-        <Messenger channelID={channelID} socket={socket} />
-
-        {/* Right Column */}
-        <div className="col-md-3">
-          <div className="card shadow h-100">
-            <div className="card-body p-0 pt-3 pb-3">
-              <ChatInfo
-                channelID={channelID}
-                friends={friends}
-                setFriends={setFriends}
-                socket={socket}
-              />
-            </div>
-          </div>
-        </div>
+        <Messenger channelID={channelID} socket={socket}/>
+        <ChatInfo channelID={channelID} friends={friends} setFriends={setFriends} socket={socket}/>
       </div>
     </div>
   );  

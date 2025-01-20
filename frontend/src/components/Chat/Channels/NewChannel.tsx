@@ -3,10 +3,10 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { emitter } from '../../emitter';
 
-import { MemberData } from '../interfaces';
+import { FriendData } from '../interfaces';
 
 interface NewChannelProps {
-  friends: MemberData[];
+  friends: FriendData[];
   socket: Socket;
 }
 

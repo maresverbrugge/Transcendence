@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
-import { MemberData, ChannelData } from '../interfaces';
+import { ChannelData, FriendData } from '../interfaces';
 import { emitter } from '../../emitter';
 
 interface AddMemberProps {
   channel: ChannelData;
-  friends: MemberData[];
+  friends: FriendData[];
   socket: Socket;
 }
 
 const AddMember = ({ channel, friends, socket }: AddMemberProps) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
-  const [selectedFriend, setSelectedFriend] = useState<MemberData | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<FriendData | null>(null);
   const token = localStorage.getItem('authenticationToken');
 
   const handleAddMember = async () => {

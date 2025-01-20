@@ -24,6 +24,13 @@ export interface MemberData {
   channelID: string;
 }
 
+export interface FriendData {
+  ID: number;
+  username: string;
+  avatarURL: string;
+  status : 'ONLINE' | 'OFFLINE' | 'IN_GAME' | 'AFK';
+}
+
 export interface MessageData {
   ID: number;
   senderName?: string;

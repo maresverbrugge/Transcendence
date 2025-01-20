@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import Confirm from '../../Confirm';
-import { ChannelData, MemberData } from '../interfaces';
+import { ChannelData, MemberData, FriendData } from '../interfaces';
 import AddMember from './AddMember';
 import BlockButton from './BlockButton';
 import { emitter } from '../../emitter';
@@ -11,7 +11,7 @@ import SendGameInvite from './SendGameInvite';
 
 interface ChannelMemberListProps {
   channel: ChannelData;
-  friends: MemberData[];
+  friends: FriendData[];
   socket: Socket;
 }
 

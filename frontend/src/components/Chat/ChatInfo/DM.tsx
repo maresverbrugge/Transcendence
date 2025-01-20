@@ -64,9 +64,7 @@ const DMInfoComponent = ({ profileID, username, status, avatarURL, socket }: DMI
     console.log("useEffect triggered for ID:", profileID, "with initial status:", status);
 
     socket.on('userStatusChange', (userID, userStatus) => {
-      console.log('check trigger handler', userID, profileID);
       if (userID === profileID) {
-        console.log('check right ID');
         setStatusClass(getStatusClass(userStatus));
         setDisplayStatus(getDisplayStatus(userStatus));
       }
@@ -136,7 +134,6 @@ const DM = ({ channelID, socket }: DMProps) => {
           `${process.env.REACT_APP_URL_BACKEND}/chat/channel/dm-info/${channelID}/${token}`
         );
         setDMInfo(response.data);
-        console.log('check dminfo', response.data);
       } catch (error) {
         console.error(error);
       }

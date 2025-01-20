@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
+import { FriendData } from '../interfaces';
 
-import { MemberData } from '../interfaces';
 import { emitter } from '../../emitter';
 
 interface FriendProps {
   key: number;
-  friend: MemberData;
+  friend: FriendData;
   socket: Socket;
 }
 
 interface FriendsProps {
-  friends: MemberData[];
-  setFriends: (friends: MemberData[]) => void;
+  friends: FriendData[];
+  setFriends: (friends: FriendData[]) => void;
   socket: Socket;
 }
 
@@ -56,7 +56,7 @@ const Friends = ({ friends, setFriends, socket }: FriendsProps) => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/chat/friends/${token}`);
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/friends/${token}`);
         if (response.data) setFriends(response.data);
       } catch (error) {
         emitter.emit('error', error);
@@ -69,7 +69,7 @@ const Friends = ({ friends, setFriends, socket }: FriendsProps) => {
   return (
     <div className="friends-container">
       <h1>Friends</h1>
-      <ul className="friends">
+      <ul className="friends" style={{ listStyleType: 'none', paddingLeft: 0 }}>
         {friends.map((friend) => (
           <Friend key={friend.ID} friend={friend} socket={socket} />
         ))}
