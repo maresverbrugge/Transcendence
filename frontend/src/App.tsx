@@ -10,7 +10,7 @@ import LogOut from './components/Authentication/LogOut';
 import UserAccount from './pages/UserAccount';
 import UserProfile from './pages/UserProfile';
 import Chat from './pages/Chat';
-// import GameApp from './pages/game';
+import Game from './pages/game';
 
 const App = () => {
 	return (
@@ -25,7 +25,7 @@ const App = () => {
 			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
 			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
 			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-			{/* <Route path="/game" element={<ProtectedRoute element={<GameApp />} />} /> */}
+			<Route path="/game" element={<ProtectedRoute element={<Game />} />} />
 		  </Routes>
 		</Router>
 	  );
