@@ -43,7 +43,12 @@ const AddMember = ({ channel, friends, socket }: AddMemberProps) => {
 
   return (
     <>
-      <button className="new-member-button" onClick={() => setIsAdding(true)}>
+      <button
+        type="button"
+        className="btn btn-success"
+        style={{ marginTop: 'auto' }}
+        onClick={() => setIsAdding(true)}
+      >
         Add Member
       </button>
 

@@ -18,7 +18,6 @@ interface ChannelInfoProps {
 interface ChatInfoProps {
   channelID: number | null;
   friends: FriendData[];
-  setFriends: (friends: FriendData[]) => void;
   socket: Socket;
 }
 
@@ -69,15 +68,14 @@ const ChannelInfo = ({ channelID, friends, socket }: ChannelInfoProps) => {
   );
 };
 
-const ChatInfo = ({ channelID, friends, setFriends, socket }: ChatInfoProps) => {
+const ChatInfo = ({ channelID, friends, socket }: ChatInfoProps) => {
   return (
 
     <div className="col-md-3 card shadow h-100" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="card-body p-0 pt-3 pb-3" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div className="chat-info-container">
             {channelID === null ? (
-              <Friends friends={friends} setFriends={setFriends} socket={socket} />
+              <Friends friends={friends} socket={socket} />
             ) : (
               <ChannelInfo
                 channelID={channelID}
@@ -85,7 +83,6 @@ const ChatInfo = ({ channelID, friends, setFriends, socket }: ChatInfoProps) => 
                 socket={socket}
               />
             )}
-          </div>
         </div>
       </div>
     </div>

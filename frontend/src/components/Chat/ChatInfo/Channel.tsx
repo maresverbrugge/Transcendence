@@ -48,16 +48,17 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
 
   return (
     <div className="channel-container">
-      <div className="channel-header text-center">
+      <div className="mb-3 text-center">
         <h2>{(channel?.name) ? channel.name : `Channel ${channel?.ID}`}</h2>
-        <ChannelMemberList
-          channel={channel}
-          friends={friends}
-          socket={socket}
-        />
+      </div >
+      <ChannelMemberList
+        channel={channel}
+        friends={friends}
+        socket={socket}
+      />
+      {channel.isPrivate && <button type="button" className="btn btn-outline-warning" style={{ marginTop: 'auto' }} onClick={leaveChannel}>Leave Channel</button>}
+
       </div>
-      {channel.isPrivate && <button onClick={leaveChannel}>Leave Channel</button>}
-    </div>
   );
 };
 

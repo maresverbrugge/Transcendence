@@ -7,6 +7,7 @@ type Events = {
   acceptGameInvite: void;
   createChannel: void;
   showPasswordPrompt: number;
+  confirm: { message: string; onOK: () => void };
 };
 
 export const emitter = mitt<Events>();

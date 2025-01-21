@@ -74,7 +74,7 @@ const SendGameInvite = ({ receiverUserID, socket }: SendGameInviteProps) => {
 
   return (
     <div>
-      <button onClick={handleSendGameInvite} disabled={isPending}>
+      <button className='dropdown-item' onClick={handleSendGameInvite} disabled={isPending}>
         {isPending ? 'Invite Pending...' : 'Send Game Invite'}
       </button>
 

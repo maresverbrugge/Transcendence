@@ -11,6 +11,7 @@ import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
 import GoBackButton from '../components/GoBackButton';
 import NewChannel from '../components/Chat/Channels/NewChannel';
 import PasswordPrompt from '../components/Chat/Channels/PasswordPrompt';
+import Confirm from '../components/Confirm';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -20,8 +21,6 @@ const Chat = () => {
 
   useEffect(() => {
 
-
-      
     const socketIo = io(`${process.env.REACT_APP_URL_BACKEND_WS}/chat`, {
       transports: ["websocket"],
       query: { token },
@@ -45,6 +44,17 @@ const Chat = () => {
     emitter.on('selectChannel', selectChannel);
 
     setSocket(socketIo);
+
+    const fetchFriends = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/friends/${token}`);
+        if (response.data) setFriends(response.data);
+      } catch (error) {
+        emitter.emit('error', error);
+      }
+    };
+
+    fetchFriends();
 
     return () => {
       emitter.off('selectChannel');
@@ -74,11 +84,12 @@ const Chat = () => {
       <GoBackButton />
       <ReceiveGameInvite socket={socket}/>
       <PasswordPrompt/>
+      <Confirm/>
 
       <div className="row g-4" style={{ height: '87%' }}>
         <Channels selectedChannelID={channelID} socket={socket}/>
         <Messenger channelID={channelID} socket={socket}/>
-        <ChatInfo channelID={channelID} friends={friends} setFriends={setFriends} socket={socket}/>
+        <ChatInfo channelID={channelID} friends={friends} socket={socket}/>
       </div>
     </div>
   );  
