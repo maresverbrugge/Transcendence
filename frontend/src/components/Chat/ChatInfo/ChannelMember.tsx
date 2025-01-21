@@ -4,7 +4,6 @@ import { Socket } from 'socket.io-client';
 import { ChannelData, MemberData } from '../interfaces';
 import BlockButton from './BlockButton';
 import { emitter } from '../../emitter';
-import SendGameInvite from './SendGameInvite';
 import { useNavigate } from 'react-router-dom';
 
 interface ChannelMemberProps {
@@ -15,7 +14,7 @@ interface ChannelMemberProps {
     socket: Socket;
 }
 
-const ChannelMember = ({ member, currentMember, channel, blockedUserIDs, socket}: ChannelMemberProps) => {
+const ChannelMember = ({member, currentMember, channel, blockedUserIDs, socket}: ChannelMemberProps) => {
   const token = localStorage.getItem('authenticationToken');
   const navigate = useNavigate();
 
@@ -43,44 +42,15 @@ const ChannelMember = ({ member, currentMember, channel, blockedUserIDs, socket}
     });
   };
 
-
-  
-      // <>
-      //   {!(member.ID === currentMember.ID) && (
-      //     <>
-      //       <BlockButton userID={member?.user.ID} blockedUserIDs={blockedUserIDs} />
-      //       <SendGameInvite receiverUserID={member?.user.ID} socket={socket} />
-      //     </>
-      //   )}
-  
-      //   {currentMember?.isOwner && !member.isOwner && (
-      //     <>
-      //       {member.isAdmin ? (
-      //         <button onClick={() => handleActionClick('demote', member.ID)}>Demote Admin</button>
-      //       ) : (
-      //         <>
-      //           <button onClick={() => handleActionClick('makeAdmin', member.ID)}>Make Admin</button>
-      //           {actionButtons(member.ID)}
-      //         </>
-      //       )}
-      //     </>
-      //   )}
-  
-      //   {currentMember?.isAdmin && !currentMember?.isOwner && !member.isAdmin && !member.isOwner && (
-      //     <>
-      //       <button onClick={() => handleActionClick('mute', memberID)}>Mute</button>
-      //       <button onClick={() => handleActionClick('kick', memberID)}>Kick</button>
-      //       {!isPrivateChannel && (
-      //         <button onClick={() => handleActionClick('ban', memberID)}>Ban</button>
-      //       )}
-      //     </>
-      //   )}
-      // </>
+  const handleSendGameInvite = () => {
+    socket.emit('sendGameInvite', { receiverUserID: member.user.ID, token });
+    emitter.emit('sendGameInvite', member.user.ID)
+  };
 
   const roleLabel = member.isOwner ? 'Owner' : member.isAdmin ? 'Admin' : '';
 
   return (
-    <li key={`member${member.ID}`} className="p-1">
+    <li className="p-1">
       <div className="dropdown">
         <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           {(member.ID === currentMember.ID)
@@ -122,7 +92,7 @@ const ChannelMember = ({ member, currentMember, channel, blockedUserIDs, socket}
                 <BlockButton userID={member?.user.ID} blockedUserIDs={blockedUserIDs} />
               </li>
               <li key={'action7'}>
-                <SendGameInvite receiverUserID={member?.user.ID} socket={socket} />
+                <button className='dropdown-item' onClick={handleSendGameInvite}>Send Game Invite</button>
               </li>
             </>
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { emitter } from '../../emitter';
+import { emitter } from '../emitter';
 import axios from 'axios';
 
 const PasswordPrompt = () => {

@@ -7,11 +7,13 @@ import Messenger from '../components/Chat/Messenger/Messenger';
 import { FriendData } from '../components/Chat/interfaces';
 import axios from 'axios';
 import { emitter } from '../components/emitter';
-import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
+import ReceiveGameInvite from '../components/Chat/ReceiveGameInvite';
 import GoBackButton from '../components/GoBackButton';
-import NewChannel from '../components/Chat/Channels/NewChannel';
-import PasswordPrompt from '../components/Chat/Channels/PasswordPrompt';
+import NewChannel from '../components/Chat/NewChannel';
+import PasswordPrompt from '../components/Chat/PasswordPrompt';
 import Confirm from '../components/Confirm';
+import SendGameInvite from '../components/Chat/SendGameInvite';
+import AddChannelMember from '../components/Chat/AddChannelMember';
 
 const Chat = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -83,8 +85,10 @@ const Chat = () => {
       <NewChannel friends={friends} socket={socket}/>
       <GoBackButton />
       <ReceiveGameInvite socket={socket}/>
+      <SendGameInvite socket={socket}/>
       <PasswordPrompt/>
       <Confirm/>
+      <AddChannelMember friends={friends} socket={socket}/>
 
       <div className="row g-4" style={{ height: '87%' }}>
         <Channels selectedChannelID={channelID} socket={socket}/>

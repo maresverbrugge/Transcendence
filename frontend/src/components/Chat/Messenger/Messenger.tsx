@@ -105,7 +105,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
                     ) : (
                       <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
                         {messages?.map((message) => (
-                          <li key={message.ID}>
+                          <li key={`message${message.ID}`}>
                             {message.senderID && message.senderName ? (
                               <>
                                 <strong>{message.senderName}: </strong>

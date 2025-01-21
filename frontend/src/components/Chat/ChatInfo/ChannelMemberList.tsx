@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 import { ChannelData, MemberData, FriendData } from '../interfaces';
-import AddMember from './AddMember';
+import AddMember from '../AddChannelMember';
 import ChannelMember from './ChannelMember';
 import { emitter } from '../../emitter';
 
@@ -75,12 +75,19 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
         {sortedMembers.map((member) => {
           if (member.isBanned) return null;
           return (
-            <ChannelMember member={member} currentMember={currentMember} channel={channel} blockedUserIDs={blockedUserIDs} socket={socket}/>
+            <ChannelMember key={`member${member.ID}`} member={member} currentMember={currentMember} channel={channel} blockedUserIDs={blockedUserIDs} socket={socket}/>
           );
         })}
       </ul>
       {currentMember?.isAdmin && channel.isPrivate && (
-        <AddMember channel={channel} friends={friends} socket={socket} />
+        <button
+          type="button"
+          className="btn btn-success"
+          style={{ marginTop: 'auto' }}
+          onClick={() => emitter.emit('addChannelMember', channel.ID)}
+        >
+          Add Member
+        </button>
       )}
     </div>
   );
