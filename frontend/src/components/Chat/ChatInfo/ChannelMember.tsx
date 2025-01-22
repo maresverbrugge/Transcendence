@@ -52,55 +52,98 @@ const ChannelMember = ({member, currentMember, channel, blockedUserIDs, socket}:
   return (
     <li className="p-1">
       <div className="dropdown">
-        <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <button
+          className="btn shadow btn-secondary dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
           {(member.ID === currentMember.ID)
-          ? `You${roleLabel ? ` (${roleLabel})` : ''}`
-          : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ''}`}
+            ? `You${roleLabel ? ` (${roleLabel})` : ''}`
+            : `${member.user.username}${roleLabel ? ` (${roleLabel})` : ''}`}
         </button>
-        <ul className="dropdown-menu">
+        <ul
+          className="dropdown-menu"
+        >
           {currentMember?.isOwner && !member.isOwner && (
             <>
               {member.isAdmin ? (
-                <li key={'action1'}>
-                  <button className="dropdown-item" onClick={() => handleActionClick('demote')}>Demote Admin</button>
+                <li>
+                  <button
+                    className="dropdown-item text-primary-emphasis"
+                    onClick={() => handleActionClick('demote')}
+                  >
+                    Demote Admin
+                  </button>
                 </li>
               ) : (
-                <li key={'action2'}>
-                  <button className="dropdown-item" onClick={() => handleActionClick('makeAdmin')}>Make Admin</button>
+                <li>
+                  <button
+                    className="dropdown-item text-primary-emphasis"
+                    onClick={() => handleActionClick('makeAdmin')}
+                  >
+                    Make Admin
+                  </button>
                 </li>
               )}
             </>
           )}
           {currentMember?.isAdmin && !member.isAdmin && (
             <>
-              <li key={'action3'}>
-                <button className="dropdown-item" onClick={() => handleActionClick('mute')}>Mute</button>
+              <li>
+                <button
+                  className="dropdown-item text-primary-emphasis"
+                  onClick={() => handleActionClick('mute')}
+                >
+                  Mute
+                </button>
               </li>
-              <li key={'action4'}>
-                <button className="dropdown-item" onClick={() => handleActionClick('kick')}>Kick</button>
+              <li>
+                <button
+                  className="dropdown-item text-primary-emphasis"
+                  onClick={() => handleActionClick('kick')}
+                >
+                  Kick
+                </button>
               </li>
               {!channel.isPrivate && (
-                <li key={'action5'}>
-                  <button className="dropdown-item" onClick={() => handleActionClick('ban')}>Ban</button>
+                <li>
+                  <button
+                    className="dropdown-item text-primary-emphasis"
+                    onClick={() => handleActionClick('ban')}
+                  >
+                    Ban
+                  </button>
                 </li>
               )}
             </>
           )}
-          {(currentMember.ID !== member.ID) && (
+          {currentMember.ID !== member.ID && (
             <>
-              <li key={'action6'}>
+              <li>
                 <BlockButton userID={member?.user.ID} blockedUserIDs={blockedUserIDs} />
               </li>
-              <li key={'action7'}>
-                <button className='dropdown-item' onClick={handleSendGameInvite}>Send Game Invite</button>
+              <li>
+                <button
+                  className="dropdown-item text-primary-emphasis"
+                  onClick={handleSendGameInvite}
+                >
+                  Send Game Invite
+                </button>
               </li>
             </>
           )}
           <li>
-              <button className="dropdown-item" onClick={() => navigate(`/profile/${member.user.ID}`)}>Go to Profile</button>
+            <button
+              className="dropdown-item text-primary-emphasis"
+              onClick={() => navigate(`/profile/${member.user.ID}`)}
+            >
+              Go to Profile
+            </button>
           </li>
         </ul>
       </div>
+
     </li>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 
@@ -11,6 +11,7 @@ interface AddMemberProps {
 }
 
 const AddChannelMember = ({ friends, socket }: AddMemberProps) => {
+  const addChannelMemberBoxRef = useRef<HTMLDivElement>(null);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectedFriend, setSelectedFriend] = useState<number | null>(null);
   const [channelID, setChannelID] = useState<number | null>(null);
@@ -23,6 +24,11 @@ const AddChannelMember = ({ friends, socket }: AddMemberProps) => {
         emitter.off('addChannelMember', showAddChannelMember);
       };
     }, [channelID, friends, socket]);
+
+  useEffect(() => {
+        addChannelMemberBoxRef.current?.focus();
+    
+    }, [isAdding]);
 
   const showAddChannelMember = (targetChannelID: number) => {
     setChannelID(targetChannelID);
@@ -54,6 +60,14 @@ const AddChannelMember = ({ friends, socket }: AddMemberProps) => {
     setSelectedFriend(null);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          handleAddMember();
+        } else if (event.key === 'Escape') {
+          resetForm();
+        }
+    };
+
   return (
     <>
       {isAdding && (
@@ -70,7 +84,12 @@ const AddChannelMember = ({ friends, socket }: AddMemberProps) => {
           }}
         >
 
-          <div className="card">
+          <div
+            className="card"
+            onKeyDown={handleKeyDown}
+            ref={addChannelMemberBoxRef}
+            tabIndex={0}
+          >
             <div className="card-body"
               style={{
                 zIndex: 9998,

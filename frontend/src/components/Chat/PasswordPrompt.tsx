@@ -9,10 +9,17 @@ const PasswordPrompt = () => {
   const [selectedChannelForPassword, setSelectedChannelForPassword] = useState<number | null>(null);
 
   useEffect(() => {
+    emitter.on('showPasswordPrompt', (channelID) => showPasswordPrompt(channelID))
+  
+    return () => {
+      emitter.off('showPasswordPrompt');
+    }
+  }, []);
+
+  useEffect(() => {
     PasswordPromptRef.current?.focus();
 
-    emitter.on('showPasswordPrompt', (channelID) => showPasswordPrompt(channelID))
-  }, []);
+  }, [passwordPromptVisible]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -57,22 +64,21 @@ const PasswordPrompt = () => {
             width: "100vw",
             height: "100vh",
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 9997,
+            zIndex: 9995,
           }}
         >
 
-          <div className="card">
-            <div className="card-body"
-              style={{
-                zIndex: 9998,
-              }}>
-              <h4 className="card-title text-center text-warning">Enter Channel Password</h4>
-            <div
-            className="password-prompt-modal"
+          <div
+            className="card"
             onKeyDown={handleKeyDown}
             ref={PasswordPromptRef}
             tabIndex={0} // Make the div focusable
-            >
+          >
+            <div className="card-body"
+              style={{
+                zIndex: 9996,
+              }}>
+              <h4 className="card-title text-center text-warning">Enter Channel Password</h4>
 
               <div className="form-floating has-">
                 <input type="password"
@@ -86,12 +92,9 @@ const PasswordPrompt = () => {
 
 
               <div>
-
                 <button type="button" className="btn btn-outline-warning mt-2" onClick={handleSubmit}>Submit</button>
                 <button type="button" className="btn btn-outline-warning mt-2" onClick={() => {setPasswordPromptVisible(false)}}>Cancel</button>
               </div>
-            </div>
-
             </div>
           </div>
         </div>

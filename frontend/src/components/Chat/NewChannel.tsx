@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { emitter } from '../emitter';
@@ -12,6 +12,7 @@ interface NewChannelProps {
 
 
 const NewChannel = ({ friends, socket }: NewChannelProps) => {
+  const newChannelBoxRef = useRef<HTMLDivElement>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [channelName, setChannelName] = useState<string>('');
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
@@ -30,6 +31,11 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
       emitter.off('createChannel');
     };
   }, []);
+
+  useEffect(() => {
+      newChannelBoxRef.current?.focus();
+  
+  }, [isCreating]);
   
   const toggleMember = (userID: number) => {
     setSelectedFriends((prev) => (prev.includes(userID) ? prev.filter((id) => id !== userID) : [...prev, userID]));
@@ -64,6 +70,14 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
     setPassword('');
     setSelectedFriends([]);
   };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        handleCreateChannel();
+      } else if (event.key === 'Escape') {
+        resetForm();
+      }
+    };
   
   return (
     <>
@@ -77,14 +91,19 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
             width: "100vw",
             height: "100vh",
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 9997,
+            zIndex: 9995,
           }}
         >
 
-          <div className="card">
+          <div
+            className="card"
+            onKeyDown={handleKeyDown}
+            ref={newChannelBoxRef}
+            tabIndex={0}
+          >
             <div className="card-body"
               style={{
-                zIndex: 9998,
+                zIndex: 9996,
               }}>
               <h4 className="card-title">Create New Channel</h4>
               <h6 className="card-subtitle mb-2 text-info">Create a public channel, a private channel or a direct message</h6>

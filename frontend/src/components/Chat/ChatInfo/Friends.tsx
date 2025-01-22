@@ -65,7 +65,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
           <button
             onClick={() => navigate(`/profile/${friend.ID}`)}
             className={`btn bg-${statusColor} p-1 m-2 mt-0 mb-0`}
-            style={{ textDecoration: 'none', width: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+            style={{ textDecoration: 'none', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis'}}>
             {friend.username}
           </button>
       </div>

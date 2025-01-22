@@ -1,14 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { emitter } from '../emitter';
 
 const SendGameInvite = ({ socket } : {socket: Socket} ) => {
+  const sendGameInviteBoxRef = useRef<HTMLDivElement>(null);
   const [isPending, setIsPending] = useState(false);
   const [receiverUserID, setReceiverUserID] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('authenticationToken');
+
+  
+  useEffect(() => {
+    sendGameInviteBoxRef.current?.focus();
+  
+    const handleInviteResponse = (data: { accepted: boolean; message: string, receiverUserID: number }) => {
+      if (data.receiverUserID === receiverUserID) {
+        setIsPending(false);
+        if (data.accepted) {
+          handleAcceptResponse();
+        } else {
+          emitter.emit('alert', data.message)
+        }
+      }
+    };
+  
+    const handleAcceptOtherGameInvite = () => {
+      if (isPending)
+        handleCancelInvite();
+    }
+  
+    const handleSendGameInvite = (userID: number) => {
+      setReceiverUserID(userID);
+      setIsPending(true);
+    }
+  
+    emitter.on('acceptOtherGameInvite', handleAcceptOtherGameInvite);
+  
+    emitter.on('sendGameInvite', handleSendGameInvite);
+  
+    socket.on('gameInviteResponse', handleInviteResponse);
+  
+    return () => {
+      emitter.off('acceptOtherGameInvite');
+      emitter.off('sendGameInvite', handleSendGameInvite);
+      socket.off('gameInviteResponse', handleInviteResponse);
+    };
+  }, [socket, isPending, receiverUserID]);
 
   const handleCancelInvite = () => {
     socket.emit('cancelGameInvite', { receiverUserID, token });
@@ -31,40 +70,11 @@ const SendGameInvite = ({ socket } : {socket: Socket} ) => {
     }
   };
 
-  useEffect(() => {
-    const handleInviteResponse = (data: { accepted: boolean; message: string, receiverUserID: number }) => {
-      if (data.receiverUserID === receiverUserID) {
-        setIsPending(false);
-        if (data.accepted) {
-          handleAcceptResponse();
-        } else {
-          emitter.emit('alert', data.message)
-        }
-      }
-    };
-
-    const handleAcceptOtherGameInvite = () => {
-      if (isPending)
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+      if (event.key === 'Escape') {
         handleCancelInvite();
-    }
-
-    const handleSendGameInvite = (userID: number) => {
-      setReceiverUserID(userID);
-      setIsPending(true);
-    }
-
-    emitter.on('acceptOtherGameInvite', handleAcceptOtherGameInvite);
-
-    emitter.on('sendGameInvite', handleSendGameInvite);
-
-    socket.on('gameInviteResponse', handleInviteResponse);
-
-    return () => {
-      emitter.off('acceptOtherGameInvite');
-      emitter.off('sendGameInvite', handleSendGameInvite);
-      socket.off('gameInviteResponse', handleInviteResponse);
-    };
-  }, [socket, isPending, receiverUserID]);
+      }
+  };
 
   return (
   <>
@@ -83,6 +93,9 @@ const SendGameInvite = ({ socket } : {socket: Socket} ) => {
       >
         <div
           className="alert alert-dismissible alert-success"
+          onKeyDown={handleKeyDown}
+          ref={sendGameInviteBoxRef}
+          tabIndex={0}
           style={{
             zIndex: 9996,
             maxWidth: "500px",

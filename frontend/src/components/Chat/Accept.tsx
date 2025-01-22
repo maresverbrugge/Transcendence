@@ -10,10 +10,9 @@ interface AcceptProps {
 const Accept = ({ message, senderUserID, onAccept, onDecline }: AcceptProps) => {
   const acceptBoxRef = useRef<HTMLDivElement>(null);
 
-  // Add focus to the accept box when the component mounts
   useEffect(() => {
     acceptBoxRef.current?.focus();
-  }, []);
+  }, [acceptBoxRef]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -42,6 +41,13 @@ const Accept = ({ message, senderUserID, onAccept, onDecline }: AcceptProps) => 
         ref={acceptBoxRef}
         tabIndex={0} // Make the div focusable
         onKeyDown={handleKeyDown}
+        style={{
+          zIndex: 9998,
+          maxWidth: "500px",
+          padding: "20px",
+          borderRadius: "8px",
+          textAlign: "center",
+        }}
       >
         <p>{message}</p>
         <button className="btn btn-outline-light" onClick={() => onDecline(senderUserID)}>Decline</button>

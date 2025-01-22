@@ -70,8 +70,8 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
   });
 
   return (
-    <div>
-      <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
+    <div className='p-0 pb-2' style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <ul style={{ listStyleType: 'none', paddingLeft: 0, flexGrow: 1, overflowY: 'auto', overflowX: 'hidden', maxWidth: '100%', boxSizing: 'border-box'}}>
         {sortedMembers.map((member) => {
           if (member.isBanned) return null;
           return (

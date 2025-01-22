@@ -17,7 +17,7 @@ const AlertMessage = ({ message, onClose }: AlertMessageProps) => {
   useEffect(() => {
     // Focus the alert box when it mounts
     alertBoxRef.current?.focus();
-  }, []);
+  }, [alertBoxRef]);
 
   return (
     <>
@@ -38,6 +38,9 @@ const AlertMessage = ({ message, onClose }: AlertMessageProps) => {
           >
             <div
               className="alert alert-dismissible alert-warning"
+              onKeyDown={handleKeyDown}
+              ref={alertBoxRef}
+              tabIndex={0} // Make the div focusable
               style={{
                 zIndex: 10000,
                 maxWidth: "500px",

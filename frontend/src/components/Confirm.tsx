@@ -8,7 +8,6 @@ const Confirm = () => {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    confirmBoxRef.current?.focus();
 
     const confirmHandler = ({ message, onOK }: { message: string, onOK: () => void }) => {
       setShowConfirm(true);
@@ -23,8 +22,14 @@ const Confirm = () => {
     };
   }, []);
 
+
+  useEffect(() => {
+      confirmBoxRef.current?.focus();
+    }, [showConfirm]);
+  
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && onOKFunction) {
+      setShowConfirm(false);
       onOKFunction();
     } else if (event.key === 'Escape') {
       setShowConfirm(false);
@@ -51,13 +56,16 @@ const Confirm = () => {
             width: "100vw",
             height: "100vh",
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 9997,
+            zIndex: 9995,
           }}
         >
           <div
             className="alert alert-dismissible alert-warning"
+            ref={confirmBoxRef}
+            tabIndex={0} // Make the div focusable
+            onKeyDown={handleKeyDown}
             style={{
-              zIndex: 9998,
+              zIndex: 9996,
               maxWidth: "500px",
               padding: "20px",
               borderRadius: "8px",

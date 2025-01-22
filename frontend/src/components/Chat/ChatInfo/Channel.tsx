@@ -47,7 +47,7 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
   };
 
   return (
-    <div className="channel-container">
+    <>
       <div className="mb-3 text-center">
         <h2>{(channel?.name) ? channel.name : `Channel ${channel?.ID}`}</h2>
       </div >
@@ -58,7 +58,7 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
       />
       {channel.isPrivate && <button type="button" className="btn btn-outline-warning" style={{ marginTop: 'auto' }} onClick={leaveChannel}>Leave Channel</button>}
 
-      </div>
+    </>
   );
 };
 

@@ -92,84 +92,81 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
   return (
     <div className="col-md-3 card shadow h-100" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="card-body p-0 pt-3 pb-3" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-          {/* Top Section */}
-          <div className="mb-3 text-center">
-            <h2>Available Channels</h2>
-          </div>
-
-          {/* Scrollable Lists */}
-          <div style={{ flexGrow: 1, overflowY: 'auto'}}>
-            {/* Public Channels */}
-            {channels.some((channel) => !channel.isPrivate) && (
-              <div className="mb-3 text-center">
-                <h3>Public Channels</h3>
-                <ul className="list-group">
-                  {channels
-                    .filter((channel) => !channel.isPrivate)
-                    .map((channel) => (
-                      <ChannelListItem
-                        key={channel.ID}
-                        channel={channel}
-                        handleClickChannel={handleClickChannel}
-                        unreadCounts={unreadCounts[channel.ID]}
-                      />
-                    ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Private Channels */}
-            {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
-              <div className="mb-3 text-center">
-                <h3>Private Channels</h3>
-                <ul className="list-group">
-                  {channels
-                    .filter((channel) => channel.isPrivate && !channel.isDM)
-                    .map((channel) => (
-                      <ChannelListItem
-                        key={channel.ID}
-                        channel={channel}
-                        handleClickChannel={handleClickChannel}
-                        unreadCounts={unreadCounts[channel.ID]}
-                      />
-                    ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Direct Messages */}
-            {channels.some((channel) => channel.isDM) && (
-              <div className="mb-3 text-center">
-                <h3>Direct Messages</h3>
-                <ul className="list-group">
-                  {channels
-                    .filter((channel) => channel.isDM)
-                    .map((channel) => (
-                      <ChannelListItem
-                        key={channel.ID}
-                        channel={channel}
-                        handleClickChannel={handleClickChannel}
-                        unreadCounts={unreadCounts[channel.ID]}
-                      />
-                    ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Create New Channel Button */}
-
-          <button
-            type="button"
-            className="btn btn-success"
-            style={{ marginTop: 'auto' }}
-            onClick={() => emitter.emit('createChannel')}
-          >
-            New Channel
-          </button>
+        {/* Top Section */}
+        <div className="mb-3 text-center">
+          <h2>Available Channels</h2>
         </div>
+
+        {/* Scrollable Lists */}
+        <div style={{ flexGrow: 1, overflowY: 'auto'}}>
+          {/* Public Channels */}
+          {channels.some((channel) => !channel.isPrivate) && (
+            <div className="mb-3 text-center">
+              <h5>Public Channels</h5>
+              <ul className="list-group">
+                {channels
+                  .filter((channel) => !channel.isPrivate)
+                  .map((channel) => (
+                    <ChannelListItem
+                      key={channel.ID}
+                      channel={channel}
+                      handleClickChannel={handleClickChannel}
+                      unreadCounts={unreadCounts[channel.ID]}
+                    />
+                  ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Private Channels */}
+          {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
+            <div className="mb-3 text-center">
+              <h5>Private Channels</h5>
+              <ul className="list-group">
+                {channels
+                  .filter((channel) => channel.isPrivate && !channel.isDM)
+                  .map((channel) => (
+                    <ChannelListItem
+                      key={channel.ID}
+                      channel={channel}
+                      handleClickChannel={handleClickChannel}
+                      unreadCounts={unreadCounts[channel.ID]}
+                    />
+                  ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Direct Messages */}
+          {channels.some((channel) => channel.isDM) && (
+            <div className="mb-3 text-center">
+              <h5>Direct Messages</h5>
+              <ul className="list-group">
+                {channels
+                  .filter((channel) => channel.isDM)
+                  .map((channel) => (
+                    <ChannelListItem
+                      key={channel.ID}
+                      channel={channel}
+                      handleClickChannel={handleClickChannel}
+                      unreadCounts={unreadCounts[channel.ID]}
+                    />
+                  ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Create New Channel Button */}
+        <button
+          type="button"
+          className="btn btn-success"
+          style={{ marginTop: 'auto' }}
+          onClick={() => emitter.emit('createChannel')}
+        >
+          New Channel
+        </button>
       </div>
     </div>
   )
