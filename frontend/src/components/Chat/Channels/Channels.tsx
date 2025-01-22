@@ -90,7 +90,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
   };
 
   return (
-    <div className="col-md-3 card shadow h-100" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="col-12 col-sm-6 col-md-3 card shadow h-100" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="card-body p-0 pt-3 pb-3" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
         {/* Top Section */}

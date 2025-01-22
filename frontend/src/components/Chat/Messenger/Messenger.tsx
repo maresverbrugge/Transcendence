@@ -85,7 +85,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
   };
 
   return (
-    <div className="col-md-6 p-3 pt-0 pb-0" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="col-12 col-sm-12 col-md-6 p-3 pt-0 pb-0" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="card shadow h-100">
         <div className="card-body p-3 pb-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
