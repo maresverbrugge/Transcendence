@@ -39,6 +39,8 @@ import {
 	  try {
 		  const memberID: number = await this.loginService.getUserIDFromCache(token);
 		  const gameID: number = this.gameService.getGameID(memberID);
+		  console.log(client.id)
+		  console.log(gameID)
 		  client.emit('gameID', gameID);
 	  } catch (error) {
 		  console.error('I was not able to find the game associated with this user, sorry about that');
@@ -67,10 +69,9 @@ import {
 	async handleDisconnect(client: Socket): Promise<void> {
 		try {
 			//check if other player disconnected
-			const playerID: number = await this.userService.getUserIDBySocketID(client.id);
 			const user = await this.prisma.user.findUnique({
 				where: {
-					ID: playerID,
+					websocketID: client.id,
 				},
 				select: {
 					matches: {
@@ -93,7 +94,7 @@ import {
 			// }
 			console.log(`Client disconnected: ${client.id}`);
 			await this.prisma.user.update({
-			where: { ID: playerID },
+			where: { websocketID: client.id },
 			data: { websocketID: null, status: UserStatus.ONLINE },
 		  });
 		} catch (error) {

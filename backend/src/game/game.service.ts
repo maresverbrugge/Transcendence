@@ -30,6 +30,9 @@ export class GameService {
   ) {}
   async createGame(userID1: number, userID2: number): Promise<Match | null> {
 	try {
+		var ongoingGame: number = this.matches.findIndex((instance) => instance.leftPlayerID === userID1 || instance.rightPlayerID === userID1 || instance.leftPlayerID === userID2 || instance.rightPlayerID === userID2);
+		if (ongoingGame > -1)
+			return;
 		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
 		const socketRight = await this.userService.getSocketIDByUserID(userID2);
 		const newGame = await this.prisma.match.create({
