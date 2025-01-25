@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import './Game.css'
 
 let g_socket: Socket;
 let g_gameID: number;
@@ -190,7 +189,7 @@ const GameLogic = ({ socket, skin, token }) => {
 		navigate('/landingpage');
 	  }, 2000);
     }
-  };
+};
 
   useEffect(() => {
 	let frameCount: number = 0;
@@ -198,22 +197,14 @@ const GameLogic = ({ socket, skin, token }) => {
 	const ctx: any = canvas.current.getContext('2d');
 
 	if (ctx) {
-	  setContext(ctx);
+		setContext(ctx);
 	}
 	if (context)
 	{
 		ball = new Ball(width / 2, height / 2, 50, context, gameID);
 		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
 		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-		socket.on('gameID', (gameID: number) => {
-			setGameID(gameID);
-			g_gameID = gameID;
-			socket.emit('start', gameID);
-			// socket.emit('updateSocket', token, gameID);
-			// setTimeout(() => {
-			// 	socket.emit('start', gameID);
-			//   }, 2000);
-		  });
+		socket.emit('start', gameID);
 		socket.on('ballSpeedY', (speed: string) => {
 			console.log(speed)
 		  ball.speedY = parseInt(speed);
@@ -279,6 +270,10 @@ const GameLogic = ({ socket, skin, token }) => {
 		};
 		render();
 	}
+	socket.on('gameID', (gameID: number) => {
+		setGameID(gameID);
+		g_gameID = gameID;
+	  });
 	const onBeforeUnload = (ev) => {
 		//user left the page
 	  };
