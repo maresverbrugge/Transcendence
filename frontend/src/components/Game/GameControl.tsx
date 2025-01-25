@@ -203,12 +203,7 @@ const GameLogic = ({ socket, skin, token }) => {
 			ball = new Ball(width / 2, height / 2, 50, context, gameID);
 			paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
 			paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-			socket.on('gameID', (gameID: number) => {
-				setGameID(gameID);
-				g_gameID = gameID;
-				console.log(gameID);
-				socket.emit('start', gameID);
-			  });
+			socket.emit('start', gameID);
 			const render = () => {
 				frameCount++;
 				draw(context, socket);
@@ -216,6 +211,11 @@ const GameLogic = ({ socket, skin, token }) => {
 			};
 			render();
 		}
+		socket.on('gameID', (gameID: number) => {
+			setGameID(gameID);
+			g_gameID = gameID;
+			console.log(gameID);
+		  });
 
 		return () => {
 			socket.off('gameID');

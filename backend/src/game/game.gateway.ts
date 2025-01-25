@@ -86,6 +86,7 @@ import {
 					}
 				}
 			});
+			console.log(user)
 			const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
 			// for (client in game.players)
 			// {
