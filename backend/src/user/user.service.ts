@@ -134,18 +134,6 @@ export class UserService {
         return user?.ID || null; // Return the user ID if found, otherwise return null
       }
 
-    async getSocketIDByUserID(userID: number): Promise<string | null> {
-        const user = await this.prisma.user.findUnique({
-          where: {
-            ID: userID,
-          },
-          select: {
-            websocketID: true,
-          },
-        });
-        return user?.websocketID || null; // Return the user's websocketID if found, otherwise return null
-      }
-
       async getUserBySocketID(socketID: string): Promise<User | null> {
         return this.prisma.user.findUnique({
           where: {
