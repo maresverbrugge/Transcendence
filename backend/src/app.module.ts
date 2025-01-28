@@ -4,6 +4,7 @@ import { LoginModule } from './authentication/authentication.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
+import { AchievementService } from './user/achievement.service';
 
 @Module({
   imports: [PrismaModule, LoginModule, UserModule, ChatModule, GameModule],
@@ -11,4 +12,10 @@ import { GameModule } from './game/game.module';
   exports: [],
   controllers: [],
 })
-export class AppModule {}
+export class AppModule implements OnApplicationBootstrap {
+  constructor(private readonly achievementService: AchievementService) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.achievementService.initializeAchievements();
+  }
+}

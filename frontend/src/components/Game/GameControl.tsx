@@ -186,7 +186,7 @@ const GameLogic = ({ socket, skin, token }) => {
       ball.speedX = 0;
       ball.speedY = 0;
 	  setTimeout(() => {
-		navigate('/landingpage');
+		navigate('/main');
 	  }, 2000);
     }
 };
@@ -204,88 +204,94 @@ const GameLogic = ({ socket, skin, token }) => {
 		ball = new Ball(width / 2, height / 2, 50, context, gameID);
 		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
 		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-		socket.emit('start', gameID);
 		socket.on('ballSpeedY', (speed: string) => {
-			console.log(speed)
-		  ball.speedY = parseInt(speed);
+			console.log("ballspeedy" + speed)
+			ball.speedY = parseInt(speed);
 		});
 		socket.on('ballSpeedX', (speed: string) => {
+			console.log("ballspeedx" + speed)
 			ball.speedX = parseInt(speed);
 		});
 		socket.on('right up', () => {
-		  console.log('right player up');
-		  paddleRight.y -= 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleRight.topPosition -= 3;
+			console.log('right player up');
+			paddleRight.y -= 2;
+			if (paddleRight.skinPath != "")
+				{
+			  paddleRight.topPosition -= 2;
 			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-		  }
+			}
 		});
 		socket.on('left up', () => {
-		  console.log('left player up');
-		  paddleLeft.y -= 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleLeft.topPosition -= 3;
-			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-		  }
-		});
+			console.log('left player up');
+			paddleLeft.y -= 2;
+			if (paddleRight.skinPath != "")
+				{
+					paddleLeft.topPosition -= 2;
+					paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+				}
+			});
 		socket.on('right down', () => {
-		  console.log('right player down');
-		  paddleRight.y += 3;
+			console.log('right player down');
+		  paddleRight.y += 2;
 		  if (paddleRight.skinPath != "")
 		  {
-			  paddleRight.topPosition += 3;
+			  paddleRight.topPosition += 2;
 			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-		  }
+			}
 		});
 		socket.on('left down', () => {
-		  console.log('left player down');
-		  paddleLeft.y += 3;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleLeft.topPosition += 3;
-			  paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-		  }
+			console.log('left player down');
+			paddleLeft.y += 2;
+			if (paddleRight.skinPath != "")
+			{
+				paddleLeft.topPosition += 2;
+				paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+			}
 		});
-		socket.on('pause', () => {
-			ball.speedX = 0;
-			ball.speedY = 0;
-		  });
+		// socket.on('pause', () => {
+		// 	ball.speedX = 0;
+		// 	ball.speedY = 0;
+		// });
+		
+		// socket.on('disconnect', () => {
+		// 	console.log('game paused');
+		// 	ball.speedX = 0;
+		// 	ball.speedY = 0;
+		// });
 	
-		socket.on('disconnect', () => {
-			console.log('game paused');
-			ball.speedX = 0;
-			ball.speedY = 0;
-		  });
-	
-		socket.on('connect'), () => {
-			socket.emit('reconnected', gameID);
-		}
-	
+		// socket.on('connect'), () => {
+		// 	socket.emit('reconnected', gameID);
+		// }
+		
 		const render = () => {
-		  frameCount++;
-		  draw(context, socket);
-		  frameId = window.requestAnimationFrame(render);
+			frameCount++;
+			draw(context, socket);
+			frameId = window.requestAnimationFrame(render);
 		};
 		render();
 	}
 	socket.on('gameID', (gameID: number) => {
 		setGameID(gameID);
 		g_gameID = gameID;
+		socket.emit('start', gameID);
 	  });
-	const onBeforeUnload = (ev) => {
-		//user left the page
+	  const onBeforeUnload = (ev) => {
+		  //user left the page
 	  };
 	window.addEventListener("beforeunload", onBeforeUnload);
 
     return () => {
       window.cancelAnimationFrame(frameId);
       socket.off('ballSpeedY');
+	  socket.off('ballSpeedX');
       socket.off('right up');
       socket.off('left up');
       socket.off('right down');
       socket.off('left down');
+	  socket.off('gameID');
+	//   socket.off('pause');
+	//   socket.off('disconnect');
+	//   socket.off('connect');
 	  window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, [context, theme]);

@@ -18,7 +18,7 @@ import { LoginService } from 'src/authentication/login/login.service';
 @WebSocketGateway({
   namespace: 'game',
   cors: {
-    origin: 'http://localhost:3000', // Update with your client's origin
+    origin: `${process.env.URL_FRONTEND}`, // Update with your client's origin
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -39,6 +39,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	try {
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
 		const gameID: number = this.gameService.getGameID(memberID);
+		console.log(gameID)
 		client.emit('gameID', gameID);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
@@ -47,16 +48,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
   }
 
-
-  @SubscribeMessage('updateSocket')
-  async handleUpdateSocket(client: Socket, token: string, gameID: number) {
-	await this.gameService.updateSocket(gameID, token, client.id);
-	client.join(client.id);
-  }
-
   @SubscribeMessage('start')
   handleGameStart(client: Socket, gameID: number) {
-	console.log(gameID)
     this.gameService.handleStart(gameID, this.server);
   }
 
@@ -66,8 +59,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('key')
-  async handleKey(@MessageBody() data: { move: string; gameID: number; token: string }) {
-    this.gameService.handleKey(data[0], data[2], data[1]);
+  async handleKey(client: Socket, move: string, gameID: number, token: string ) {
+    this.gameService.handleKey(this.server, move, token, gameID);
   }
 
   @SubscribeMessage('left scored')
@@ -106,6 +99,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (Array.isArray(token)) token = token[0];
       const userID = await this.loginService.getUserIDFromCache(token);
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
+	//   await this.gameService.updateSocket(token, client.id);
     } catch (error) {
     //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
       console.error(error)
