@@ -29,13 +29,13 @@ export class GameService {
     private readonly userService: UserService,
 	private readonly loginService: LoginService,
   ) {}
-  async createGame(userID1: number, userID2: number): Promise<Match | null> {
+  async createGame(userID1: number, userID2: number, token: string): Promise<Match | null> {
 	try {
 		var ongoingGame: number = this.matches.findIndex((instance) => instance.leftPlayerID === userID1 || instance.rightPlayerID === userID1 || instance.leftPlayerID === userID2 || instance.rightPlayerID === userID2);
 		if (ongoingGame > -1)
 			return;
-		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
-		const socketRight = await this.userService.getSocketIDByUserID(userID2);
+		const socketLeft = await this.userService.getSocketIDByUserID(userID1, token);
+		const socketRight = await this.userService.getSocketIDByUserID(userID2, token);
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',
@@ -79,7 +79,7 @@ export class GameService {
 	return game.ID;
   }
 
-  async handleStart(gameID: number, server: Namespace) {
+  async handleStart(gameID: number, token: string, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
@@ -90,13 +90,13 @@ export class GameService {
 	{
 		game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 		game.ballspeedx = 5;
-		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID);
-		console.log(socketLeft)
-		console.log(game.leftSocketID)
+		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+		// console.log(socketLeft)
+		// console.log(game.leftSocketID)
 		// game.leftSocketID = socketLeft;
-		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID);
-		console.log(socketRight)
-		console.log(game.rightSocketID)
+		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+		// console.log(socketRight)
+		// console.log(game.rightSocketID)
 		// game.rightSocketID = socketRight;
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
@@ -172,10 +172,10 @@ export class GameService {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
-	// const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID);
-	// const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID);
-	const socketLeft = game.leftSocketID;
-	const socketRight = game.rightSocketID;
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	// const socketLeft = game.leftSocketID;
+	// const socketRight = game.rightSocketID;
     if (game.rightPlayerID === playerID) {
 		if (move === 'up')
 		{
@@ -226,5 +226,6 @@ export class GameService {
 		}
 	const index = this.matches.indexOf(game);
 	this.matches.splice(index, 1);
+	console.log(this.matches)
   }
 }

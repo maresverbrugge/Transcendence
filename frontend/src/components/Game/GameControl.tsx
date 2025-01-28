@@ -83,7 +83,7 @@ class Paddle {
     this.y = y;
     this.w = w;
     this.h = h;
-	this.topPosition = this.y - this.h / 2;
+	this.topPosition = (window.innerHeight / 2) - (this.h / 2);
     this.context = context;
 	this.skinPath = "";
 	if (skin === "option1")
@@ -94,13 +94,14 @@ class Paddle {
 	{
 		this.img = document.createElement("img");
 		this.img.src = this.skinPath;
+		this.img.className = 'paddleimg';
 		this.img.width = this.w;
 		this.img.height = this.h;
 
 		// This next line will just add it to the <body> tag
 		document.body.appendChild(this.img);
 		this.img.setAttribute("style", "position:absolute;");;
-		this.img.style.top = `${(window.innerHeight / 2) - (this.h / 2)}px`;
+		this.img.style.top = `${this.topPosition}px`;
 		this.img.style.left = `${this.x + (window.innerWidth / 2 - 250) - 20}px`;
 	}
   }
@@ -144,7 +145,7 @@ onkeydown = (event: KeyboardEvent) => {
     move = 'down';
   }
   if (move)
-  	g_socket.emit('key', move, g_gameID, g_token);
+  	g_socket.emit('key', {move: move, gameID: g_gameID, token: g_token});
 };
 
 const GameLogic = ({ socket, skin, token }) => {
@@ -185,7 +186,10 @@ const GameLogic = ({ socket, skin, token }) => {
       ball.y = height / 2;
       ball.speedX = 0;
       ball.speedY = 0;
+	  document.querySelectorAll('.paddleimg').forEach((img) => img.remove());
 	  setTimeout(() => {
+		scoreLeft = 0;
+		scoreRight = 0;
 		navigate('/main');
 	  }, 2000);
     }
@@ -216,7 +220,7 @@ const GameLogic = ({ socket, skin, token }) => {
 			console.log('right player up');
 			paddleRight.y -= 2;
 			if (paddleRight.skinPath != "")
-				{
+			{
 			  paddleRight.topPosition -= 2;
 			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
 			}
@@ -225,11 +229,11 @@ const GameLogic = ({ socket, skin, token }) => {
 			console.log('left player up');
 			paddleLeft.y -= 2;
 			if (paddleRight.skinPath != "")
-				{
-					paddleLeft.topPosition -= 2;
-					paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-				}
-			});
+			{
+				paddleLeft.topPosition -= 2;
+				paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
+			}
+		});
 		socket.on('right down', () => {
 			console.log('right player down');
 		  paddleRight.y += 2;
@@ -273,7 +277,7 @@ const GameLogic = ({ socket, skin, token }) => {
 	socket.on('gameID', (gameID: number) => {
 		setGameID(gameID);
 		g_gameID = gameID;
-		socket.emit('start', gameID);
+		socket.emit('start', {token: g_token, gameID: gameID});
 	  });
 	  const onBeforeUnload = (ev) => {
 		  //user left the page
@@ -303,7 +307,15 @@ const GameLogic = ({ socket, skin, token }) => {
   return (
 	  <div>
       <canvas ref={canvas} height="500" width="500" className={theme} style={{ border: '1px solid black' }} />
-	  <button onClick={() => toggleDarkMode()}>{`switch up the colours`}</button>
+	  <button style={{
+          position: "absolute",
+          top: "5px",
+          left: "5px",
+          padding: "8px 12px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }} onClick={() => toggleDarkMode()}>{`switch up the colours`}</button>
     </div>
   );
 };

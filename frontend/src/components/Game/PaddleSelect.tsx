@@ -13,7 +13,7 @@ const PaddleSelect = ({}) => {
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/game`, {
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND_WS}/game`, {
       transports: ["websocket"],
       query: { token },
 	  withCredentials: true,

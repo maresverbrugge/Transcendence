@@ -49,8 +49,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('start')
-  handleGameStart(client: Socket, gameID: number) {
-    this.gameService.handleStart(gameID, this.server);
+  handleGameStart(client: Socket, payload: { token: string; gameID: number }) {
+	const { token, gameID } = payload;
+    this.gameService.handleStart(gameID, token, this.server);
   }
 
   @SubscribeMessage('reconnected')
@@ -59,7 +60,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('key')
-  async handleKey(client: Socket, move: string, gameID: number, token: string ) {
+  async handleKey(client: Socket, payload: {move: string; gameID: number; token: string }) {
+	const { move, gameID, token } = payload;
     this.gameService.handleKey(this.server, move, token, gameID);
   }
 
@@ -109,10 +111,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleDisconnect(client: Socket): Promise<void> {
     try {
 		//check if other player disconnected
-		const playerID: number = await this.userService.getUserIDBySocketID(client.id);
+		let token = client.handshake.query.token;
+        if (Array.isArray(token)) token = token[0];
+        const userID = await this.loginService.getUserIDFromCache(token);
 		const user = await this.prisma.user.findUnique({
 			where: {
-				ID: playerID,
+				ID: userID,
 			},
 			select: {
 				matches: {
@@ -135,7 +139,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		// }
 		console.log(`Client disconnected: ${client.id}`);
 		await this.prisma.user.update({
-        where: { ID: playerID },
+        where: { ID: userID },
         data: { websocketID: null, status: UserStatus.ONLINE },
       });
     } catch (error) {

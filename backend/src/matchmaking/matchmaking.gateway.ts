@@ -29,17 +29,19 @@ import { LoginService } from 'src/authentication/login/login.service';
 	@SubscribeMessage('joinqueue')
 	async handleJoinQueue(client: any, token: string) {
 		try {
+			let token = client.handshake.query.token;
+			if (Array.isArray(token)) token = token[0];
 			const userID = await this.loginService.getUserIDFromCache(token);
 			console.log(this.queue);
 			if (this.queue.length >= 1)
 			{
 				const otherID: number = this.queue.shift();
 				// make game
-				const game = await this.gameService.createGame(userID, otherID);
+				const game = await this.gameService.createGame(userID, otherID, token);
 				if (game == null)
 					throw new InternalServerErrorException('Error creating the game');
-				const userSocketID: string = await this.userService.getSocketIDByUserID(userID);
-				const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID);
+				const userSocketID: string = await this.userService.getSocketIDByUserID(userID, token);
+				const otherSocketID: string = await this.userService.getSocketIDByUserID(otherID, token);
 				this.server.to(userSocketID).to(otherSocketID).emit('newGame');
 				await this.prismaService.user.update({
 					where: { ID: userID },
