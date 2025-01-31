@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
-let end: number = 0;
-let paddleLeft: Paddle;
-let paddleRight: Paddle;
 let scoreLeft: number = 0;
 let scoreRight: number = 0;
 
@@ -16,7 +13,8 @@ class Ball {
   speedY: number;
   context: any;
   gameID: number;
-  constructor(x: number, y: number, diameter: number, context: any, gameID: number) {
+  socket: Socket;
+  constructor(x: number, y: number, diameter: number, context: any, gameID: number, socket: Socket) {
     this.x = x;
     this.y = y;
     this.diameter = diameter;
@@ -24,6 +22,7 @@ class Ball {
     this.speedY = 0;
     this.context = context;
     this.gameID = gameID;
+	this.socket = socket;
   }
   left() {
     return this.x - this.diameter / 2;
@@ -42,21 +41,21 @@ class Ball {
     this.y += this.speedY;
     if (this.right() > width) {
       scoreLeft += 1;
-      g_socket.emit('left scored', this.gameID);
+      this.socket.emit('left scored', this.gameID);
       this.x = width / 2;
       this.y = height / 2;
     }
     if (this.left() < 0) {
       scoreRight += 1;
-      g_socket.emit('right scored', this.gameID);
+      this.socket.emit('right scored', this.gameID);
       this.x = width / 2;
       this.y = height / 2;
     }
     if (this.bottom() > height) {
-      g_socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
     if (this.top() < 0) {
-      g_socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
   }
   display() {
@@ -166,7 +165,7 @@ const GameLogic = ({ socket, skin, token }) => {
   useEffect(() => {
     if (!context || gameID === null) return;
 
-    ball = new Ball(width / 2, height / 2, 50, context, gameID);
+    ball = new Ball(width / 2, height / 2, 50, context, gameID, socket);
     paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
     paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
     socket.emit('start', gameID);

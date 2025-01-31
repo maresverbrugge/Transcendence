@@ -12,11 +12,6 @@ const Game = () => {
   const [joinedGame, setJoinedGame] = useState<boolean>(false);
 
   useEffect(() => {
-    //because dev mode sometimes didnt disconnect old sockets
-    if (socket) {
-      socket.disconnect(); // Disconnect existing socket if any
-      console.log('Previous socket disconnected');
-    }
 
     // Initialize socket connection
     const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/matchmaking`, { // localhost veranderen naar react_app_var
