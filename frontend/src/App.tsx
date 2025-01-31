@@ -7,28 +7,29 @@ import Verify2FA from './components/Authentication/Verify2FA';
 import LoginRedirect from './components/Authentication/LoginRedirect';
 import ProtectedRoute from './components/Authentication/ProtectedRoute';
 import LogOut from './components/Authentication/LogOut';
-import UserAccount from './pages/UserAccount';
-import UserProfile from './pages/UserProfile';
+import UserPage from './pages/UserPage';
 import Chat from './pages/Chat';
 import Game from './pages/game';
+import ErrorHandler from './components/ErrorHandler';
+import Leaderboard from './components/User/Shared/Leaderboard';
 
-const App = () => {
-	return (
-		<Router>
-		  <Routes>
-			<Route path="/" element={<Login />} />
-			<Route path="/login/redirect" element={<LoginRedirect />} />
-			<Route path="/login/set-up-2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
-			<Route path="/login/verify-2fa" element={<Verify2FA />} />
-			<Route path="/logout" element={<LogOut />} />
-			<Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
-			<Route path="/account/" element={<ProtectedRoute element={<UserAccount />} />} />
-			<Route path="/profile/:ID" element={<ProtectedRoute element={<UserProfile />} />} />
-			<Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
-			<Route path="/game" element={<ProtectedRoute element={<Game />} />} />
-		  </Routes>
-		</Router>
-	  );
-}
+const App = () => (
+  <Router>
+	<ErrorHandler/>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/login/redirect" element={<LoginRedirect />} />
+      <Route path="/login/set-up-2fa" element={<ProtectedRoute element={<SetUp2FA />} />} />
+      <Route path="/login/verify-2fa" element={<Verify2FA />} />
+      <Route path="/logout" element={<LogOut />} />
+      <Route path="/main" element={<ProtectedRoute element={<MainPage />} />} />
+      <Route path="/profile" element={<ProtectedRoute element={<UserPage />} />} />
+      <Route path="/profile/:userID" element={<ProtectedRoute element={<UserPage />} />} />
+      <Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
+      <Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />
+      <Route path="/game" element={<ProtectedRoute element={<Game />} />} />
+    </Routes>
+  </Router>
+);
 
 export default App;

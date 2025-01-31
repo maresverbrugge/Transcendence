@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { LoginService } from 'src/authentication/login/login.service';
@@ -8,6 +8,7 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 export class FriendsController {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => LoginService))
     private readonly loginService: LoginService,
     private readonly errorHandlingService: ErrorHandlingService,
   ) {}

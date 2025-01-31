@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, ParseIntPipe, ForbiddenException, HttpCode } from '@nestjs/common';
-import { User, Message, ChannelMember } from '@prisma/client';
+import { User, Message, ChannelMember, UserStatus } from '@prisma/client';
 
 import { ChannelService } from './channel.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
@@ -35,6 +35,14 @@ type newChannelData = {
   token: string;
   memberIDs: number[];
 };
+
+type UserProfile = {
+  currentUserID: number;
+  profileID: number;
+  username: string;
+  avatarURL: string;
+  status: UserStatus;
+}
 
 type newMemberData = {
   channelID: number;
@@ -91,6 +99,11 @@ export class ChannelController {
   @Get('/members/:channelID/:token')
   async getChannelMembers(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string): Promise<ChannelMemberResponse[]> {
     return this.channelMemberService.getChannelMembers(channelID, token);
+  }
+
+  @Get('/dm-info/:channelID/:token')
+  async getDMInfo(@Param('channelID', ParseIntPipe) channelID: number, @Param('token') token: string): Promise<UserProfile> {
+    return this.channelService.getDMInfo(channelID, token);
   }
 
   @Post('/:channelID/verify-password')

@@ -1,43 +1,65 @@
 import React from 'react';
 
 interface NameAvatarStatusProps {
-    username: string;
-    avatarURL: string;
-    status: string;
+  username: string;
+  avatarURL: string;
+  status: string;
 }
 
 function NameAvatarStatus({ username, avatarURL, status }: NameAvatarStatusProps) {
-  const getStatusLabel = (status: string): string => {
+  const getStatusClass = (status: string) => {
     switch (status) {
-      case "ONLINE":
-        return "online";
-      case "OFFLINE":
-        return "offline";
-      case "IN_GAME":
-        return "in game";
-      case "IN_CHAT":
-        return "in chat";
+      case 'ONLINE':
+        return 'bg-success';
+      case 'IN_CHAT':
+        return 'bg-info';
+      case 'IN_GAME':
+        return 'bg-warning';
+      case 'OFFLINE':
+        return 'bg-danger';
       default:
-        return "unknown";
+        return 'bg-secondary';
     }
+  };
+
+  const getStatusLabel = (status: string): string => {
+    return status.toLowerCase().replace('_', ' ');
   };
 
   return (
     <div className="name-avatar-status">
-      {/* Display Avatar */}
-      <img
-        src={avatarURL}
-        alt={`${username}'s Avatar`}
-        style={{ width: '100px', height: '100px', borderRadius: '50%' }}
-      />
-      
-      {/* Display Name */}
-      <h3>{username}'s Profile</h3>
+      <div className="text-center">
+        {/* Display Avatar */}
+        <img
+          src={avatarURL}
+          alt={`${username}'s Avatar`}
+          style={{
+            width: '50%',
+            height: 'auto',
+            borderRadius: '50%',
+            marginBottom: '5%',
+          }}
+        />
 
-      {/* Display Status */}
-      <p>Status: {getStatusLabel(status)}</p>
+        {/* Display Name */}
+        <h2 style={{ fontSize: '2.5vw', marginBottom: '2%' }}>{`${username}'s`}</h2>
+        <h3 style={{ fontSize: '2vw', marginBottom: '10%' }}>profile</h3>
+
+        {/* Display Status */}
+        <span
+          className={`badge ${getStatusClass(status)}`}
+          style={{
+            fontSize: '1.2vw',
+            fontWeight: 'bold',
+            padding: '0.5rem 1rem',
+            textTransform: 'capitalize',
+          }}
+        >
+          {getStatusLabel(status)}
+        </span>
+      </div>
     </div>
   );
-};
+}
 
 export default NameAvatarStatus;

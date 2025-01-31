@@ -12,7 +12,7 @@ const Enable2FA = () => {
 
   useEffect(() => {
     if (navigateToAccount) {
-      navigate('/account');
+      navigate('/profile');
     }
   }, [navigateToAccount, navigate]);
 
@@ -27,7 +27,7 @@ const Enable2FA = () => {
       const verified = response.data;
       if (!verified) throw new Error('Invalid one-time password');
       await enableTwoFactor(token);
-      navigate('/account');
+      navigate('/profile');
     } catch (error) {
       console.error('Error verifying one-time password:', error);
       setErrorMessage('Error verifying one-time password. Please try again.');

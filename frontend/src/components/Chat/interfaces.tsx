@@ -1,4 +1,4 @@
-enum UserStatus {
+export enum UserStatus {
   ONLINE,
   OFFLINE,
   IN_GAME,
@@ -38,6 +38,6 @@ export interface UserData {
   intraUsername: string;
   websocketID: string;
   Enabled2FA: boolean;
-  status: UserStatus;
+  status: string;
   avatarURL: string;
 }
