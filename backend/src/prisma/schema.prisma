@@ -54,11 +54,10 @@ model User {
 model Match {
   matchID           Int           @id @default(autoincrement())
   status            MatchStatus   @default(PENDING) // PENDING | FINISHED
-  scorePlayer1      Int           @default(0)
-  scorePlayer2      Int           @default(0)
+  scoreLeft         Int           @default(0)
+  scoreRight        Int           @default(0)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-
   players           User[]
 }
 
