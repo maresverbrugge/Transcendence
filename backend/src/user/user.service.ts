@@ -273,6 +273,18 @@ export class UserService {
     }
   }
 
+	async getSocketIDByUserID(userID: number): Promise<string | null> {
+        const user = await this.prisma.user.findUnique({
+          where: {
+            ID: userID,
+          },
+          select: {
+            websocketID: true,
+          },
+        });
+        return user?.websocketID || null; // Return the user's websocketID if found, otherwise return null
+      }
+
   async toggleFriendship(token: string, targetUserID: number): Promise<string> {
     const userID = await this.loginService.getUserIDFromCache(token);
 
@@ -317,13 +329,6 @@ export class UserService {
       this.errorHandlingService.throwHttpException(error);
     }
   }
-
-
-
-
-
-
-
 
   // FOR LATER: REMOVE winRate and playerRating CALCULATION LOGIC FROM getUserStats FUNCTION
   // TO GAME LOGIC WHENEVER A GAME IS FINISHED

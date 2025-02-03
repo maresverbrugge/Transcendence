@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -33,9 +33,9 @@ export class GameService {
 	try {
 		var ongoingGame: number = this.matches.findIndex((instance) => instance.leftPlayerID === userID1 || instance.rightPlayerID === userID1 || instance.leftPlayerID === userID2 || instance.rightPlayerID === userID2);
 		if (ongoingGame > -1)
-			return;
-		const socketLeft = await this.userService.getSocketIDByUserID(userID1, token);
-		const socketRight = await this.userService.getSocketIDByUserID(userID2, token);
+			throw ForbiddenException("this user is already playing a game, can't add another one");
+		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
+		const socketRight = await this.userService.getSocketIDByUserID(userID2);
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',

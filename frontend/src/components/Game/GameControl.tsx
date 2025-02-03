@@ -2,12 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
 
-let g_socket: Socket;
-let g_gameID: number;
-let g_token: string;
-let end: number = 0;
-let paddleLeft: Paddle;
-let paddleRight: Paddle;
 let scoreLeft: number = 0;
 let scoreRight: number = 0;
 
@@ -19,7 +13,8 @@ class Ball {
   speedY: number;
   context: any;
   gameID: number;
-  constructor(x: number, y: number, diameter: number, context: any, gameID: number) {
+  socket: Socket;
+  constructor(x: number, y: number, diameter: number, context: any, gameID: number, socket: Socket) {
     this.x = x;
     this.y = y;
     this.diameter = diameter;
@@ -27,6 +22,7 @@ class Ball {
     this.speedY = 0;
     this.context = context;
     this.gameID = gameID;
+	this.socket = socket;
   }
   left() {
     return this.x - this.diameter / 2;
@@ -45,21 +41,21 @@ class Ball {
     this.y += this.speedY;
     if (this.right() > width) {
       scoreLeft += 1;
-      g_socket.emit('left scored', this.gameID);
+      this.socket.emit('left scored', this.gameID);
       this.x = width / 2;
       this.y = height / 2;
     }
     if (this.left() < 0) {
       scoreRight += 1;
-      g_socket.emit('right scored', this.gameID);
+      this.socket.emit('right scored', this.gameID);
       this.x = width / 2;
       this.y = height / 2;
     }
     if (this.bottom() > height) {
-      g_socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
     if (this.top() < 0) {
-      g_socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
   }
   display() {
@@ -83,25 +79,24 @@ class Paddle {
     this.y = y;
     this.w = w;
     this.h = h;
-	this.topPosition = (window.innerHeight / 2) - (this.h / 2);
+	this.topPosition = this.y - this.h / 2;
     this.context = context;
 	this.skinPath = "";
 	if (skin === "option1")
-		this.skinPath = "http://localhost:3001/images/pexels-lum3n-44775-406014.jpg";
+		this.skinPath = `${process.env.REACT_APP_URL_BACKEND}/images/pexels-lum3n-44775-406014.jpg`;
 	if (skin === "option2")
-		this.skinPath = "http://localhost:3001/images/pexels-pixabay-259915.jpg";
+		this.skinPath = `${process.env.REACT_APP_URL_BACKEND}/images/pexels-pixabay-259915.jpg`;
 	if (this.skinPath != "")
 	{
 		this.img = document.createElement("img");
 		this.img.src = this.skinPath;
-		this.img.className = 'paddleimg';
 		this.img.width = this.w;
 		this.img.height = this.h;
 
 		// This next line will just add it to the <body> tag
 		document.body.appendChild(this.img);
 		this.img.setAttribute("style", "position:absolute;");;
-		this.img.style.top = `${this.topPosition}px`;
+		this.img.style.top = `${(window.innerHeight / 2) - (this.h / 2)}px`;
 		this.img.style.left = `${this.x + (window.innerWidth / 2 - 250) - 20}px`;
 	}
   }
@@ -130,192 +125,117 @@ class Paddle {
   }
 }
 
-function map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
-  return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
-}
+const createKeyHandler = (socket: Socket, gameID: number, token: string) => {
+  return (event: KeyboardEvent) => {
+    let move: string | undefined;
+    if (event.key === 'ArrowUp') {
+      move = 'up';
+    } else if (event.key === 'ArrowDown') {
+      move = 'down';
+    }
 
-onkeydown = (event: KeyboardEvent) => {
-  if (end)
-	return;
-  let move: string;
-  if (event.key === 'ArrowUp') {
-    move = 'up';
-  }
-  if (event.key === 'ArrowDown') {
-    move = 'down';
-  }
-  if (move)
-  	g_socket.emit('key', {move: move, gameID: g_gameID, token: g_token});
+    if (move) {
+      socket.emit('key', move, gameID, token);
+    }
+  };
 };
 
 const GameLogic = ({ socket, skin, token }) => {
-	const canvasRef = useRef(null);
-	const [context, setContext] = useState<any>(null);
-	const [gameID, setGameID] = useState<number>(-1);
-	const [theme, setTheme] = useState<string>('dark');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  const [gameID, setGameID] = useState<number | null>(null);
   const navigate = useNavigate();
-  const canvas: any = React.useRef();
-  const width: number = 500;
-  const height: number = 500;
+  const [scoreLeft, setScoreLeft] = useState(0);
+  const [scoreRight, setScoreRight] = useState(0);
+  const [end, setEnd] = useState(false);
+  const width = 500;
+  const height = 500;
   let ball: Ball;
-  g_socket = socket;
-  g_token = token;
-  const draw = (context, socket) => {
-    context.clearRect(0, 0, width, height);
-	context.strokeStyle = theme === 'dark' ? 'white' : 'black';
-	context.fillStyle = theme === 'dark' ? 'white' : 'black';
-    ball.move(width, height);
-    ball.display();
-    paddleLeft.display(height);
-    paddleRight.display(height);
-    if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-      ball.speedX = -ball.speedX;
-	  socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
-    }
-    if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-      ball.speedX = -ball.speedX;
-	  socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
-    }
-    context.fillText(scoreRight, width / 2 + 30, 30); // Right side score
-    context.fillText(scoreLeft, width / 2 - 30, 30); // Left side score
-    if (scoreLeft - scoreRight === 3 || scoreRight - scoreLeft === 3) {
-      socket.emit('done', g_gameID);
-      context.fillText("You've won, nice game!", width / 2, height / 2);
-      end = 1;
-      ball.x = width / 2;
-      ball.y = height / 2;
-      ball.speedX = 0;
-      ball.speedY = 0;
-	  document.querySelectorAll('.paddleimg').forEach((img) => img.remove());
-	  setTimeout(() => {
-		scoreLeft = 0;
-		scoreRight = 0;
-		navigate('/main');
-	  }, 2000);
-    }
-};
+  let paddleLeft: Paddle;
+  let paddleRight: Paddle;
 
   useEffect(() => {
-	let frameCount: number = 0;
-	let frameId: number;
-	const ctx: any = canvas.current.getContext('2d');
+    if (!canvasRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (ctx) {
+      setContext(ctx);
+    }
+  }, []);
 
-	if (ctx) {
-		setContext(ctx);
-	}
-	if (context)
-	{
-		ball = new Ball(width / 2, height / 2, 50, context, gameID);
-		paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
-		paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-		socket.on('ballSpeedY', (speed: string) => {
-			console.log("ballspeedy" + speed)
-			ball.speedY = parseInt(speed);
-		});
-		socket.on('ballSpeedX', (speed: string) => {
-			console.log("ballspeedx" + speed)
-			ball.speedX = parseInt(speed);
-		});
-		socket.on('right up', () => {
-			console.log('right player up');
-			paddleRight.y -= 2;
-			if (paddleRight.skinPath != "")
-			{
-			  paddleRight.topPosition -= 2;
-			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-			}
-		});
-		socket.on('left up', () => {
-			console.log('left player up');
-			paddleLeft.y -= 2;
-			if (paddleRight.skinPath != "")
-			{
-				paddleLeft.topPosition -= 2;
-				paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-			}
-		});
-		socket.on('right down', () => {
-			console.log('right player down');
-		  paddleRight.y += 2;
-		  if (paddleRight.skinPath != "")
-		  {
-			  paddleRight.topPosition += 2;
-			  paddleRight.img.style.top = `${paddleRight.topPosition}px`;
-			}
-		});
-		socket.on('left down', () => {
-			console.log('left player down');
-			paddleLeft.y += 2;
-			if (paddleRight.skinPath != "")
-			{
-				paddleLeft.topPosition += 2;
-				paddleLeft.img.style.top = `${paddleLeft.topPosition}px`;
-			}
-		});
-		// socket.on('pause', () => {
-		// 	ball.speedX = 0;
-		// 	ball.speedY = 0;
-		// });
-		
-		// socket.on('disconnect', () => {
-		// 	console.log('game paused');
-		// 	ball.speedX = 0;
-		// 	ball.speedY = 0;
-		// });
-	
-		// socket.on('connect'), () => {
-		// 	socket.emit('reconnected', gameID);
-		// }
-		
-		const render = () => {
-			frameCount++;
-			draw(context, socket);
-			frameId = window.requestAnimationFrame(render);
-		};
-		render();
-	}
-	socket.on('gameID', (gameID: number) => {
-		setGameID(gameID);
-		g_gameID = gameID;
-		socket.emit('start', {token: g_token, gameID: gameID});
-	  });
-	  const onBeforeUnload = (ev) => {
-		  //user left the page
-	  };
-	window.addEventListener("beforeunload", onBeforeUnload);
+  useEffect(() => {
+    if (!context || gameID === null) return;
+
+    ball = new Ball(width / 2, height / 2, 50, context, gameID, socket);
+    paddleLeft = new Paddle(15, height / 2, 40, 200, context, skin);
+    paddleRight = new Paddle(width - 15, height / 2, 40, 200, context, skin);
+    socket.emit('start', gameID);
+
+    let frameId: number;
+
+    const draw = () => {
+      if (end) return;
+
+      context.clearRect(0, 0, width, height);
+      context.strokeStyle = 'black';
+      context.fillStyle = 'black';
+
+      ball.move(width, height);
+      ball.display();
+      paddleLeft.display(height);
+      paddleRight.display(height);
+
+      if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
+        ball.speedX = -ball.speedX;
+        socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
+      }
+      if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
+        ball.speedX = -ball.speedX;
+        socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
+      }
+
+      context.fillText(scoreRight.toString(), width / 2 + 30, 30); // Right score
+      context.fillText(scoreLeft.toString(), width / 2 - 30, 30); // Left score
+
+      if (Math.abs(scoreLeft - scoreRight) === 3) {
+        socket.emit('done', gameID);
+        context.fillText("You've won, nice game!", width / 2, height / 2);
+        setEnd(true);
+        ball.x = width / 2;
+        ball.y = height / 2;
+        ball.speedX = 0;
+        ball.speedY = 0;
+        setTimeout(() => navigate('/landingpage'), 2000);
+      }
+
+      frameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    // Event listener for keydown
+    const keyHandler = createKeyHandler(socket, gameID, token);
+    document.addEventListener('keydown', keyHandler);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
-      socket.off('ballSpeedY');
-	  socket.off('ballSpeedX');
-      socket.off('right up');
-      socket.off('left up');
-      socket.off('right down');
-      socket.off('left down');
-	  socket.off('gameID');
-	//   socket.off('pause');
-	//   socket.off('disconnect');
-	//   socket.off('connect');
-	  window.removeEventListener("beforeunload", onBeforeUnload);
+      cancelAnimationFrame(frameId);
+      document.removeEventListener('keydown', keyHandler);
     };
-  }, [context, theme]);
+  }, [context, gameID, end]);
 
-  const toggleDarkMode = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
+  useEffect(() => {
+    socket.on('gameID', (id: number) => {
+      setGameID(id);
+      console.log("Received game ID:", id);
+    });
+
+    return () => {
+      socket.off('gameID');
+    };
+  }, []);
 
   return (
-	  <div>
-      <canvas ref={canvas} height="500" width="500" className={theme} style={{ border: '1px solid black' }} />
-	  <button style={{
-          position: "absolute",
-          top: "5px",
-          left: "5px",
-          padding: "8px 12px",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }} onClick={() => toggleDarkMode()}>{`switch up the colours`}</button>
+    <div>
+      <canvas ref={canvasRef} height="500" width="500" style={{ border: '1px solid black' }} />
     </div>
   );
 };

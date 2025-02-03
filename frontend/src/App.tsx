@@ -28,8 +28,8 @@ const App = () => (
       <Route path="/profile/:userID" element={<ProtectedRoute element={<UserPage />} />} />
       <Route path="/chat" element={<ProtectedRoute element={<Chat />} />} />
       <Route path="/leaderboard/" element={<ProtectedRoute element={<Leaderboard />} />} />
-		<Route path="/queue" element={<ProtectedRoute element={<Game />}  />} />
-		<Route path="/game" element={<ProtectedRoute element={<PaddleSelect />}  />} />
+	  <Route path="/queue" element={<ProtectedRoute element={<Game />}  />} />
+	  <Route path="/game" element={<ProtectedRoute element={<PaddleSelect />}  />} />
     </Routes>
   </Router>
 );
