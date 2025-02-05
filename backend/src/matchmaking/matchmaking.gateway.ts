@@ -54,6 +54,8 @@ import { LoginService } from 'src/authentication/login/login.service';
 			}
 			else
 			{
+				if (this.queue.indexOf(userID) > -1)
+					return;
 			  this.queue.push(userID);
 			}
 		} catch (error) {

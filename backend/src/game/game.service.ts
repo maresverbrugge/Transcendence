@@ -33,9 +33,9 @@ export class GameService {
 	try {
 		var ongoingGame: number = this.matches.findIndex((instance) => instance.leftPlayerID === userID1 || instance.rightPlayerID === userID1 || instance.leftPlayerID === userID2 || instance.rightPlayerID === userID2);
 		if (ongoingGame > -1)
-			throw ForbiddenException("this user is already playing a game, can't add another one");
-		const socketLeft = await this.userService.getSocketIDByUserID(userID1);
-		const socketRight = await this.userService.getSocketIDByUserID(userID2);
+			throw new ForbiddenException("this user is already playing a game, can't add another one");
+		const socketLeft = await this.userService.getSocketIDByUserID(userID1, token);
+		const socketRight = await this.userService.getSocketIDByUserID(userID2, token);
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',
@@ -91,11 +91,11 @@ export class GameService {
 		game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 		game.ballspeedx = 5;
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
-		// console.log(socketLeft)
+		console.log(socketLeft)
 		// console.log(game.leftSocketID)
 		// game.leftSocketID = socketLeft;
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
-		// console.log(socketRight)
+		console.log(socketRight)
 		// console.log(game.rightSocketID)
 		// game.rightSocketID = socketRight;
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
