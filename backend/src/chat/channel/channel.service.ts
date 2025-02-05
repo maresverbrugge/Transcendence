@@ -180,9 +180,15 @@ export class ChannelService {
     }
   }
 
+  async hasTooManyChannels(): Promise<boolean> {
+    const channelCount = await this.prisma.channel.count();
+    return channelCount > 20;
+  }
+
   async newChannel(data: newChannelData): Promise<ChannelWithMembersAndMessages> {
     try {
         const ownerID = await this.loginService.getUserIDFromCache(data.token);
+        if (this.hasTooManyChannels()) throw new ForbiddenException('Maximum number of channels reached. Try joining an existing channel.');
         if (data.isDM && (await this.DMExists(ownerID, data.memberIDs))) throw new ForbiddenException('DM already exists');
         const hashedPassword = data.password ? await this.hashingService.hashPassword(data.password) : null;
         const newChannel = await this.prisma.channel.create({
