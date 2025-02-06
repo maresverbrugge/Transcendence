@@ -6,11 +6,11 @@ import { emitter } from '../../emitter';
 import { MessageData } from '../interfaces';
 
 interface MessengerProps {
-  channelID: number | null;
+  currentChannelID: number | null;
   socket: Socket;
 }
 
-const Messenger = ({ channelID, socket }: MessengerProps) => {
+const Messenger = ({ currentChannelID, socket }: MessengerProps) => {
   const [messages, setMessages] = useState<MessageData[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const token = localStorage.getItem('authenticationToken');
@@ -26,7 +26,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get<MessageData[]>(
-          `${process.env.REACT_APP_URL_BACKEND}/chat/message/channel/${channelID}/${token}`
+          `${process.env.REACT_APP_URL_BACKEND}/chat/message/channel/${currentChannelID}/${token}`
         );
         setMessages(response.data);
       } catch (error) {
@@ -34,7 +34,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
     }
     };
 
-    if (channelID) {
+    if (currentChannelID) {
       fetchMessages();
     }
 
@@ -54,7 +54,10 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
       }
     };
 
-    socket.on('newMessage', ({ messageID }: { messageID: number }) => {
+    socket.on('newMessage', ({ channelID, messageID }: {channelID: number, messageID: number }) => {
+      console.log(channelID,  currentChannelID);
+      if (channelID != currentChannelID)
+        return;
       setMessages((prevMessages) => {
         if (prevMessages.length === 0 || prevMessages[prevMessages.length - 1].ID !== messageID) {
           fetchMessage(messageID);
@@ -69,7 +72,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
       socket.off('newMessage');
       socket.off('reloadMessages')
     };
-  }, [channelID, socket]);
+  }, [currentChannelID, socket]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -79,7 +82,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      socket.emit('sendMessage', { channelID, token, content: newMessage });
+      socket.emit('sendMessage', { channelID: currentChannelID, token, content: newMessage });
       setNewMessage('');
     }
   };
@@ -90,7 +93,7 @@ const Messenger = ({ channelID, socket }: MessengerProps) => {
         <div className="card-body p-3 pb-2" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="messenger-container" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              {!channelID ? (
+              {!currentChannelID ? (
                 <div className="select-channel-message text-center"><h5>Select a channel to start chatting!</h5></div>
               ) : (
                 <>

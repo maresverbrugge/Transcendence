@@ -92,7 +92,7 @@ const Chat = () => {
 
       <div className="row g-4" style={{ height: '87%' }}>
         <Channels selectedChannelID={channelID} socket={socket}/>
-        <Messenger channelID={channelID} socket={socket}/>
+        <Messenger currentChannelID={channelID} socket={socket}/>
         <ChatInfo channelID={channelID} friends={friends} socket={socket}/>
       </div>
     </div>
