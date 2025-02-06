@@ -39,8 +39,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	try {
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
 		const gameID: number = this.gameService.getGameID(memberID);
-		console.log(gameID)
 		client.emit('gameID', gameID);
+		const side: number = await this.gameService.getSide(gameID, token);
+		client.emit('side', side);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
 		console.error(error);
@@ -77,12 +78,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('hit paddle')
   async handleHitPaddle(client: Socket, gameID: number, value: number, oldHigh: number) {
-    this.server.emit('ballSpeedY', this.gameService.handleHitPaddle(gameID, value, oldHigh));
+	const speedY: number = this.gameService.handleHitPaddle(gameID, value, oldHigh);
+    this.server.emit('ballSpeedY', speedY);
+	this.gameService.handleReverseSpeedX(gameID);
   }
 
-  @SubscribeMessage('reverse ball speedy')
+  @SubscribeMessage('reverse ball speedY')
   async handleReverseSpeedY(client: Socket, gameID: number) {
-    this.server.emit('ballSpeedY', this.gameService.handleReverseSpeedY(gameID));
+	  const speedY: number = this.gameService.handleReverseSpeedY(gameID);
+    client.emit('ballSpeedY', speedY);
   }
 
   @SubscribeMessage('done')

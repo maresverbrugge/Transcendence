@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
+import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 
 class Ball {
   x: number;
@@ -53,10 +54,10 @@ class Ball {
       this.y = height / 2;
     }
     if (this.bottom() > height) {
-      this.socket.emit('reverse ballRef speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
     if (this.top() < 0) {
-      this.socket.emit('reverse ballRef speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', this.gameID);
     }
   }
   display() {
@@ -90,7 +91,6 @@ class Paddle {
 	  } else {
 		this.img = null;
 	  }
-	  console.log(this.img.complete)
   }
   left() {
     return this.x - this.w / 2;
@@ -114,7 +114,7 @@ class Paddle {
     this.context.beginPath();
     this.context.rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
     this.context.stroke();
-	if (this.img && this.img.complete) {
+	if (this.img) {
 		this.context.drawImage(this.img, this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
 	  }
   }
@@ -140,6 +140,7 @@ const GameLogic = ({ socket, skin, token }) => {
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [gameID, setGameID] = useState<number | null>(null);
   const navigate = useNavigate();
+  const [side, setSide] = useState(0);
   const [scoreLeft, setScoreLeft] = useState(0);
   const [scoreRight, setScoreRight] = useState(0);
   const [end, setEnd] = useState(false);
@@ -192,11 +193,11 @@ const GameLogic = ({ socket, skin, token }) => {
     paddleRight.display(height);
 
     if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-      ball.speedX = -ball.speedX;
+		ballRef.current.speedX *= -1;
       socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
     }
     if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-      ball.speedX = -ball.speedX;
+		ballRef.current.speedX *= -1;
       socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
     }
 
@@ -205,13 +206,11 @@ const GameLogic = ({ socket, skin, token }) => {
 
     if (Math.abs(scoreLeft - scoreRight) === 3) {
       socket.emit('done', gameID);
-      context.fillText("You've won, nice game!", width / 2, height / 2);
       setEnd(true);
       ball.x = width / 2;
       ball.y = height / 2;
       ball.speedX = 0;
       ball.speedY = 0;
-      setTimeout(() => navigate('/main'), 2000);
     }
 
       frameId = requestAnimationFrame(draw);
@@ -232,34 +231,32 @@ const GameLogic = ({ socket, skin, token }) => {
   useEffect(() => {
     socket.on('gameID', (id: number) => {
       setGameID(id);
-      console.log("Received game ID:", id);
     });
+	socket.on('side', (side: number) => {
+		setSide(side)
+	  });
 	socket.on('ballSpeedY', (speed: string) => {
-		console.log(speed)
 	  ballRef.current.speedY = parseInt(speed);
 	});
 	socket.on('ballSpeedX', (speed: string) => {
 		ballRef.current.speedX = parseInt(speed);
 	});
 	socket.on('right up', () => {
-	  console.log('right player up');
 	  paddleRightRef.current.y -= 3;
 	});
 	socket.on('left up', () => {
-	  console.log('left player up');
 	  paddleLeftRef.current.y -= 3;
 	});
 	socket.on('right down', () => {
-	  console.log('right player down');
 	  paddleRightRef.current.y += 3;
 	});
 	socket.on('left down', () => {
-	  console.log('left player down');
 	  paddleLeftRef.current.y += 3;
 	});
 
     return () => {
       socket.off('gameID');
+	  socket.off('side');
 	  socket.off('ballSpeedY');
 	socket.off('ballSpeedX');
 	socket.off('right up');
@@ -271,7 +268,39 @@ const GameLogic = ({ socket, skin, token }) => {
 
   return (
     <div>
-      <canvas ref={canvasRef} height="500" width="500" style={{ border: '1px solid black' }} />
+		<canvas ref={canvasRef} height="500" width="500" className="border border-light rounded" />
+          {end && side == 0 && scoreLeft > scoreRight && (
+            <div className="mt-3">
+              <h4 className="text-success">You won, yay!</h4>
+              <Button variant="outline-light" onClick={() => navigate('/main')}>
+                Back to Main Menu
+              </Button>
+            </div>
+          )}
+		  {end && side == 0 && scoreRight > scoreLeft && (
+            <div className="mt-3">
+              <h4 className="text-success">You lose, better luck next time!</h4>
+              <Button variant="outline-light" onClick={() => navigate('/main')}>
+                Back to Main Menu
+              </Button>
+            </div>
+          )}
+		  {end && side == 1 && scoreRight > scoreLeft && (
+            <div className="mt-3">
+              <h4 className="text-success">You won, yay!</h4>
+              <Button variant="outline-light" onClick={() => navigate('/main')}>
+                Back to Main Menu
+              </Button>
+            </div>
+          )}
+		  {end && side == 1 && scoreLeft > scoreRight && (
+            <div className="mt-3">
+              <h4 className="text-success">You lose, better luck next time!</h4>
+              <Button variant="outline-light" onClick={() => navigate('/main')}>
+                Back to Main Menu
+              </Button>
+            </div>
+          )}
     </div>
   );
 };

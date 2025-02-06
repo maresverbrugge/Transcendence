@@ -32,7 +32,6 @@ import { LoginService } from 'src/authentication/login/login.service';
 			let token = client.handshake.query.token;
 			if (Array.isArray(token)) token = token[0];
 			const userID = await this.loginService.getUserIDFromCache(token);
-			console.log(this.queue);
 			if (this.queue.length >= 1)
 			{
 				const otherID: number = this.queue.shift();
@@ -59,7 +58,7 @@ import { LoginService } from 'src/authentication/login/login.service';
 			  this.queue.push(userID);
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 			client.emit('error');
 		}
 	}

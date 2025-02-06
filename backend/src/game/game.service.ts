@@ -66,7 +66,6 @@ export class GameService {
 			  },
 		});
 		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
-		console.log(this.matches)
 		return newGame;
 	} catch (error) {
 		console.error(error);
@@ -79,23 +78,31 @@ export class GameService {
 	return game.ID;
   }
 
+  async getSide(gameID: number, token: string): Promise<number> {
+	  const playerID = await this.loginService.getUserIDFromCache(token);
+	var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
+	if (playerID == game.leftPlayerID)
+		return 0;
+	else
+		return 1;
+  }
+
   async handleStart(gameID: number, token: string, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
-	console.log("start game", game)
 	if (game.firstPlayerReady)
 	{
 		game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 		game.ballspeedx = 5;
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
-		console.log(socketLeft)
+		// console.log(socketLeft)
 		// console.log(game.leftSocketID)
 		// game.leftSocketID = socketLeft;
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
-		console.log(socketRight)
+		// console.log(socketRight)
 		// console.log(game.rightSocketID)
 		// game.rightSocketID = socketRight;
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
@@ -147,22 +154,24 @@ export class GameService {
     game.scoreRight += 1;
   }
 
-  handleReverseSpeedY(gameID: number) {
+  handleReverseSpeedY(gameID: number): number {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
     game.ballspeedy *= -1;
+	return game.ballspeedy;
   }
 
-  handleReverseSpeedX(gameID: number) {
+  handleReverseSpeedX(gameID: number): number {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
     game.ballspeedx *= -1;
+	return game.ballspeedx;
   }
 
   async handleKey(server: Namespace, move: string, token: string, gameID: number) {
@@ -226,6 +235,5 @@ export class GameService {
 		}
 	const index = this.matches.indexOf(game);
 	this.matches.splice(index, 1);
-	console.log(this.matches)
   }
 }
