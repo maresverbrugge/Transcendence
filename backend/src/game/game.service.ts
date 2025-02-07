@@ -2,7 +2,7 @@ import { Injectable, ForbiddenException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { User, Match, MatchStatus } from '@prisma/client';
+import { Match, MatchStatus } from '@prisma/client';
 import { LoginService } from 'src/authentication/login/login.service';
 
 interface MatchInstance

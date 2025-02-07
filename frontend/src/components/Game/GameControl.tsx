@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
-import { Container, Card, Button, Row, Col } from 'react-bootstrap';
 
 class Ball {
   x: number;
@@ -72,7 +71,6 @@ class Paddle {
   y: number;
   w: number;
   h: number;
-  skinPath: string;
   topPosition: number;
   context: CanvasRenderingContext2D;
   img: HTMLImageElement | null;

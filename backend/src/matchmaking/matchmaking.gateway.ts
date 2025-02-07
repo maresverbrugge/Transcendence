@@ -3,7 +3,7 @@
   import { Socket, Namespace } from 'socket.io';
   import { PrismaService } from 'src/prisma/prisma.service';
   import { UserService } from 'src/user/user.service';
-  import { User, UserStatus, Match } from '@prisma/client';
+  import { UserStatus } from '@prisma/client';
   import { GameService } from 'src/game/game.service';
 import { LoginService } from 'src/authentication/login/login.service';
   

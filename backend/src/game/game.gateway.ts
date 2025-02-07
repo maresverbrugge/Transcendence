@@ -1,6 +1,5 @@
 import {
   SubscribeMessage,
-  MessageBody,
   WebSocketGateway,
   WebSocketServer,
   OnGatewayInit,
@@ -8,10 +7,10 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Socket, Server, Namespace } from 'socket.io';
+import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { User, UserStatus, Match, MatchStatus } from '@prisma/client';
+import { UserStatus, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
 import { LoginService } from 'src/authentication/login/login.service';
 

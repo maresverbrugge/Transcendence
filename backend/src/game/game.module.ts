@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameService } from './game.service';
 import { LoginService } from 'src/authentication/login/login.service';
