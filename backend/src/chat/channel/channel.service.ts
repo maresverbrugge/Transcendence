@@ -137,8 +137,8 @@ export class ChannelService {
     });
     if (!channelMember) throw new NotFoundException('ChannelMember not found');
     if (!channelMember.isBanned) {
+      await this.messageService.sendActionLogMessage(channelID, channelMember.user.username, 'leave');
       await this.channelMemberService.deleteChannelMember(channelMember.ID);
-      this.messageService.sendActionLogMessage(channelID, channelMember.user.username, 'leave');
     }
     if(channelMember.isOwner)
       await this.assignNewOwner(channelID);
