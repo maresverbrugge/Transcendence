@@ -53,7 +53,7 @@ export class MessageService {
     if (messageCount > 80) {
       const oldestMessage = await this.prisma.message.findFirst({
         where: { channelID },
-        orderBy: { ID: 'asc' }, // Assuming id is auto-incrementing
+        orderBy: { createdAt: 'asc' },
       });
   
       if (oldestMessage) {
@@ -105,6 +105,7 @@ export class MessageService {
         join: `${username} has joined the channel.`,
         leave: `${username} has left the channel.`,
       };
+      await this.enforceMessageLimit(channelID);
       return await this.prisma.message.create({
         data: {
           content: actionMessageMap[action],

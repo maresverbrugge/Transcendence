@@ -92,11 +92,10 @@ model Message {
   ID                Int           @id @default(autoincrement())
   content           String
   createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
   senderName        String
   
   senderID          Int?
-  sender            User?          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
+  sender            User?         @relation(fields: [senderID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
