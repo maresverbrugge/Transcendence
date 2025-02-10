@@ -60,7 +60,6 @@ export class MessageService {
         await this.prisma.message.delete({
           where: { ID: oldestMessage.ID },
         });
-        console.log(`Deleted oldest message (ID: ${oldestMessage.ID}, message: ${oldestMessage.content}) from channel ${channelID}`);
       }
     }
   }
