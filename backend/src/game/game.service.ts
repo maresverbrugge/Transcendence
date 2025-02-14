@@ -14,8 +14,6 @@ interface MatchInstance
   rightSocketID: string,
   ballspeedx: number,
   ballspeedy: number,
-  paddlerightspeedy: number,
-  paddleleftspeedy: number,
   scoreLeft: number,
   scoreRight: number,
   firstPlayerReady: boolean,
@@ -34,8 +32,6 @@ export class GameService {
 		var ongoingGame: number = this.matches.findIndex((instance) => instance.leftPlayerID === userID1 || instance.rightPlayerID === userID1 || instance.leftPlayerID === userID2 || instance.rightPlayerID === userID2);
 		if (ongoingGame > -1)
 			throw new ForbiddenException("this user is already playing a game, can't add another one");
-		const socketLeft = await this.userService.getSocketIDByUserID(userID1, token);
-		const socketRight = await this.userService.getSocketIDByUserID(userID2, token);
 		const newGame = await this.prisma.match.create({
 		  data: {
 			status: 'PENDING',
@@ -65,7 +61,7 @@ export class GameService {
 				  },
 			  },
 		});
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: socketLeft, rightPlayerID: userID2, rightSocketID: socketRight, ballspeedx: 0, ballspeedy: 0, paddlerightspeedy: 0, paddleleftspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: null, rightPlayerID: userID2, rightSocketID: null, ballspeedx: 0, ballspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
 		return newGame;
 	} catch (error) {
 		console.error(error);
@@ -95,7 +91,8 @@ export class GameService {
     }
 	if (game.firstPlayerReady)
 	{
-		game.ballspeedy = Math.floor(Math.random() * 6 - 3);
+		while (game.ballspeedy == 0)
+			game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 		game.ballspeedx = 5;
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		// console.log(socketLeft)
@@ -188,23 +185,19 @@ export class GameService {
     if (game.rightPlayerID === playerID) {
 		if (move === 'up')
 		{
-			game.paddlerightspeedy = 2;
 			server.to(socketRight).to(socketLeft).emit('right up');
 		}
       else
 	  {
-	      game.paddlerightspeedy = -2;
 		  server.to(socketRight).to(socketLeft).emit('right down');
 	  }
     } else {
       if (move === 'up')
 		{
-			game.paddleleftspeedy = 2;
 			server.to(socketRight).to(socketLeft).emit('left up');
 		}
       else
 	  {
-	      game.paddleleftspeedy = -2;
 		  server.to(socketRight).to(socketLeft).emit('left down');
 	  }
     }
