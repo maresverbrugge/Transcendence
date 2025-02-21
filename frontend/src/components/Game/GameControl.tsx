@@ -240,16 +240,16 @@ const GameLogic = ({ socket, skin, token }) => {
 		ballRef.current.speedX = parseInt(speed);
 	});
 	socket.on('right up', () => {
-	  paddleRightRef.current.y -= 3;
+	  paddleRightRef.current.y -= 5;
 	});
 	socket.on('left up', () => {
-	  paddleLeftRef.current.y -= 3;
+	  paddleLeftRef.current.y -= 5;
 	});
 	socket.on('right down', () => {
-	  paddleRightRef.current.y += 3;
+	  paddleRightRef.current.y += 5;
 	});
 	socket.on('left down', () => {
-	  paddleLeftRef.current.y += 3;
+	  paddleLeftRef.current.y += 5;
 	});
 	socket.on('left score', () => {
 		setScoreLeft(prev => prev + 1);
