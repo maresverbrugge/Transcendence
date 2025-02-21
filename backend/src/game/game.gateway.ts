@@ -66,13 +66,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('left scored')
-  async handleScoreLeft(client: Socket, gameID: number) {
-    this.gameService.handleScoreLeft(gameID);
+  async handleScoreLeft(client: Socket, payload: {gameID: number; token: string }) {
+	const { gameID, token } = payload;
+    this.gameService.handleScoreLeft(this.server, gameID, token);
   }
 
   @SubscribeMessage('right scored')
-  async handleScoreRight(client: Socket, gameID: number) {
-    this.gameService.handleScoreRight(gameID);
+  async handleScoreRight(client: Socket, payload: {gameID: number; token: string }) {
+	const { gameID, token } = payload;
+    this.gameService.handleScoreRight(this.server, gameID, token);
   }
 
   @SubscribeMessage('hit paddle')
@@ -89,8 +91,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('done')
-  handleGameEnd(client: Socket, gameID: number) {
-	this.gameService.handleEnd(gameID, client);
+  handleGameEnd(client: Socket, payload: {gameID: number; token: string }) {
+	const { gameID, token } = payload;
+	this.gameService.handleEnd(this.server, gameID, client, token);
   }
 
   afterInit(server: Namespace) {

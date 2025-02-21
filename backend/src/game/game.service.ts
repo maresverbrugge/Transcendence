@@ -133,22 +133,28 @@ export class GameService {
     return game.ballspeedy;
   }
 
-  async handleScoreLeft(gameID: number) {
+  async handleScoreLeft(server: Namespace, gameID: number, token: string) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
     game.scoreLeft += 1;
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	server.to(socketRight).to(socketLeft).emit('left score');
   }
 
-  async handleScoreRight(gameID: number) {
+  async handleScoreRight(server: Namespace, gameID: number, token: string) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
     game.scoreRight += 1;
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	server.to(socketRight).to(socketLeft).emit('right score');
   }
 
   handleReverseSpeedY(gameID: number): number {
@@ -203,13 +209,16 @@ export class GameService {
     }
   }
 
-  async handleEnd(gameID: number, client: Socket): Promise<void> {
+  async handleEnd(server: Namespace, gameID: number, client: Socket, token: string): Promise<void> {
 	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	  if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
 	  try {
+		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+		server.to(socketRight).to(socketLeft).emit('finished');
 		  await this.prisma.match.update({
 			  where: {
 				  matchID: gameID,

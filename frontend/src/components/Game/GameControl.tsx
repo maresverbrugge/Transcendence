@@ -13,9 +13,8 @@ class Ball {
   context: any;
   gameID: number;
   socket: Socket;
-  setScoreLeft: React.Dispatch<React.SetStateAction<number>>;
-  setScoreRight: React.Dispatch<React.SetStateAction<number>>;
-  constructor(x: number, y: number, diameter: number, context: any, gameID: number, socket: Socket, setScoreLeft: React.Dispatch<React.SetStateAction<number>>, setScoreRight: React.Dispatch<React.SetStateAction<number>>) {
+  token: string;
+  constructor(x: number, y: number, diameter: number, context: any, gameID: number, socket: Socket, token: string) {
     this.x = x;
     this.y = y;
     this.diameter = diameter;
@@ -24,8 +23,7 @@ class Ball {
     this.context = context;
     this.gameID = gameID;
 	this.socket = socket;
-	this.setScoreLeft = setScoreLeft;
-    this.setScoreRight = setScoreRight;
+	this.token = token;
   }
   left() {
     return this.x - this.diameter / 2;
@@ -43,14 +41,12 @@ class Ball {
     this.x += this.speedX;
     this.y += this.speedY;
     if (this.right() > width) {
-		this.setScoreLeft(prev => prev + 1);
-      this.socket.emit('left scored', this.gameID);
+      this.socket.emit('left scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
     }
     if (this.left() < 0) {
-		this.setScoreRight(prev => prev + 1);
-      this.socket.emit('right scored', this.gameID);
+      this.socket.emit('right scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
     }
@@ -130,7 +126,7 @@ const createKeyHandler = (socket: Socket, gameID: number, token: string) => {
     }
 
     if (move) {
-      socket.emit('key', { move, gameID, token });
+      socket.emit('key', { move: move, gameID: gameID, token: token });
     }
   };
 };
@@ -161,11 +157,11 @@ const GameLogic = ({ socket, skin, token }) => {
   useEffect(() => {
 	if (!context || gameID === null) return;
   
-	ballRef.current = new Ball(width / 2, height / 2, 50, context, gameID, socket, setScoreLeft, setScoreRight);
+	ballRef.current = new Ball(width / 2, height / 2, 50, context, gameID, socket, token);
 	paddleLeftRef.current = new Paddle(15, height / 2, 40, 200, context, skin);
 	paddleRightRef.current = new Paddle(width - 15, height / 2, 40, 200, context, skin);
   
-	socket.emit('start', { token, gameID });
+	socket.emit('start', { token: token, gameID: gameID });
   
   }, [context, gameID]);
   
@@ -205,8 +201,7 @@ const GameLogic = ({ socket, skin, token }) => {
     context.fillText(scoreLeft.toString(), width / 2 - 30, 30);
 
     if (Math.abs(scoreLeft - scoreRight) === 3) {
-      socket.emit('done', gameID);
-      setEnd(true);
+      socket.emit('done', { gameID, token });
       ball.x = width / 2;
       ball.y = height / 2;
       ball.speedX = 0;
@@ -215,23 +210,26 @@ const GameLogic = ({ socket, skin, token }) => {
 
       frameId = requestAnimationFrame(draw);
     };
-
+	
     draw();
 
     // Event listener for keydown
     const keyHandler = createKeyHandler(socket, gameID, token);
     document.addEventListener('keydown', keyHandler);
-
+	
     return () => {
-      cancelAnimationFrame(frameId);
-      document.removeEventListener('keydown', keyHandler);
+		cancelAnimationFrame(frameId);
+		document.removeEventListener('keydown', keyHandler);
     };
-  }, [context, gameID, end, scoreLeft, scoreRight]);
+}, [context, gameID, end, scoreLeft, scoreRight]);
 
   useEffect(() => {
     socket.on('gameID', (id: number) => {
       setGameID(id);
     });
+	socket.on('finished', () => {
+		setEnd(true);
+	  });
 	socket.on('side', (side: number) => {
 		setSide(side)
 	  });
@@ -253,16 +251,25 @@ const GameLogic = ({ socket, skin, token }) => {
 	socket.on('left down', () => {
 	  paddleLeftRef.current.y += 3;
 	});
+	socket.on('left score', () => {
+		setScoreLeft(prev => prev + 1);
+	  });
+	socket.on('right score', () => {
+		setScoreRight(prev => prev + 1);
+	  });
 
     return () => {
-      socket.off('gameID');
-	  socket.off('side');
-	  socket.off('ballSpeedY');
+    socket.off('gameID');
+	socket.off('finished');
+	socket.off('side');
+	socket.off('ballSpeedY');
 	socket.off('ballSpeedX');
 	socket.off('right up');
 	socket.off('left up');
 	socket.off('right down');
 	socket.off('left down');
+	socket.off('left score');
+	socket.off('right score');
     };
   }, []);
 
