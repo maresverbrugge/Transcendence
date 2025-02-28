@@ -257,6 +257,9 @@ const GameLogic = ({ socket, skin, token }) => {
 	socket.on('right score', () => {
 		setScoreRight(prev => prev + 1);
 	  });
+	socket.on('disconnection', () => {
+		setEnd(true);
+	  });
 
     return () => {
     socket.off('gameID');
@@ -270,6 +273,7 @@ const GameLogic = ({ socket, skin, token }) => {
 	socket.off('left down');
 	socket.off('left score');
 	socket.off('right score');
+	socket.off('disconnection');
     };
   }, []);
 

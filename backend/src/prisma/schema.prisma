@@ -25,6 +25,7 @@ enum UserStatus {
 enum MatchStatus {
   PENDING
   FINISHED
+  CANCELED
 }
 
 model User {

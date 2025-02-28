@@ -111,14 +111,6 @@ export class GameService {
 	}
   }
 
-  //detect if gamecontrol component unmounted while finished == false, then send a notification to the other player
-
-//   handleReconnection(gameID: number, server: Namespace) {
-//     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-// 	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedY', game.ballspeedy);
-// 	server.to(game.leftSocketID).to(game.rightSocketID).emit('ballSpeedX', game.ballspeedx);
-//   }
-
   map_range(value: number, low1: number, high1: number, low2: number, high2: number) {
 	return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
   }
@@ -238,4 +230,33 @@ export class GameService {
 	const index = this.matches.indexOf(game);
 	this.matches.splice(index, 1);
   }
+
+  async handleDisconnection(server: Namespace, gameID: number, client: Socket, token: string): Promise<void> {
+	var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	if (!game) {
+	  console.error(`Game with ID ${gameID} not found.`);
+	  return; // Exit the function to prevent further execution
+  }
+  try {
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	server.to(socketRight).to(socketLeft).emit('disconnection');
+	await this.prisma.match.update({
+		where: {
+			matchID: gameID,
+		  },
+		  data: {
+			  status: MatchStatus.CANCELED,
+			  updatedAt: new Date(),
+		  },
+	  });
+	  console.error("this game got interrupted by something, who closed the tab?");
+} catch (error) {
+	console.error("couldn't save game to the database, too bad");
+	console.error(error);
+	client.emit('error');
+}
+  const index = this.matches.indexOf(game);
+  this.matches.splice(index, 1);
+}
 }

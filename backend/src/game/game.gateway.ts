@@ -119,30 +119,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		//check if other player disconnected
 		let token = client.handshake.query.token;
         if (Array.isArray(token)) token = token[0];
-        const userID = await this.loginService.getUserIDFromCache(token);
-		const user = await this.prisma.user.findUnique({
-			where: {
-				ID: userID,
-			},
-			select: {
-				matches: {
-					select: {
-						status: true,
-						players: {
-							select: {
-								websocketID: true,
-							}
-						}
-					}
-				}
-			}
-		});
-		const game = user.matches.filter(x => x.status == MatchStatus.PENDING)[0];
-		// for (client in game.players)
-		// {
-		// 	if (client.websocketID != playerID)
-		// 		this.server.to(client.websocketID).emit('pause');
-		// }
+		const userID = await this.loginService.getUserIDFromCache(token);
+		const gameID: number = this.gameService.getGameID(userID);
+		this.gameService.handleDisconnection(this.server, gameID, client, token);
+
 		console.log(`Client disconnected: ${client.id}`);
 		await this.prisma.user.update({
         where: { ID: userID },
