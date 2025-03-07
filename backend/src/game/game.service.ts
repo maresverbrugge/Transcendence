@@ -126,8 +126,9 @@ export class GameService {
   }
 
   async handleScoreLeft(server: Namespace, gameID: number, token: string) {
+	const playerID = await this.loginService.getUserIDFromCache(token);
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	if (!game) {
+	if (!game || playerID == game.rightPlayerID) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
@@ -138,8 +139,9 @@ export class GameService {
   }
 
   async handleScoreRight(server: Namespace, gameID: number, token: string) {
+	const playerID = await this.loginService.getUserIDFromCache(token);
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	if (!game) {
+	if (!game || playerID == game.leftPlayerID) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
@@ -222,6 +224,14 @@ export class GameService {
 					scoreRight: game.scoreRight,
 				},
 			});
+			if (game.scoreLeft > game.scoreRight){
+				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}}});
+				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}}});
+			}
+			else if (game.scoreRight > game.scoreLeft){
+				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}}});
+				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}}});
+			}
 		} catch (error) {
 			console.error("couldn't save game to the database, too bad");
 			console.error(error);
