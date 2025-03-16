@@ -9,10 +9,10 @@ import {
 import { Logger } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
 import { UserStatus, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
 import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -25,9 +25,9 @@ import { LoginService } from 'src/authentication/login/login.service';
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private prisma: PrismaService,
-    private readonly userService: UserService,
     private readonly gameService: GameService,
-	private readonly loginService: LoginService
+	private readonly loginService: LoginService,
+    private readonly errorHandlingService: ErrorHandlingService
   ) {}
 
   @WebSocketServer() server: Namespace;
@@ -43,8 +43,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		client.emit('side', side);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
-		console.error(error);
-		client.emit('error');
+		this.errorHandlingService.emitHttpException(error, client);
 	}
   }
 
@@ -52,11 +51,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleGameStart(client: Socket, payload: { token: string; gameID: number }) {
 	const { token, gameID } = payload;
     this.gameService.handleStart(gameID, token, this.server);
-  }
-
-  @SubscribeMessage('reconnected')
-  handleReconnection(client: Socket, gameID: number) {
-    // this.gameService.handleReconnection(gameID, this.server);
   }
 
   @SubscribeMessage('key')
@@ -109,9 +103,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
 	//   await this.gameService.updateSocket(token, client.id);
     } catch (error) {
-    //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+		this.errorHandlingService.emitHttpException(error, client);
     }
   }
   async handleDisconnect(client: Socket): Promise<void> {
@@ -129,9 +121,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         data: { websocketID: null, status: UserStatus.ONLINE },
       });
     } catch (error) {
-    //   if (!(error instanceof HttpException)) error = new InternalServerErrorException('An unexpected error occurred', error.message);
-      console.error(error)
-      client.emit('error', error)
+		this.errorHandlingService.emitHttpException(error, client);
     }
   }
 }

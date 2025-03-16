@@ -1,9 +1,7 @@
-// Game page that is shown when the user goes to localhost:3000/game
-
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import PaddleSelect from '../components/Game/PaddleSelect';
-// import { emitter } from '../emitter'; // not final place
+import { emitter } from '../components/emitter';
 
 const Game = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -24,16 +22,14 @@ const Game = () => {
       setJoinedGame(true);
     });
 
-	// socketIo.on('error', (gameID: number) => {
-	// 	emitter.emit('error', error);
-	//   });
+	socketIo.on('error', (error) => {emitter.emit('error', error)});
 
     // Set socket instance in state
     setSocket(socketIo);
 
     return () => {
       socketIo.off('newGame');
-    //   socketIo.off('error');
+      socketIo.off('error');
       socketIo.disconnect(); // Disconnect the socket when the component unmounts
     };
   }, []);

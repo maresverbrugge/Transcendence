@@ -1,11 +1,12 @@
-  import { WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-  import { Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-  import { Socket, Namespace } from 'socket.io';
-  import { PrismaService } from 'src/prisma/prisma.service';
-  import { UserService } from 'src/user/user.service';
-  import { UserStatus } from '@prisma/client';
-  import { GameService } from 'src/game/game.service';
+import { WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Socket, Namespace } from 'socket.io';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UserService } from 'src/user/user.service';
+import { UserStatus } from '@prisma/client';
+import { GameService } from 'src/game/game.service';
 import { LoginService } from 'src/authentication/login/login.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
   
   @WebSocketGateway({
 	namespace: 'matchmaking',
@@ -20,7 +21,8 @@ import { LoginService } from 'src/authentication/login/login.service';
 	  private readonly userService: UserService,
 	  private readonly gameService: GameService,
 	  private readonly prismaService: PrismaService,
-	  private readonly loginService: LoginService
+	  private readonly loginService: LoginService,
+	  private readonly errorHandlingService: ErrorHandlingService
 	) {}
 	@WebSocketServer() server: Namespace;
 	private queue: number[] = [];
@@ -58,18 +60,21 @@ import { LoginService } from 'src/authentication/login/login.service';
 			  this.queue.push(userID);
 			}
 		} catch (error) {
-			console.error(error);
-			client.emit('error');
+			this.errorHandlingService.emitHttpException(error, client);
 		}
 	}
 
 	@SubscribeMessage('leavequeue')
 	async handleLeaveQueue(client: any, token: string) {
-	  const userID = await this.loginService.getUserIDFromCache(token);
-	  if (this.queue.indexOf(userID) >= 0)
-	  {
-		this.queue.splice(this.queue.indexOf(userID));
-	  }
+		try {
+			const userID = await this.loginService.getUserIDFromCache(token);
+			if (this.queue.indexOf(userID) >= 0)
+			{
+			  this.queue.splice(this.queue.indexOf(userID));
+			}
+		} catch(error) {
+			this.errorHandlingService.emitHttpException(error, client);
+		}
 	}
   
 	afterInit(server: Namespace) {
@@ -84,7 +89,7 @@ import { LoginService } from 'src/authentication/login/login.service';
 			const userID = await this.loginService.getUserIDFromCache(token);
 			await this.prismaService.user.update({where: {ID: userID}, data: {websocketID: client.id}})
 		  } catch (error) {
-			// this.errorHandlingService.emitHttpException(error, client);
+			this.errorHandlingService.emitHttpException(error, client);
 		  }
 	  }
 	  async handleDisconnect(client: Socket): Promise<void> {
@@ -99,7 +104,7 @@ import { LoginService } from 'src/authentication/login/login.service';
 			  data: { websocketID: null, status: UserStatus.ONLINE },
 			});
 		  } catch (error) {
-			// this.errorHandlingService.emitHttpException(error, client);
+			this.errorHandlingService.emitHttpException(error, client);
 		  }
 	  }
   }
