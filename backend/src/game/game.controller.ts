@@ -21,7 +21,7 @@ export class GameController {
 			if (game == null)
 			  throw new InternalServerErrorException('Error starting the game');
 		} catch(error) {
-			this.errorHandlingService.emitHttpException(error, client);
+			this.errorHandlingService.throwHttpException(error);
 		}
   }
 }

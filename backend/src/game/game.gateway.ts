@@ -62,13 +62,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('left scored')
   async handleScoreLeft(client: Socket, payload: {gameID: number; token: string }) {
 	const { gameID, token } = payload;
-    this.gameService.handleScoreLeft(this.server, gameID, token);
+    this.gameService.handleScore(this.server, gameID, 1, token);
   }
 
   @SubscribeMessage('right scored')
   async handleScoreRight(client: Socket, payload: {gameID: number; token: string }) {
 	const { gameID, token } = payload;
-    this.gameService.handleScoreRight(this.server, gameID, token);
+    this.gameService.handleScore(this.server, gameID, 0, token);
   }
 
   @SubscribeMessage('hit paddle')

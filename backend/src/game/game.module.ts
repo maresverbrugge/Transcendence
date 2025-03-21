@@ -7,10 +7,11 @@ import { MatchmakingGateway } from 'src/matchmaking/matchmaking.gateway';
 import { GameGateway } from './game.gateway';
 import { UserModule } from 'src/user/user.module';
 import { ChatModule } from 'src/chat/chat.module';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 @Module({
   controllers: [GameController],
-  providers: [PrismaService, LoginService, GameService, GameGateway, MatchmakingGateway],
+  providers: [PrismaService, LoginService, GameService, ErrorHandlingService, GameGateway, MatchmakingGateway],
   exports: [],
   imports: [UserModule, ChatModule]
 })
