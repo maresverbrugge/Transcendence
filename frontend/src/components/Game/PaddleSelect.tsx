@@ -1,9 +1,6 @@
-// Game page that is shown when the user goes to localhost:3000/game
-
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-// import { emitter } from '../emitter'; // not final place
-
+import { emitter } from '../emitter';
 import GameControl from './GameControl';
 
 const PaddleSelect = ({}) => {
@@ -13,22 +10,16 @@ const PaddleSelect = ({}) => {
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND}/game`, { // localhost veranderen naar react_app_var
-      transports: ['websocket', 'polling'],
-      query: { token }, // Hier de token uit localstorage halen
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND_WS}/game`, {
+      transports: ["websocket"],
+      query: { token },
 	  withCredentials: true,
     });
-
-	socketIo.on('connect_error', (error) => {
-		console.error('Connection Error:', error.message);
-	  });
 
     // Set socket instance in state
     setSocket(socketIo);
 
-	socketIo.on('error', (gameID: number) => {
-		// emitter.emit('error', error);
-	  });
+	socketIo.on('error', (error) => {emitter.emit('error', error)});
 
     return () => {
 	  socketIo.off('error');
