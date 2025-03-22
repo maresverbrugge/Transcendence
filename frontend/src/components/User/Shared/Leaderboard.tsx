@@ -69,7 +69,7 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
                       src={entry.avatarURL}
                       alt={`${entry.username}'s avatar`}
                       className="rounded-circle"
-                      style={{ width: '5vw', height: '5vw', objectFit: 'cover' }}
+                      style={{ width: '3vw', height: '3vw', objectFit: 'cover' }}
                     />
                     <button
                     onClick={() => navigate(`/profile/${entry.ID}`)}
