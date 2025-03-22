@@ -48,8 +48,8 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
   }
 
   return (
-    <div className="container my-3">
-      <h2 className="text-center mb-4">Leaderboard</h2>
+    <div className="px-3 py-3">
+    <h2 className="text-center mb-3">Leaderboard</h2>
       <div className="table-responsive">
         <table className="table table-hover align-middle">
           <thead className="table-dark">
