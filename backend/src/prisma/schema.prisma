@@ -25,6 +25,7 @@ enum UserStatus {
 enum MatchStatus {
   PENDING
   FINISHED
+  CANCELED
 }
 
 model User {
@@ -32,7 +33,7 @@ model User {
   username          String
   intraUsername     String        @unique
   avatar            Bytes?
-  Enabled2FA        Boolean
+  Enabled2FA        Boolean	
   token             String?
   websocketID       String?       @unique// The ID of the websocket, nullable
   status            UserStatus  // ONLINE | OFFLINE | IN_GAME | IN_CHAT
@@ -54,11 +55,10 @@ model User {
 model Match {
   matchID           Int           @id @default(autoincrement())
   status            MatchStatus   @default(PENDING) // PENDING | FINISHED
-  scorePlayer1      Int           @default(0)
-  scorePlayer2      Int           @default(0)
+  scoreLeft         Int           @default(0)
+  scoreRight        Int           @default(0)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-
   players           User[]
 }
 
@@ -92,11 +92,10 @@ model Message {
   ID                Int           @id @default(autoincrement())
   content           String
   createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
   senderName        String
   
   senderID          Int?
-  sender            User?          @relation(fields: [senderID], references: [ID], onDelete: Cascade)
+  sender            User?         @relation(fields: [senderID], references: [ID], onDelete: Cascade)
   channelID         Int
   channel           Channel       @relation(fields: [channelID], references: [ID], onDelete: Cascade)
 }
