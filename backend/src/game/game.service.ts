@@ -154,6 +154,12 @@ export class GameService {
 		} else {
 			server.to(socketRight).to(socketLeft).emit('right score');
 		}
+		game.ballspeedy = 0;
+		while (game.ballspeedy == 0)
+			game.ballspeedy = Math.floor(Math.random() * 6 - 3);
+		game.ballspeedx = 5;
+		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
+		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
 	} catch(error) {
 		this.errorHandlingService.throwHttpException(error);
 	}

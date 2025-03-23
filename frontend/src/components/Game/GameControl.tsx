@@ -44,11 +44,15 @@ class Ball {
       this.socket.emit('left scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedY = 0;
+	  this.speedX = 0;
     }
     if (this.left() < 0) {
       this.socket.emit('right scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedY = 0;
+	  this.speedX = 0;
     }
     if (this.bottom() > height) {
       this.socket.emit('reverse ball speedY', this.gameID);
