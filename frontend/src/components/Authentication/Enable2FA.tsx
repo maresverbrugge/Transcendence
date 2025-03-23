@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { verifyOTP, enableTwoFactor } from '../Utils/apiCalls';
+import GoBackButton from '../GoBackButton';
 
 const Enable2FA = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const Enable2FA = () => {
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
+      <GoBackButton />
       <div className="card shadow d-flex justify-content-center align-items-center m-4 p-3">
         <p>Enter a one-time password to verify that set-up was successful:</p>
 

@@ -5,6 +5,7 @@ import SingleHeader from './Pages/SingleHeader';
 import { getQRCode } from '../Utils/apiCalls';
 import Enable2FA from './Enable2FA';
 import { emitter } from '../emitter';
+import GoBackButton from '../GoBackButton';
 
 const SetUp2FA = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ const SetUp2FA = () => {
   } else {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
+        <GoBackButton />
         <div className="card shadow d-flex justify-content-center align-items-center m-4 p-3">
           <h2>Set up 2FA</h2>
           <ol>
