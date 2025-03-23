@@ -75,11 +75,46 @@ export class MessageService {
           channel: { connect: { ID: channelID } },
         },
       });
-      await this.prisma.user.update({ where: {ID: sender.ID}, data: {messagesSend: sender.messagesSend + 1}})
       await this.enforceMessageLimit(channelID);
       return message;
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
+    }
+  }
+
+  async updateSendMessageAchievement(userID: number): Promise<void> {
+    const checkUser = await this.prisma.user.findUnique({
+      where: { ID: userID},
+      select: { messagesSend: true }
+    })
+    
+    console.log("messages before increment: ", checkUser.messagesSend);
+
+    const user = await this.prisma.user.update({
+      where: { ID: userID },
+      data: { messagesSend: { increment: 1 } },
+      select: { messagesSend: true }
+    });
+    console.log("messages after increment:", user.messagesSend);
+
+    const messageAchievements = [
+      { name: 'Sent First Message', threshold: 1 },
+      { name: 'Sent 10 Messages', threshold: 10 },
+      { name: 'Sent 100 Messages', threshold: 100 },
+    ];
+
+    for (const achievement of messageAchievements) {
+      if (user.messagesSend == achievement.threshold) {
+        const achievementData = await this.prisma.achievement.findUnique({
+          where: { name: achievement.name },
+        });
+        if (!achievementData) {
+          throw new Error(`Achievement "${achievement.name}" not found.`);
+        }
+        await this.prisma.userAchievement.create({
+          data: { userID, achievementID: achievementData.ID },
+        });
+      }
     }
   }
 
@@ -91,6 +126,7 @@ export class MessageService {
       channelID: data.channelID,
       messageID: message.ID,
     });
+    await this.updateSendMessageAchievement(senderID);
   }
 
   async createActionLogMessage(channelID: number, username: string, action: action): Promise<Message> {
