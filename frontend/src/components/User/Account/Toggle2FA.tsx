@@ -30,7 +30,7 @@ const Toggle2FA = ({ twoFactorAuthenticationEnabled }: { twoFactorAuthentication
   };
 
   return (
-    <div>
+    <div className="d-flex flex-column justify-content-center align-items-center">
       <p>Two-factor authentication is currently {twoFactorEnabled ? 'enabled' : 'disabled'}.</p>
       <button className="btn btn-outline-primary btn-sm mb-2" onClick={twoFactorEnabled ? disable2FA : enable2FA}>
         {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
