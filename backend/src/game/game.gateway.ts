@@ -72,10 +72,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('hit paddle')
-  async handleHitPaddle(client: Socket, gameID: number, value: number, oldHigh: number) {
-	const speedY: number = this.gameService.handleHitPaddle(gameID, value, oldHigh);
-    this.server.emit('ballSpeedY', speedY);
-	this.gameService.handleReverseSpeedX(gameID);
+  async handleHitPaddle(client: Socket, payload: {gameID: number; value: number; oldHigh: number; token: string }) {
+	const { gameID, value, oldHigh, token } = payload;
+	this.gameService.handleHitPaddle(this.server, gameID, value, oldHigh, token);
   }
 
   @SubscribeMessage('reverse ball speedY')
