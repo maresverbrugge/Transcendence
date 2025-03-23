@@ -6,7 +6,7 @@ interface SingleHeaderProps {
 
 const SingleHeader: React.FC<SingleHeaderProps> = ({ text }) => {
   return (
-    <div>
+    <div className="d-flex justify-content-center align-items-center vh-100">
       <h1>{text}</h1>
     </div>
   );
