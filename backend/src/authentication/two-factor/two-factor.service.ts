@@ -2,10 +2,14 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 @Injectable()
 export class TwoFactorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly errorHandlingservice: ErrorHandlingService,
+  ) {}
 
   async getQRCode(userID: number): Promise<any> {
     try {
@@ -19,7 +23,7 @@ export class TwoFactorService {
       });
       return dataURL;
     } catch (error) {
-      throw new InternalServerErrorException('Error generating QR code for 2FA');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -35,7 +39,7 @@ export class TwoFactorService {
         return isEnabled.Enabled2FA;
       }
     } catch (error) {
-      throw new InternalServerErrorException('Error while checking if two-factor authentication is enabled');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -52,7 +56,7 @@ export class TwoFactorService {
       });
       return verified;
     } catch (error) {
-      throw new InternalServerErrorException('Error while verifying token');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -63,7 +67,7 @@ export class TwoFactorService {
         data: { Enabled2FA: true },
       });
     } catch (error) {
-      throw new InternalServerErrorException('Error while enabling two-factor authentication');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -77,7 +81,7 @@ export class TwoFactorService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException('Error while disabling two-factor authentication');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 }

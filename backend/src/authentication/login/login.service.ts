@@ -12,6 +12,7 @@ import { Cache } from 'cache-manager';
 import axios from 'axios';
 import { UserStatus } from '@prisma/client';
 import { GatewayService } from 'src/chat/gateway/gateway.service';
+import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 
@@ -21,7 +22,8 @@ export class LoginService {
     private prisma: PrismaService,
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly errorHandlingservice: ErrorHandlingService,
   ) {}
 
   async getToken(response_code: string): Promise<any> {
@@ -42,7 +44,7 @@ export class LoginService {
       // Return the token to the controller
       return response.data;
     } catch (error) {
-      throw new InternalServerErrorException('Error getting authentication token');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -71,7 +73,7 @@ export class LoginService {
         });
       }
     } catch (error) {
-      throw new InternalServerErrorException('Error while adding user to database');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -83,7 +85,7 @@ export class LoginService {
       });
       this.gatewayService.updateUserStatus(userID, 'OFFLINE');
     } catch (error) {
-      throw new InternalServerErrorException('Error while setting user status to offline');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -102,7 +104,7 @@ export class LoginService {
         return true;
       }
     } catch (error) {
-      throw new InternalServerErrorException('Error while verifying authentication token');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -115,8 +117,7 @@ export class LoginService {
       });
       return response.data.login;
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('Error while getting intra name');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -134,20 +135,21 @@ export class LoginService {
         return response.data['expires_in_seconds'];
       }
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Error while getting expires in seconds');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
   async getUserIDByIntraUsername(intraUsername: string): Promise<number> {
-    const user = await this.prisma.user.findUnique({
-      where: { intraUsername: intraUsername },
-      select: { ID: true },
-    });
-    if (!user) throw new NotFoundException('User not found in database');
-    return user.ID;
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { intraUsername: intraUsername },
+        select: { ID: true },
+      });
+      if (!user) throw new NotFoundException('User not found in database');
+      return user.ID;
+    } catch (error) {
+      this.errorHandlingservice.throwHttpException(error);
+    }
   }
 
   async getUserIDFromCache(token: string): Promise<number> {
@@ -158,10 +160,7 @@ export class LoginService {
       }
       return userID;
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Error while getting user from cache');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -169,7 +168,7 @@ export class LoginService {
     try {
       await this.cacheManager.set(token, userID, expiresInMilliseconds);
     } catch (error) {
-      throw new InternalServerErrorException('Error while storing user in cache');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 
@@ -177,7 +176,7 @@ export class LoginService {
     try {
       await this.cacheManager.del(token);
     } catch (error) {
-      throw new InternalServerErrorException('Error while removing user from cache');
+      this.errorHandlingservice.throwHttpException(error);
     }
   }
 }
