@@ -1,3 +1,6 @@
+#pdf files
+*.pdf
+
 # Prisma migrations
 backend/src/prisma/migrations
 
@@ -9,7 +12,7 @@ dist/
 build/
 
 # Environment variables
-# .env
+.env
 
 # Docker-related files
 *.log
