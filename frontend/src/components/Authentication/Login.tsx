@@ -23,8 +23,14 @@ const Login = () => {
   }
 
   return (
-    <div>
-      <button onClick={handleLogin}>Login with 42</button>
+    <div className="container vh-100">
+      <div className="row h-100">
+        <div className="col d-flex justify-content-center align-items-center">
+          <button type="button" className="btn btn-primary w-30 fs-3" onClick={handleLogin}>
+            Login with 42
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
