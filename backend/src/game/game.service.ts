@@ -10,9 +10,7 @@ interface MatchInstance
 {
   ID: number,
   leftPlayerID: number,
-  leftSocketID: string,
   rightPlayerID: number,
-  rightSocketID: string,
   ballspeedx: number,
   ballspeedy: number,
   scoreLeft: number,
@@ -63,7 +61,7 @@ export class GameService {
 				  },
 			  },
 		});
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, leftSocketID: null, rightPlayerID: userID2, rightSocketID: null, ballspeedx: 0, ballspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
 		return newGame;
 	} catch (error) {
 		this.errorHandlingService.throwHttpException(error);
@@ -92,7 +90,7 @@ export class GameService {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
+        return;
     }
 	if (game.firstPlayerReady)
 	{
@@ -101,13 +99,7 @@ export class GameService {
 				game.ballspeedy = Math.floor(Math.random() * 6 - 3);
 			game.ballspeedx = 5;
 			const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
-			// console.log(socketLeft)
-			// console.log(game.leftSocketID)
-			// game.leftSocketID = socketLeft;
 			const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
-			// console.log(socketRight)
-			// console.log(game.rightSocketID)
-			// game.rightSocketID = socketRight;
 			server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
 			server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
 		} catch(error) {
@@ -128,8 +120,8 @@ export class GameService {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
-    }
+        return;
+    	}
     game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -10, 10);
     return game.ballspeedy;
   }
@@ -140,7 +132,7 @@ export class GameService {
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game || playerID == game.rightPlayerID) {
 			console.error(`Game with ID ${gameID} not found.`);
-			return; // Exit the function to prevent further execution
+			return;
 		}
 		if (side === 1) {
 			game.scoreLeft += 1;
@@ -163,7 +155,7 @@ export class GameService {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
+        return;
     }
     game.ballspeedy *= -1;
 	return game.ballspeedy;
@@ -173,7 +165,7 @@ export class GameService {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
+        return;
     }
     game.ballspeedx *= -1;
 	return game.ballspeedx;
@@ -185,12 +177,10 @@ export class GameService {
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game) {
 			console.error(`Game with ID ${gameID} not found.`);
-			return; // Exit the function to prevent further execution
+			return;
 		}
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
-		// const socketLeft = game.leftSocketID;
-		// const socketRight = game.rightSocketID;
 		if (game.rightPlayerID === playerID) {
 			if (move === 'up')
 			{
@@ -219,7 +209,7 @@ export class GameService {
 	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	  if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
+        return;
     }
 	  try {
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
@@ -256,7 +246,7 @@ export class GameService {
 	var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
 	  console.error(`Game with ID ${gameID} not found.`);
-	  return; // Exit the function to prevent further execution
+	  return;
   }
   try {
 	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
