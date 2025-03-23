@@ -47,11 +47,10 @@ const Enable2FA = () => {
           className="form-control w-50 fs-5 fw-bold mt-2"
           value={oneTimePassword}
           onChange={(e) => setOneTimePassword(e.target.value)}
-          placeholder="Enter OTP"
-        />
+          placeholder="Enter OTP"/>
 
-        <button 
-          className="btn btn-primary w-30 fs-5 fw-bold mt-3" 
+        <button
+          className="btn btn-primary w-30 fs-5 fw-bold mt-3"
           onClick={handleVerifyAndEnable} disabled={isLoading}>
           {isLoading ? 'Submitting...' : 'Submit'}
         </button>
@@ -65,11 +64,10 @@ const Enable2FA = () => {
         <button
           className="btn btn-primary w-30 fs-5 fw-bold mt-3"
           onClick={() => setNavigateToAccount(true)}
-          disabled={isLoading}
-        >
+          disabled={isLoading}>
           Cancel 2FA Setup
         </button>
-      </div>                                  
+      </div>
     </div>
   );
 };
