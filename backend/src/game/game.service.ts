@@ -223,12 +223,11 @@ export class GameService {
 
   async handleEnd(server: Namespace, gameID: number, client: Socket, token: string): Promise<void> {
 	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+	  if (!game) {
+		console.error(`Game with ID ${gameID} not found.`);
+		return; // Exit the function to prevent further execution
+	}
 	  try {
-		const playerID = await this.loginService.getUserIDFromCache(token);
-		  if (!game || playerID == game.rightPlayerID) {
-			console.error(`Game with ID ${gameID} not found.`);
-			return; // Exit the function to prevent further execution
-		}
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('finished');
