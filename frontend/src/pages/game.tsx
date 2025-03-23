@@ -49,17 +49,17 @@ const Game = () => {
   }
 
   return (
-	<div>
+	<div className="d-flex justify-content-center align-items-center vh-100" style={{overflowY: 'hidden'}}>
 		{joinedGame && (
 			<PaddleSelect/>
 		)}
 		{!joinedGame && (
 			<div className="games-startup">
 				{inQueue && (
-					<button onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
+					<button className="btn btn-primary" onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
 				)}
 				{!inQueue && (
-					<button onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
+					<button className="btn btn-primary" onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
 				)}
 				<label>Join the queue to play.</label>
 			</div>
