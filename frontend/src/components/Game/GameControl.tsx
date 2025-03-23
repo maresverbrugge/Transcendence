@@ -55,10 +55,10 @@ class Ball {
 	  this.speedX = 0;
     }
     if (this.bottom() > height) {
-      this.socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
     }
     if (this.top() < 0) {
-      this.socket.emit('reverse ball speedY', this.gameID);
+      this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
     }
   }
   display() {
@@ -149,6 +149,8 @@ const GameLogic = ({ socket, skin, token }) => {
   const ballRef = useRef<Ball | null>(null);
   const paddleLeftRef = useRef<Paddle | null>(null);
   const paddleRightRef = useRef<Paddle | null>(null);
+  const [ballSpeedX, setBallSpeedX] = useState(0);
+  const [ballSpeedY, setBallSpeedY] = useState(0);
 
 
   useEffect(() => {
@@ -176,11 +178,15 @@ const GameLogic = ({ socket, skin, token }) => {
 
     const draw = () => {
       if (end) return;
-
+	  
       context.clearRect(0, 0, width, height);
       context.strokeStyle = 'black';
       context.fillStyle = 'black';
-
+	  
+	  if (ballRef.current) {
+		ballRef.current.speedX = ballSpeedX;
+		ballRef.current.speedY = ballSpeedY;
+	}
       const ball = ballRef.current;
     const paddleLeft = paddleLeftRef.current;
     const paddleRight = paddleRightRef.current;
@@ -193,10 +199,10 @@ const GameLogic = ({ socket, skin, token }) => {
     paddleRight.display(height);
 
     if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-      socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2, token);
+      socket.emit('hit paddle', {gameID, value: ball.y - paddleLeft.y, oldHigh: paddleLeft.h / 2, token});
     }
     if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-      socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2, token);
+      socket.emit('hit paddle', {gameID, value: ball.y - paddleRight.y, oldHigh: paddleRight.h / 2, token});
     }
 
     context.fillText(scoreRight.toString(), width / 2 + 30, 30);
@@ -223,7 +229,7 @@ const GameLogic = ({ socket, skin, token }) => {
 		cancelAnimationFrame(frameId);
 		document.removeEventListener('keydown', keyHandler);
     };
-}, [context, gameID, end, scoreLeft, scoreRight]);
+}, [context, gameID, end, scoreLeft, scoreRight, ballSpeedY, ballSpeedX]);
 
   useEffect(() => {
     socket.on('gameID', (id: number) => {
@@ -236,10 +242,10 @@ const GameLogic = ({ socket, skin, token }) => {
 		setSide(side)
 	  });
 	socket.on('ballSpeedY', (speed: string) => {
-	  ballRef.current.speedY = parseInt(speed);
+	  setBallSpeedY(parseInt(speed));
 	});
 	socket.on('ballSpeedX', (speed: string) => {
-		ballRef.current.speedX = parseInt(speed);
+		setBallSpeedX(parseInt(speed));
 	});
 	socket.on('right up', () => {
 	  paddleRightRef.current.y -= 5;
