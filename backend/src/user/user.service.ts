@@ -277,7 +277,6 @@ export class UserService {
             data: { friendsOf: { disconnect: { ID: userID } } },
           });
 
-          return `You unfriended user ${targetUserID}`;
         } else {
           await prisma.user.update({
             where: { ID: userID },
@@ -289,8 +288,10 @@ export class UserService {
             data: { friendsOf: { connect: { ID: userID } } },
           });
 
+          await this.checkAndGrantFriendAchievements(userID);
           return `You befriended user ${targetUserID}`;
         }
+        return `You unfriended user ${targetUserID}`;
       });
 
       return result;
@@ -299,8 +300,51 @@ export class UserService {
     }
   }
 
+  async checkAndGrantFriendAchievements(userID: number): Promise<void> {
+    try {
+      const userWithFriends = await this.prisma.user.findUnique({
+        where: { ID: userID },
+        include: { friends: true },
+      });
 
+      const totalFriends = userWithFriends?.friends.length != null
+      ? userWithFriends.friends.length + 1
+      : 0;
+      
+      console.log("totalFriends = " , {totalFriends})
+      const friendAchievements = [
+        { name: 'First Friend', threshold: 1 },
+        { name: '10 Friends', threshold: 10 },
+        { name: '50 Friends', threshold: 50 },
+      ];
 
+      for (const achievement of friendAchievements) {
+        if (totalFriends >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) continue;
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: {
+                userID,
+                achievementID: achievementData.ID,
+              },
+            });
+            }
+          }
+        }
+    }
+    catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
 
 
 
@@ -316,17 +360,17 @@ export class UserService {
 
       if (!statistics) throw new NotFoundException('Statistics not found!');
 
-      // Calculate win rate and ladder rank -> we will later move this to game logic
+      // Calculate win rate and ladder rank -> remove here and move this to game logic
       const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
       const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
-      // Update the ladder rank in the database -> we will later move this to game logic
+      // Update the ladder rank in the database -> remove here and move this to game logic
       await this.prisma.statistics.update({
         where: { userID },
         data: { ladderRank: playerRating },
       });
 
-      // Check and grant XP-related achievements -> we will later move this to game logic
+      // Check and grant XP-related achievements -> remove here and move this to game logic
       await this.checkAndGrantXPAchievements(userID, playerRating);
 
       return {
@@ -339,12 +383,11 @@ export class UserService {
     }
   }
 
-  // FOR LATER: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION
-  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
-  // IN FUNCTION LOOKING SOMEWHAT LIKE THIS:
+  // FOR JEROEN: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION ABOVE
+  // AND MOVE (AND IMPROVE!) FUNCTION UNDERNEATH HERE
+  // TO GAME LOGIC AND CALL WHENEVER A GAME IS FINISHED
   async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<StatisticsData> {
     try {
-      // Fetch the current statistics
       const statistics = await this.prisma.statistics.findUnique({
         where: { userID },
       });
@@ -357,6 +400,7 @@ export class UserService {
       const updatedStats = {
         gamesPlayed: statistics.gamesPlayed + 1,
         wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
+        losses: gameResult.won ? statistics.losses : statistics.losses + 1,
         totalScores: statistics.totalScores + gameResult.score,
       };
 
@@ -380,8 +424,8 @@ export class UserService {
     }
   }
 
-  // FOR LATER: REMOVE checkAndGrantXPAchievements from user.service.ts
-  // TO GAME LOGIC WHENEVER A GAME IS FINISHED
+  // FOR JEROEN: MOVE THIS checkAndGrantXPAchievements FUNCTION from user.service.ts
+  // TO GAME LOGIC AND CALL WHENEVER A GAME IS FINISHED
   async checkAndGrantXPAchievements(userID: number, playerRating: number): Promise<void> {
     try {
       const xpAchievements = [

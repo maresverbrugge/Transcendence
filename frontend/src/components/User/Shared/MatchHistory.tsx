@@ -11,7 +11,7 @@ const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData
       <h2 className="text-center mb-3">Match History</h2>
       {matchHistoryData.length === 0 ? (
         <div className="text-center text-muted">
-        <p>No matches played yet.</p>
+        <p>No matches played yet</p>
         <p>Go on and play some games, you can do it! </p>
       </div>
 

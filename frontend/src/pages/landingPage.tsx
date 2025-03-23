@@ -24,19 +24,16 @@ const MainPage = () => {
 
       <div className="d-grid gap-3 col-6 mx-auto">
         <button className="btn btn-primary" onClick={() => navigate('/game')}>
-          Go to Game
+          PLAY GAME
         </button>
         <button className="btn btn-info" onClick={() => navigate('/chat')}>
-          Go to Chat
+          CHAT
         </button>
         <button className="btn btn-success" onClick={() => navigate('/leaderboard')}>
-          Go to Leaderboard
+          LEADERBOARD
         </button>
         <button className="btn btn-warning" onClick={() => navigate('/profile')}>
-          My Account
-        </button>
-        <button className="btn btn-secondary" onClick={() => navigate('/profile/2')}>
-          TESTING: View Profile (UserID=2)
+          ACCOUNT
         </button>
       </div>
     </div>

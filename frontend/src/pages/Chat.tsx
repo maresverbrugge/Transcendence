@@ -6,7 +6,7 @@ import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
 import { MemberData } from '../components/Chat/interfaces';
 import axios from 'axios';
-import './Chat.css'
+// import './Chat.css'
 import { emitter } from '../components/emitter';
 import ReceiveGameInvite from '../components/Chat/ChatInfo/ReceiveGameInvite';
 import { useNavigate } from 'react-router-dom';
@@ -21,13 +21,13 @@ const Chat = () => {
   useEffect(() => {
 
 
-      
+
     const socketIo = io(`${process.env.REACT_APP_URL_BACKEND_WS}/chat`, {
       transports: ["websocket"],
       query: { token },
       withCredentials: true,
     });
-    
+
     socketIo.on('connect', () => {
       console.log('Connected to the server.');
     });

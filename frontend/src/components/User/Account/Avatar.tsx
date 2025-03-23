@@ -114,6 +114,7 @@ const Avatar = ({ username, currentAvatarURL, onAvatarUpdate }: AvatarProps) => 
           <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" hidden />
         </label>
 
+        
         {/* Conditional Buttons */}
         {previewURL && buttonVisible && (
           <div className="d-flex justify-content-center gap-2 mt-2">

@@ -94,7 +94,7 @@ check_database:
 studio:
 		@export DATABASE_URL="postgresql://Transcendancingqueens:8:uizdY5._r-Pe+@localhost:5432/pongdb?schema=public"
 		@echo ${DATABASE_URL}
-		@192.168.2.4
+		@npx prisma studio --schema ./backend/src/prisma/schema.prisma
 
 #========================================#
 #=============== FOR GIT ================#
