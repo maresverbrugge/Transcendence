@@ -41,10 +41,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const memberID: number = await this.loginService.getUserIDFromCache(token);
 		const gameID: number = this.gameService.getGameID(memberID);
 		client.emit('gameID', gameID);
-		const side: number = await this.gameService.getSide(gameID, token);
+		const side: number = await this.gameService.getSide(gameID, token, this.server);
 		client.emit('side', side);
-		const playerName: string = await this.userService.getUserNameByUserID(memberID, token);
-		client.emit('playerName', playerName, side);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
 		this.errorHandlingService.emitHttpException(error, client);

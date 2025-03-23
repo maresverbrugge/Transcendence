@@ -234,11 +234,11 @@ const GameLogic = ({ socket, skin, token }) => {
 	socket.on('side', (side: number) => {
 		setSide(side)
 	  });
-	socket.on('playerName', (playerName: string, side: number) => {
-		if (side === 0)
-			setPlayerLeft(playerName);
-		else
-			setPlayerRight(playerName);
+	socket.on('playerLeft', (playerName: string) => {
+		setPlayerLeft(playerName);
+	  });
+	socket.on('playerRight', (playerName: string) => {
+		setPlayerRight(playerName);
 	  });
 	socket.on('ballSpeedY', (speed: string) => {
 	  ballRef.current.speedY = parseInt(speed);
@@ -272,6 +272,8 @@ const GameLogic = ({ socket, skin, token }) => {
     socket.off('gameID');
 	socket.off('finished');
 	socket.off('side');
+	socket.off('playerLeft');
+	socket.off('playerRight');
 	socket.off('ballSpeedY');
 	socket.off('ballSpeedX');
 	socket.off('right up');
