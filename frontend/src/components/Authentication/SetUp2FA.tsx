@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import SingleHeader from './Pages/SingleHeader';
 import { getQRCode } from '../Utils/apiCalls';
 import Enable2FA from './Enable2FA';
+import { emitter } from '../emitter';
 
 const SetUp2FA = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const [qrcodeUrl, setQrcodeUrl] = useState<string | null>(null);
-  const [errorOccurred, setErrorOccurred] = useState<boolean>(false);
   const [codeIsFetched, setCodeIsFetched] = useState<boolean>(false);
   const [userScannedQRCode, setUserScannedQRCode] = useState<boolean>(false);
 
@@ -21,9 +21,9 @@ const SetUp2FA = () => {
         setQrcodeUrl(response.data);
         setCodeIsFetched(true);
       } catch (error) {
-        setQrcodeUrl(null);
-        setErrorOccurred(true);
-        console.error('Error while setting up 2FA:', error);
+        emitter.emit('error', error);
+        navigate('/main');
+        return;
       }
     };
 
@@ -32,9 +32,7 @@ const SetUp2FA = () => {
     }
   }, [codeIsFetched]);
 
-  if (errorOccurred) {
-    return <SingleHeader text="Error occurred while setting up 2FA" />;
-  } else if (!codeIsFetched) {
+  if (!codeIsFetched) {
     return <SingleHeader text="Loading..." />;
   } else if (userScannedQRCode) {
     return <Enable2FA />;

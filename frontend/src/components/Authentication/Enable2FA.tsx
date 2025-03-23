@@ -29,8 +29,7 @@ const Enable2FA = () => {
       await enableTwoFactor(token);
       navigate('/profile');
     } catch (error) {
-      console.error('Error verifying one-time password:', error);
-      setErrorMessage('Error verifying one-time password. Please try again.');
+      setErrorMessage('Invalid password. Please try again.');
     } finally {
       setIsLoading(false);
     }
