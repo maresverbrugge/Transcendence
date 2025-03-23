@@ -33,17 +33,26 @@ const Verify2FA = () => {
   };
 
   return (
-    <div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
-      <p>Enter your one-time password:</p>
-      <input type="text" value={oneTimePassword} onChange={(e) => setOneTimePassword(e.target.value)} />
-      <button style={{ width: '150px', margin: '20px' }} onClick={verifyOneTimePassword} disabled={isLoading}>
-        {isLoading ? 'Submitting...' : 'Submit'}
-      </button>
-      {errorMessage && (
-        <p style={{ color: 'red' }} aria-live="polite">
-          {errorMessage}
-        </p>
-      )}
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
+        <p>Enter your one-time password:</p>
+        <input
+          className="form-control w-50 fs-5 fw-bold mt-2"
+          type="text"
+          value={oneTimePassword}
+          placeholder="Enter OTP"
+          onChange={(e) => setOneTimePassword(e.target.value)}/>
+        <button
+          className="btn btn-primary w-30 fs-5 fw-bold mt-3"
+          onClick={verifyOneTimePassword} disabled={isLoading}>
+          {isLoading ? 'Submitting...' : 'Submit'}
+        </button>
+        {errorMessage && (
+          <p className="text-danger fs-5 fw-bold mt-3" aria-live="polite">
+            {errorMessage}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
