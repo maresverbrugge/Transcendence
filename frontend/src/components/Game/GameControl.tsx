@@ -131,7 +131,7 @@ const createKeyHandler = (socket: Socket, gameID: number, token: string) => {
   };
 };
 
-const GameLogic = ({ socket, skin, token }) => {
+const GameLogic = ({ socket, skin, token, playerLeft, playerRight }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [gameID, setGameID] = useState<number | null>(null);
@@ -145,7 +145,6 @@ const GameLogic = ({ socket, skin, token }) => {
   const ballRef = useRef<Ball | null>(null);
   const paddleLeftRef = useRef<Paddle | null>(null);
   const paddleRightRef = useRef<Paddle | null>(null);
-
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -197,8 +196,8 @@ const GameLogic = ({ socket, skin, token }) => {
       socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
     }
 
-    context.fillText(scoreRight.toString(), width / 2 + 30, 30);
-    context.fillText(scoreLeft.toString(), width / 2 - 30, 30);
+    context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
+    context.fillText(`${playerLeft}: ${scoreLeft}`, width / 2 - 30, 30);
 
     if (Math.abs(scoreLeft - scoreRight) === 3) {
       socket.emit('done', { gameID, token });

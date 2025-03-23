@@ -36,7 +36,7 @@ const PaddleSelect = ({}) => {
   return (
 	<div>
 		{showGame && (
-			<GameControl socket={socket} skin={selectedPaddle} token={token} />
+			<GameControl socket={socket} skin={selectedPaddle} token={token} playerLeft={"testleft"} playerRight={"testright"} />
 		)}
 		{!showGame && (
 			<div id="paddleselect">
