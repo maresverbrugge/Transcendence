@@ -83,19 +83,11 @@ export class MessageService {
   }
 
   async updateSendMessageAchievement(userID: number): Promise<void> {
-    const checkUser = await this.prisma.user.findUnique({
-      where: { ID: userID},
-      select: { messagesSend: true }
-    })
-    
-    console.log("messages before increment: ", checkUser.messagesSend);
-
     const user = await this.prisma.user.update({
       where: { ID: userID },
       data: { messagesSend: { increment: 1 } },
       select: { messagesSend: true }
     });
-    console.log("messages after increment:", user.messagesSend);
 
     const messageAchievements = [
       { name: 'Sent First Message', threshold: 1 },
