@@ -29,40 +29,45 @@ const Enable2FA = () => {
       await enableTwoFactor(token);
       navigate('/profile');
     } catch (error) {
-      setErrorMessage('Invalid password. Please try again.');
+      setErrorMessage('Invalid password! Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
-      <p>Enter a one-time password to verify that set-up was successful:</p>
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="card shadow d-flex justify-content-center align-items-center m-4 p-3">
+        <p>Enter a one-time password to verify that set-up was successful:</p>
 
-      <input
-        type="text"
-        value={oneTimePassword}
-        onChange={(e) => setOneTimePassword(e.target.value)}
-        placeholder="Enter OTP"
-      />
+        <input
+          type="text"
+          className="form-control w-50 fs-5 fw-bold mt-2"
+          value={oneTimePassword}
+          onChange={(e) => setOneTimePassword(e.target.value)}
+          placeholder="Enter OTP"
+        />
 
-      <button style={{ width: '150px', margin: '20px' }} onClick={handleVerifyAndEnable} disabled={isLoading}>
-        {isLoading ? 'Submitting...' : 'Submit'}
-      </button>
+        <button 
+          className="btn btn-primary w-30 fs-5 fw-bold mt-3" 
+          onClick={handleVerifyAndEnable} disabled={isLoading}>
+          {isLoading ? 'Submitting...' : 'Submit'}
+        </button>
 
-      {errorMessage && (
-        <p style={{ color: 'red' }} aria-live="polite">
-          {errorMessage}
-        </p>
-      )}
+        {errorMessage && (
+          <p className="text-danger fs-5 fw-bold mt-3" aria-live="polite">
+            {errorMessage}
+          </p>
+        )}
 
-      <button
-        style={{ width: '150px', margin: '10px' }}
-        onClick={() => setNavigateToAccount(true)}
-        disabled={isLoading}
-      >
-        Cancel 2FA Setup
-      </button>
+        <button
+          className="btn btn-primary w-30 fs-5 fw-bold mt-3"
+          onClick={() => setNavigateToAccount(true)}
+          disabled={isLoading}
+        >
+          Cancel 2FA Setup
+        </button>
+      </div>                                  
     </div>
   );
 };

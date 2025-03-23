@@ -47,8 +47,7 @@ const SetUp2FA = () => {
           </ol>
           <img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
           <button
-            style={{ width: '200px', marginTop: '30px' }}
-            className="btn btn-primary w-30 fs-4 fw-bold"
+            className="btn btn-primary w-30 fs-4 fw-bold mt-3"
             onClick={() => setUserScannedQRCode(true)}
           >
             Done
