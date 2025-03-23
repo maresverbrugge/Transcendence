@@ -131,7 +131,7 @@ const createKeyHandler = (socket: Socket, gameID: number, token: string) => {
   };
 };
 
-const GameLogic = ({ socket, skin, token, playerLeft, playerRight }) => {
+const GameLogic = ({ socket, skin, token }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [gameID, setGameID] = useState<number | null>(null);
@@ -145,6 +145,8 @@ const GameLogic = ({ socket, skin, token, playerLeft, playerRight }) => {
   const ballRef = useRef<Ball | null>(null);
   const paddleLeftRef = useRef<Paddle | null>(null);
   const paddleRightRef = useRef<Paddle | null>(null);
+  const [playerLeft, setPlayerLeft] = useState<string>(null);
+  const [playerRight, setPlayerRight] = useState<string>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -220,7 +222,7 @@ const GameLogic = ({ socket, skin, token, playerLeft, playerRight }) => {
 		cancelAnimationFrame(frameId);
 		document.removeEventListener('keydown', keyHandler);
     };
-}, [context, gameID, end, scoreLeft, scoreRight]);
+}, [context, gameID, end, scoreLeft, scoreRight, playerLeft, playerRight]);
 
   useEffect(() => {
     socket.on('gameID', (id: number) => {
@@ -231,6 +233,12 @@ const GameLogic = ({ socket, skin, token, playerLeft, playerRight }) => {
 	  });
 	socket.on('side', (side: number) => {
 		setSide(side)
+	  });
+	socket.on('playerName', (playerName: string, side: number) => {
+		if (side === 0)
+			setPlayerLeft(playerName);
+		else
+			setPlayerRight(playerName);
 	  });
 	socket.on('ballSpeedY', (speed: string) => {
 	  ballRef.current.speedY = parseInt(speed);

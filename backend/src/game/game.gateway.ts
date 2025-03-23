@@ -13,6 +13,7 @@ import { UserStatus, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -27,7 +28,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private prisma: PrismaService,
     private readonly gameService: GameService,
 	private readonly loginService: LoginService,
-    private readonly errorHandlingService: ErrorHandlingService
+    private readonly errorHandlingService: ErrorHandlingService,
+	private readonly userService: UserService
   ) {}
 
   @WebSocketServer() server: Namespace;
@@ -41,6 +43,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		client.emit('gameID', gameID);
 		const side: number = await this.gameService.getSide(gameID, token);
 		client.emit('side', side);
+		const playerName: string = await this.userService.getUserNameByUserID(memberID, token);
+		client.emit('playerName', playerName, side);
 	} catch (error) {
 		console.error('I was not able to find the game associated with this user, sorry about that');
 		this.errorHandlingService.emitHttpException(error, client);
