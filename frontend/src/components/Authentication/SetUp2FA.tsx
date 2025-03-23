@@ -38,20 +38,22 @@ const SetUp2FA = () => {
     return <Enable2FA />;
   } else {
     return (
-      <div className="card shadow d-flex justify-content-center align-items-center p-3 m-3">
-        <h2>Set up 2FA</h2>
-        <ol>
-          <li>1. Install the Google Authenticator app on your phone.</li>
-          <li>2. Scan the QR code below with the Google Authenticator app.</li>
-        </ol>
-        <img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
-        <button
-          style={{ width: '200px', marginTop: '30px' }}
-          className="btn btn-primary btn-sm"
-          onClick={() => setUserScannedQRCode(true)}
-        >
-          Done
-        </button>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="card shadow d-flex justify-content-center align-items-center m-4 p-3">
+          <h2>Set up 2FA</h2>
+          <ol>
+            <li>Install the Google Authenticator app on your phone.</li>
+            <li>Scan the QR code below with the Google Authenticator app.</li>
+          </ol>
+          <img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
+          <button
+            style={{ width: '200px', marginTop: '30px' }}
+            className="btn btn-primary w-30 fs-4 fw-bold"
+            onClick={() => setUserScannedQRCode(true)}
+          >
+            Done
+          </button>
+        </div>
       </div>
     );
   }
