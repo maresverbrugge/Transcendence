@@ -23,7 +23,7 @@ const MainPage = () => {
 
 
       <div className="d-grid gap-3 col-6 mx-auto">
-        <button className="btn btn-primary" onClick={() => navigate('/game')}>
+        <button className="btn btn-primary" onClick={() => navigate('/queue')}>
           PLAY GAME
         </button>
         <button className="btn btn-info" onClick={() => navigate('/chat')}>
