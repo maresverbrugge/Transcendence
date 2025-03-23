@@ -38,12 +38,13 @@ const ReceiveGameInvite = ({ socket }: ReceiveGameInviteProps) => {
     
     return () => {
       socket.off('gameInvite');
+      socket.off('gameCreated');
       socket.off('cancelGameInvite');
     };
   }, [invite, socket]);
   
   const handleGameCreated = (data: {created: boolean, senderID: number}) => {
-    if (invite.senderUserID === data.senderID) {
+    if (invite?.senderUserID === data.senderID) {
       if (data.created) {
         navigate('/game');
       } else {
@@ -53,10 +54,8 @@ const ReceiveGameInvite = ({ socket }: ReceiveGameInviteProps) => {
   }
 
   const handleAcceptGameInvite = (senderUserID: number) => {
-    setInvite(null);
     emitter.emit('acceptOtherGameInvite'); //for if an outgoing game invite is pending
     socket.emit('acceptGameInvite', {senderUserID, token});
-    emitter.emit('alert', 'waiting for the game to start...')
   }
 
   const handleDeclineGameInvite = (senderUserID: number) => {

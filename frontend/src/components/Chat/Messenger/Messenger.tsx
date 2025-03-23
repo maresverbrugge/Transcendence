@@ -55,7 +55,6 @@ const Messenger = ({ currentChannelID, socket }: MessengerProps) => {
     };
 
     socket.on('newMessage', ({ channelID, messageID }: {channelID: number, messageID: number }) => {
-      console.log(channelID,  currentChannelID);
       if (channelID != currentChannelID)
         return;
       setMessages((prevMessages) => {
