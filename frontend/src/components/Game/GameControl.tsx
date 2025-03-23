@@ -44,11 +44,15 @@ class Ball {
       this.socket.emit('left scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedY = 0;
+	  this.speedX = 0;
     }
     if (this.left() < 0) {
       this.socket.emit('right scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedY = 0;
+	  this.speedX = 0;
     }
     if (this.bottom() > height) {
       this.socket.emit('reverse ball speedY', this.gameID);
@@ -189,12 +193,10 @@ const GameLogic = ({ socket, skin, token }) => {
     paddleRight.display(height);
 
     if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-		ballRef.current.speedX *= -1;
-      socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
+      socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2, token);
     }
     if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-		ballRef.current.speedX *= -1;
-      socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
+      socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2, token);
     }
 
     context.fillText(scoreRight.toString(), width / 2 + 30, 30);

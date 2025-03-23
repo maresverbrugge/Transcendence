@@ -124,14 +124,18 @@ export class GameService {
 	return low2 + ((high2 - low2) * (value - low1)) / (high1 - low1);
   }
 
-  handleHitPaddle(gameID: number, value: number, oldHigh: number): number {
+  async handleHitPaddle(server: Namespace, gameID: number, value: number, oldHigh: number, token: string) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return; // Exit the function to prevent further execution
     }
     game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -10, 10);
-    return game.ballspeedy;
+	game.ballspeedx *= -1;
+	const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+	const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
+	server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
   }
 
   async handleScore(server: Namespace, gameID: number, side: number, token: string) {
@@ -154,6 +158,12 @@ export class GameService {
 		} else {
 			server.to(socketRight).to(socketLeft).emit('right score');
 		}
+		game.ballspeedy = 0;
+		while (game.ballspeedy == 0)
+			game.ballspeedy = Math.floor(Math.random() * 6 - 3);
+		game.ballspeedx = 5;
+		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
+		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
 	} catch(error) {
 		this.errorHandlingService.throwHttpException(error);
 	}
@@ -167,16 +177,6 @@ export class GameService {
     }
     game.ballspeedy *= -1;
 	return game.ballspeedy;
-  }
-
-  handleReverseSpeedX(gameID: number): number {
-    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	if (!game) {
-        console.error(`Game with ID ${gameID} not found.`);
-        return; // Exit the function to prevent further execution
-    }
-    game.ballspeedx *= -1;
-	return game.ballspeedx;
   }
 
   async handleKey(server: Namespace, move: string, token: string, gameID: number) {
