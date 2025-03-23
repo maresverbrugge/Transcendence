@@ -4,8 +4,8 @@ import { AchievementsData } from '../interfaces';
 
 function Achievements({ achievements = [] }: { achievements: AchievementsData[] }) {
   return (
-    <div className="p-3">
-      <h5 className="text-center mb-3">Achievements</h5>
+    <div className="px-0 py-3">
+    <h2 className="text-center mb-3">Achievements</h2>
       <div className="d-flex flex-wrap justify-content-center">
         {achievements.map((achievement) => (
           <div key={achievement.name} className="text-center mx-2 my-2" style={{ flex: '0 0 20%', maxWidth: '20%' }}>

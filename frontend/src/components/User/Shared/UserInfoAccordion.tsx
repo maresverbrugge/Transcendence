@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { emitter } from '../../emitter';
 
 import Statistics from './Statistics';
 import Leaderboard from './Leaderboard';
@@ -21,47 +22,36 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
   const [loadingAchievements, setLoadingAchievements] = useState<boolean>(true);
 
   useEffect(() => {
+    const token = localStorage.getItem('authenticationToken');
     const fetchStatistics = async () => {
-      try {
-        const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/stats/${token}`);
-        setStatisticsData(response.data);
-      } catch (error) {
-        console.error('Error fetching statistics:', error);
-      } finally {
-        setLoadingStatistics(false);
-      }
+        return axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/stats/${token}`);
     };
 
     const fetchMatchHistory = async () => {
-      try {
-        const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/match-history/${token}`);
-        setMatchHistoryData(response.data);
-      } catch (error) {
-        console.error('Error fetching match history:', error);
-      } finally {
-        setLoadingMatchHistory(false);
-      }
+        return axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/match-history/${token}`);
     };
 
     const fetchAchievements = async () => {
-      try {
-        const token = localStorage.getItem('authenticationToken');
-        const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/achievements/${token}`);
+        return axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/achievements/${token}`);
         // console.log('Fetched achievements:', response.data); // Testing, remove later
-        setAchievementsData(response.data);
-      } catch (error) {
-        console.error('Error fetching achievements:', error);
-        setAchievementsData([]);
-      } finally {
-        setLoadingAchievements(false);
-      }
     };
 
-    fetchStatistics();
-    fetchMatchHistory();
-    fetchAchievements();
+    const fetchAllData = async () => {
+      try {
+        let [statistics, matchHistory, achievements] = await Promise.all([fetchStatistics(), fetchMatchHistory(), fetchAchievements()]);
+        setStatisticsData(statistics.data);
+        setMatchHistoryData(matchHistory.data);
+        setAchievementsData(achievements.data);
+      } catch (error) {
+        emitter.emit("error", error);
+      } finally {
+        setLoadingStatistics(false);
+        setLoadingMatchHistory(false);
+        setLoadingAchievements(false);
+      }
+    }
+    fetchAllData();
+
   }, [userID]);
 
   const renderContent = (loading: boolean, data: any, Component: any, noDataMessage: string) => {

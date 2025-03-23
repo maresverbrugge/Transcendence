@@ -24,6 +24,11 @@ export class AchievementService {
         iconURL: `${process.env.URL_BACKEND}/images/achievements/100_wins.png`,
       },
       {
+        name: 'First Game Played',
+        description: 'Played your first game',
+        iconURL: `${process.env.URL_BACKEND}/images/achievements/first_game.png`,
+      },
+      {
         name: 'Scored 100 XP',
         description: 'Scored 100 XP',
         iconURL: `${process.env.URL_BACKEND}/images/achievements/100_XP.png`,
@@ -32,11 +37,6 @@ export class AchievementService {
         name: 'Scored 1000 XP',
         description: 'Scored 1000 XP',
         iconURL: `${process.env.URL_BACKEND}/images/achievements/1000_XP.png`,
-      },
-      {
-        name: 'First Game Played',
-        description: 'Played your first game',
-        iconURL: `${process.env.URL_BACKEND}/images/achievements/first_game.png`,
       },
       {
         name: 'First Friend',

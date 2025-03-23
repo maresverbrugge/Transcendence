@@ -1,18 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import LogOutButton from '../components/User/Account/LogOutButton';
 
 const MainPage = () => {
   const navigate = useNavigate();
-  
+
   return (
-    <div>
-      <h1>Welcome to the Main Page</h1>
-      <button onClick={() => navigate('/queue')}>Go to Game</button>
-      <button onClick={() => navigate('/chat')}>Go to Chat</button>
-      <button onClick={() => navigate('/leaderboard')}>Go to Leaderboard</button>
-      <button onClick={() => navigate('/profile')}>My Account</button>
-      <button onClick={() => navigate('/profile/2')}>TESTING: View Profile (UserID=2)</button>
+    <div className="container text-center mt-5">
+
+      <div className="mb-4">
+        <h1>Welcome!
+        <p> <small className="text-body-secondary"> let's play PONG! 🏓</small> </p>
+        </h1>
+      </div>
+
+      <div className="position-absolute top-0 end-0 m-3">
+        <div style={{ maxWidth: '150px' }}>
+          <LogOutButton buttonStyle="btn-outline-info" />
+        </div>
+      </div>
+
+
+
+      <div className="d-grid gap-3 col-6 mx-auto">
+        <button className="btn btn-primary" onClick={() => navigate('/game')}>
+          PLAY GAME
+        </button>
+        <button className="btn btn-info" onClick={() => navigate('/chat')}>
+          CHAT
+        </button>
+        <button className="btn btn-success" onClick={() => navigate('/leaderboard')}>
+          LEADERBOARD
+        </button>
+        <button className="btn btn-warning" onClick={() => navigate('/profile')}>
+          ACCOUNT
+        </button>
+      </div>
     </div>
   );
 };
@@ -20,4 +43,3 @@ const MainPage = () => {
 export default MainPage;
 
 //! let op, User Profile: user ID is hier gehard-code!!!
-
