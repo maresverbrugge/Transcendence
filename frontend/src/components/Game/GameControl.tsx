@@ -145,7 +145,8 @@ const GameLogic = ({ socket, skin, token }) => {
   const ballRef = useRef<Ball | null>(null);
   const paddleLeftRef = useRef<Paddle | null>(null);
   const paddleRightRef = useRef<Paddle | null>(null);
-
+  const [playerLeft, setPlayerLeft] = useState<string>(null);
+  const [playerRight, setPlayerRight] = useState<string>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -197,8 +198,8 @@ const GameLogic = ({ socket, skin, token }) => {
       socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
     }
 
-    context.fillText(scoreRight.toString(), width / 2 + 30, 30);
-    context.fillText(scoreLeft.toString(), width / 2 - 30, 30);
+    context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
+    context.fillText(`${playerLeft}: ${scoreLeft}`, width / 2 - 30, 30);
 
     if (Math.abs(scoreLeft - scoreRight) === 3) {
       socket.emit('done', { gameID, token });
@@ -221,7 +222,7 @@ const GameLogic = ({ socket, skin, token }) => {
 		cancelAnimationFrame(frameId);
 		document.removeEventListener('keydown', keyHandler);
     };
-}, [context, gameID, end, scoreLeft, scoreRight]);
+}, [context, gameID, end, scoreLeft, scoreRight, playerLeft, playerRight]);
 
   useEffect(() => {
     socket.on('gameID', (id: number) => {
@@ -232,6 +233,12 @@ const GameLogic = ({ socket, skin, token }) => {
 	  });
 	socket.on('side', (side: number) => {
 		setSide(side)
+	  });
+	socket.on('playerLeft', (playerName: string) => {
+		setPlayerLeft(playerName);
+	  });
+	socket.on('playerRight', (playerName: string) => {
+		setPlayerRight(playerName);
 	  });
 	socket.on('ballSpeedY', (speed: string) => {
 	  ballRef.current.speedY = parseInt(speed);
@@ -265,6 +272,8 @@ const GameLogic = ({ socket, skin, token }) => {
     socket.off('gameID');
 	socket.off('finished');
 	socket.off('side');
+	socket.off('playerLeft');
+	socket.off('playerRight');
 	socket.off('ballSpeedY');
 	socket.off('ballSpeedX');
 	socket.off('right up');

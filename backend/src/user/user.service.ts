@@ -88,6 +88,25 @@ export class UserService {
     }
   }
 
+  async getUserNameByUserID(profileUserID: number, token: string): Promise<string> {
+    const currentUserID = await this.loginService.getUserIDFromCache(token);
+
+    try {
+      const user = await this.prisma.user.findUnique({
+      where: { ID: profileUserID },
+      select: {
+        username: true,
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user.username;
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
+
   async getSocketIDByUserID(userID: number, token: string): Promise<string> {
     const currentUserID = await this.loginService.getUserIDFromCache(token);
 

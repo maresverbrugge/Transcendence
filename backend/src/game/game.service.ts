@@ -73,10 +73,16 @@ export class GameService {
 	return game.ID;
   }
 
-  async getSide(gameID: number, token: string): Promise<number> {
+  async getSide(gameID: number, token: string, server: Namespace): Promise<number> {
 	try {
 		const playerID = await this.loginService.getUserIDFromCache(token);
 	  var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
+	  const playerLeft: string = await this.userService.getUserNameByUserID(game.leftPlayerID, token);
+	  const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+	  server.to(socketRight).to(socketLeft).emit('playerLeft', playerLeft);
+	  const playerRight: string = await this.userService.getUserNameByUserID(game.rightPlayerID, token);
+	  server.to(socketRight).to(socketLeft).emit('playerRight', playerRight);
 	  if (playerID == game.leftPlayerID)
 		  return 0;
 	  else
