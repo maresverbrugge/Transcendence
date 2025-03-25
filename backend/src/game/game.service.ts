@@ -21,6 +21,7 @@ interface MatchInstance
 @Injectable()
 export class GameService {
   private matches: MatchInstance[] = [];
+  private endedIds: number[] = [];
   constructor(
     private prisma: PrismaService,
     private readonly userService: UserService,
@@ -212,12 +213,17 @@ export class GameService {
   }
 
   async handleEnd(server: Namespace, gameID: number, client: Socket, token: string): Promise<void> {
+	  if (this.endedIds.indexOf(gameID) > -1)
+		{
+			return;
+		}
+		this.endedIds.push(gameID);
 	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	  if (!game) {
         console.error(`Game with ID ${gameID} not found.`);
         return;
     }
-	  try {
+	try {
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('finished');
