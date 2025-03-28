@@ -421,32 +421,29 @@ export class UserService {
   // FOR JEROEN: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION ABOVE
   // AND MOVE (AND IMPROVE!) FUNCTION UNDERNEATH HERE
   // TO GAME LOGIC AND CALL WHENEVER A GAME IS FINISHED
-  async updateGameStats(userID: number, gameResult: { won: boolean; score: number }): Promise<StatisticsData> {
+  async updateGameStats(userID: number): Promise<StatisticsData> {
     try {
       const statistics = await this.prisma.statistics.findUnique({
         where: { userID },
+		select: {
+			gamesPlayed: true,
+			wins: true,
+			totalScores: true,
+		  },
       });
 
       if (!statistics) {
         throw new NotFoundException('Statistics not found.');
       }
 
-      // Update gamesPlayed, wins, and totalScores based on the game result
-      const updatedStats = {
-        gamesPlayed: statistics.gamesPlayed + 1,
-        wins: gameResult.won ? statistics.wins + 1 : statistics.wins,
-        losses: gameResult.won ? statistics.losses : statistics.losses + 1,
-        totalScores: statistics.totalScores + gameResult.score,
-      };
-
       // Calculate the new ladderRank (playerRating)
-      const winRate = updatedStats.gamesPlayed ? updatedStats.wins / updatedStats.gamesPlayed : 0;
-      const playerRating = Math.round(winRate * 100 + updatedStats.totalScores / 10);
+      const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
+      const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
       // Update the statistics in the database
       const updatedStatistics = await this.prisma.statistics.update({
         where: { userID },
-        data: { ...updatedStats, ladderRank: playerRating },
+        data: { ladderRank: playerRating },
       });
 
       return {
