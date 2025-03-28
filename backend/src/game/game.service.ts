@@ -239,13 +239,15 @@ export class GameService {
 				},
 			});
 			if (game.scoreLeft > game.scoreRight){
-				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}}});
-				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}}});
+				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreLeft}}});
+				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreRight}}});
 			}
 			else if (game.scoreRight > game.scoreLeft){
-				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}}});
-				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}}});
+				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreRight}}});
+				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreLeft}}});
 			}
+			this.userService.updateGameStats(game.leftPlayerID);
+			this.userService.updateGameStats(game.rightPlayerID);
 		} catch (error) {
 			console.error("couldn't save game to the database, too bad");
 			this.errorHandlingService.emitHttpException(error, client);
