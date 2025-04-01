@@ -131,11 +131,11 @@ export class GameService {
 			return;
 			}
 		game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -10, 10);
-		game.ballspeedx *= -1;
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
-		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx);
+		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx * -1);
+		game.ballspeedx *= -1;
 	} catch(error) {
 		this.errorHandlingService.throwHttpException(error);
 	}
@@ -166,23 +166,21 @@ export class GameService {
 	}
   }
 
-  handleReverseSpeedY(gameID: number): number {
-    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	if (!game) {
-        console.error(`Game with ID ${gameID} not found.`);
-        return;
-    }
-    game.ballspeedy *= -1;
-	return game.ballspeedy;
-  }
-
-  handleReverseSpeedX(gameID: number): number {
-    var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-	if (!game) {
-        console.error(`Game with ID ${gameID} not found.`);
-        return;
-    }
-	return game.ballspeedx;
+  async handleReverseSpeedY(gameID: number, token: string, server: Namespace) {
+	try {
+		const playerID = await this.loginService.getUserIDFromCache(token);
+		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
+		if (!game || playerID == game.rightPlayerID) {
+			console.error(`Game with ID ${gameID} not found.`);
+			return;
+		}
+		game.ballspeedy *= -1;
+		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
+		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
+		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
+	} catch(error) {
+		this.errorHandlingService.throwHttpException(error);
+	}
   }
 
   async handleKey(server: Namespace, move: string, token: string, gameID: number) {
