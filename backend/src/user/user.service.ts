@@ -406,7 +406,9 @@ export class UserService {
       });
 
       // Check and grant XP-related achievements -> remove here and move this to game logic
-      await this.checkAndGrantXPAchievements(userID, playerRating);
+	  const wins = statistics.wins;
+	  const gamesPlayed = statistics.gamesPlayed;
+      await this.checkAndGrantXPAchievements(userID, playerRating, wins, gamesPlayed);
 
       return {
         ...statistics,
@@ -421,7 +423,7 @@ export class UserService {
   // FOR JEROEN: REMOVE CALCULATION LOGIC FROM getUserStats FUNCTION ABOVE
   // AND MOVE (AND IMPROVE!) FUNCTION UNDERNEATH HERE
   // TO GAME LOGIC AND CALL WHENEVER A GAME IS FINISHED
-  async updateGameStats(userID: number): Promise<StatisticsData> {
+  async updateGameStats(userID: number) {
     try {
       const statistics = await this.prisma.statistics.findUnique({
         where: { userID },
@@ -440,17 +442,11 @@ export class UserService {
       const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
       const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
 
-      // Update the statistics in the database
-      const updatedStatistics = await this.prisma.statistics.update({
-        where: { userID },
-        data: { ladderRank: playerRating },
-      });
+	  // Check and grant XP-related achievements -> remove here and move this to game logic
+	  const wins = statistics.wins;
+	  const gamesPlayed = statistics.gamesPlayed;
+      await this.checkAndGrantXPAchievements(userID, playerRating, wins, gamesPlayed);
 
-      return {
-        ...updatedStatistics,
-        winRate,
-        ladderRank: playerRating,
-      };
     } catch (error) {
       this.errorHandlingService.throwHttpException(error);
     }
@@ -458,15 +454,71 @@ export class UserService {
 
   // FOR JEROEN: MOVE THIS checkAndGrantXPAchievements FUNCTION from user.service.ts
   // TO GAME LOGIC AND CALL WHENEVER A GAME IS FINISHED
-  async checkAndGrantXPAchievements(userID: number, playerRating: number): Promise<void> {
+  async checkAndGrantXPAchievements(userID: number, playerRating: number, wins: number, gamesPlayed: number): Promise<void> {
     try {
       const xpAchievements = [
         { name: 'Scored 100 XP', threshold: 100 },
         { name: 'Scored 1000 XP', threshold: 1000 },
       ];
 
+	  const winAchievements = [
+        { name: 'First Win', threshold: 1 },
+        { name: '10 Wins', threshold: 10 },
+		{ name: '100 Wins', threshold: 100 },
+      ];
+
+	  const gameAchievements = [
+        { name: 'First Game Played', threshold: 1 },
+      ];
+
       for (const achievement of xpAchievements) {
         if (playerRating >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+            // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
+          }
+        }
+      }
+
+	  for (const achievement of winAchievements) {
+        if (wins >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+            // console.log(`Achievement "${achievement.name}" granted to user ${userID}. 🎉`);
+          }
+        }
+      }
+
+	  for (const achievement of gameAchievements) {
+        if (gamesPlayed >= achievement.threshold) {
           const achievementData = await this.prisma.achievement.findUnique({
             where: { name: achievement.name },
           });
