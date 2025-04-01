@@ -190,12 +190,12 @@ const GameLogic = ({ socket, skin, token }) => {
     paddleRight.display(height);
 
     if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-		ballRef.current.speedX *= -1;
-      socket.emit('hitPaddle', gameID, ball.y - paddleLeft.y, paddleLeft.h / 2);
+		// ballRef.current.speedX *= -1;
+      socket.emit('hitPaddle', { gameID, value: ball.y - paddleLeft.y, oldHigh: paddleLeft.h / 2, token });
     }
     if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-		ballRef.current.speedX *= -1;
-      socket.emit('hitPaddle', gameID, ball.y - paddleRight.y, paddleRight.h / 2);
+		// ballRef.current.speedX *= -1;
+      socket.emit('hitPaddle', { gameID, value: ball.y - paddleRight.y, oldHigh: paddleRight.h / 2, token });
     }
 
     context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
