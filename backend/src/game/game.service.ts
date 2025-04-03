@@ -130,7 +130,7 @@ export class GameService {
 			console.error(`Game with ID ${gameID} not found.`);
 			return;
 			}
-		game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -10, 10);
+		game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -4, 4);
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
@@ -175,6 +175,7 @@ export class GameService {
 			return;
 		}
 		game.ballspeedy *= -1;
+		console.log(game.ballspeedy)
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
