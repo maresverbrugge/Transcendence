@@ -18,6 +18,7 @@ const ErrorHandler = () => {
     }, []);
 
     const handleError = (error: any) => {
+        console.error(error);
         if (error?.status === 403 || error?.status === 400) {
             if (error?.response?.data?.message) setAlert(error.response.data.message);
             else if (error?.response?.message) setAlert(error.response.message);
