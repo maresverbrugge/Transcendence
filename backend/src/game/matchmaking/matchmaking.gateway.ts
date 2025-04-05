@@ -34,7 +34,7 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 			let token = client.handshake.query.token;
 			if (Array.isArray(token)) token = token[0];
 			const userID = await this.loginService.getUserIDFromCache(token);
-			if (this.queue.length >= 1)
+			if (this.queue.length >= 1 && this.queue.indexOf(userID) === -1)
 			{
 				const otherID: number = this.queue.shift();
 				const game = await this.gameService.createGame(userID, otherID, token);
