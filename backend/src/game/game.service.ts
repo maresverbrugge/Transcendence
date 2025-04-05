@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { Match, MatchStatus } from '@prisma/client';
+import { Match, MatchStatus, UserStatus } from '@prisma/client';
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 
@@ -253,6 +253,14 @@ export class GameService {
 			}
 			this.updateGameStats(game.leftPlayerID);
 			this.updateGameStats(game.rightPlayerID);
+			await this.prisma.user.update({
+				where: { ID: game.leftPlayerID },
+				data: { websocketID: null, status: UserStatus.ONLINE },
+			});
+			await this.prisma.user.update({
+				where: { ID: game.rightPlayerID },
+				data: { websocketID: null, status: UserStatus.ONLINE },
+			});
 		} catch (error) {
 			console.error("couldn't save game to the database, too bad");
 			this.errorHandlingService.emitHttpException(error, client);
