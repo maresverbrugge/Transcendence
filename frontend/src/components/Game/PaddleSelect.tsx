@@ -34,7 +34,7 @@ const PaddleSelect = ({}) => {
   }
 
   return (
-	<div>
+	<div className="d-flex justify-content-center align-items-center vh-100">
 		{showGame && (
 			<GameControl socket={socket} skin={selectedPaddle} token={token} />
 		)}

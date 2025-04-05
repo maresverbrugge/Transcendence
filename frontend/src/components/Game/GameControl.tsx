@@ -284,7 +284,7 @@ const GameLogic = ({ socket, skin, token }) => {
   }, []);
 
   return (
-    <div>
+    <div className="d-flex flex-column justify-content-center align-items-center vh-100">
 		<canvas ref={canvasRef} height="500" width="500" className="border border-light rounded" />
           {end && side == 0 && scoreLeft > scoreRight && (
             <div className="mt-3">
