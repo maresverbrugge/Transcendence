@@ -12,5 +12,3 @@ const LeaderboardPage = () => {
 };
 
 export default LeaderboardPage;
-
-//! let op, User Profile: user ID is hier gehard-code!!!

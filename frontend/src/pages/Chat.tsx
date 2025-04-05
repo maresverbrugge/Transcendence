@@ -32,7 +32,6 @@ const Chat = () => {
     });
 
     socketIo.on('connect', () => {
-      console.log('Connected to the server.');
     });
 
     socketIo.on('connect_error', (error: any) => {

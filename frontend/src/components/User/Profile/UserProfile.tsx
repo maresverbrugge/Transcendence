@@ -23,7 +23,6 @@ const UserProfile = ({ profileUserID }: { profileUserID: number }) => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/profile/${profileUserID}/${token}`);
-        // console.log("User data UserProfile fetched: ", response.data); // for testing, remove later
         setUserData(response.data);
       } catch (error) {
         emitter.emit("error", error);

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { emitter } from '../../emitter';
-
 import Statistics from './Statistics';
 import Leaderboard from './Leaderboard';
 import MatchHistory from './MatchHistory';

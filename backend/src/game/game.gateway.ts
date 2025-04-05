@@ -18,7 +18,7 @@ import { UserService } from 'src/user/user.service';
 @WebSocketGateway({
   namespace: 'game',
   cors: {
-    origin: `${process.env.URL_FRONTEND}`, // Update with your client's origin
+    origin: `${process.env.URL_FRONTEND}`,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -97,26 +97,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-	console.log(`Client connected: ${client.id}`);
       let token = client.handshake.query.token;
       if (Array.isArray(token)) token = token[0];
       const userID = await this.loginService.getUserIDFromCache(token);
       await this.prisma.user.update({where: {ID: userID}, data: {status: UserStatus.IN_GAME, websocketID: client.id}})
-	//   await this.gameService.updateSocket(token, client.id);
     } catch (error) {
 		this.errorHandlingService.emitHttpException(error, client);
     }
   }
   async handleDisconnect(client: Socket): Promise<void> {
     try {
-		//check if other player disconnected
 		let token = client.handshake.query.token;
         if (Array.isArray(token)) token = token[0];
 		const userID = await this.loginService.getUserIDFromCache(token);
 		const gameID: number = this.gameService.getGameID(userID);
 		this.gameService.handleDisconnection(this.server, gameID, client, token);
 
-		console.log(`Client disconnected: ${client.id}`);
 		await this.prisma.user.update({
         where: { ID: userID },
         data: { websocketID: null, status: UserStatus.ONLINE },

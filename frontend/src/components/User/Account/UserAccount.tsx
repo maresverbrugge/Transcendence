@@ -26,7 +26,6 @@ const UserAccount = () => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/account/${token}`);
-        // console.log('User data UserAccount fetched:', response.data); // for testing, remove later
         setUserData(response.data);
       } catch (error) {
         emitter.emit("error", error);

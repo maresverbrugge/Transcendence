@@ -1,20 +1,17 @@
 import { Controller, Get, Post, Patch, Param, Body, ParseIntPipe, UploadedFile, UseInterceptors, Inject, forwardRef } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { User } from '@prisma/client';
+import { Statistics, User } from '@prisma/client';
 import { UsernameValidationPipe } from './pipes/username-validation.pipe';
 import { AvatarValidationPipe } from './pipes/avatar-validation.pipe';
-
 import {
   UserAccount,
   UserProfile,
   UserFriend,
   UploadedFileType,
-  StatisticsData,
   LeaderboardData,
   MatchHistoryData,
   AchievementData,
 } from './interfaces';
-
 import { UserService } from './user.service';
 import { LoginService } from '../authentication/login/login.service';
 
@@ -59,7 +56,7 @@ export class UserController {
   }
 
   @Get(':userID/stats/:token')
-  async getUserStats(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<StatisticsData> {
+  async getUserStats(@Param('token') token: string, @Param('userID', ParseIntPipe) userID: number): Promise<Statistics> {
     await this.loginService.getUserIDFromCache(token);
     return this.userService.getUserStats(userID);
   }
