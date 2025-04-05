@@ -16,7 +16,6 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
       try {
         const token = localStorage.getItem('authenticationToken');
         const response = await axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/leaderboard/${token}`);
-        // console.log('Leaderboard data fetched:', response.data); // for testing, romove later
         setLeaderboardData(response.data);
       } catch (error) {
         emitter.emit("error", error);

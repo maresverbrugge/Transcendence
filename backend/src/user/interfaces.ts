@@ -1,4 +1,4 @@
-import { Statistics, UserStatus, MatchStatus } from '@prisma/client';
+import { UserStatus, MatchStatus } from '@prisma/client';
 
 export interface UserAccount {
   ID: number;
@@ -27,10 +27,6 @@ export interface UserFriend {
   username: string;
   avatarURL: string;
   status: UserStatus;
-}
-
-export interface StatisticsData extends Statistics {
-  winRate: number;
 }
 
 export interface LeaderboardData {

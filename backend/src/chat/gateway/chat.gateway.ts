@@ -156,9 +156,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  afterInit(): void {
-    console.log('Chat Gateway Initialized');
-  }
+  afterInit(): void {}
 
   async handleConnection(client: Socket): Promise<void> {
     try {

@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -175,7 +175,6 @@ export class GameService {
 			return;
 		}
 		game.ballspeedy *= -1;
-		console.log(game.ballspeedy)
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
@@ -252,8 +251,8 @@ export class GameService {
 				await this.prisma.statistics.update({where: {userID: game.rightPlayerID}, data: {wins: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreRight}}});
 				await this.prisma.statistics.update({where: {userID: game.leftPlayerID}, data: {losses: {increment: 1}, gamesPlayed: {increment: 1}, totalScores: {increment: game.scoreLeft}}});
 			}
-			this.userService.updateGameStats(game.leftPlayerID);
-			this.userService.updateGameStats(game.rightPlayerID);
+			this.updateGameStats(game.leftPlayerID);
+			this.updateGameStats(game.rightPlayerID);
 		} catch (error) {
 			console.error("couldn't save game to the database, too bad");
 			this.errorHandlingService.emitHttpException(error, client);
@@ -289,4 +288,123 @@ export class GameService {
   const index = this.matches.indexOf(game);
   this.matches.splice(index, 1);
 }
+
+  async updateGameStats(userID: number) {
+    try {
+      const statistics = await this.prisma.statistics.findUnique({
+        where: { userID },
+		select: {
+			gamesPlayed: true,
+			wins: true,
+			totalScores: true,
+		  },
+      });
+
+      if (!statistics) {
+        throw new NotFoundException('Statistics not found.');
+      }
+
+      const winRate = statistics.gamesPlayed ? statistics.wins / statistics.gamesPlayed : 0;
+      const playerRating = Math.round(winRate * 100 + statistics.totalScores / 10);
+
+      await this.prisma.statistics.update({
+        where: { userID },
+        data: { winRate: winRate, ladderRank: playerRating },
+      });
+
+	  const wins = statistics.wins;
+	  const gamesPlayed = statistics.gamesPlayed;
+      await this.checkAndGrantXPAchievements(userID, playerRating, wins, gamesPlayed);
+
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
+
+  async checkAndGrantXPAchievements(userID: number, playerRating: number, wins: number, gamesPlayed: number): Promise<void> {
+    try {
+      const xpAchievements = [
+        { name: 'Scored 100 XP', threshold: 100 },
+        { name: 'Scored 1000 XP', threshold: 1000 },
+      ];
+
+	  const winAchievements = [
+        { name: 'First Win', threshold: 1 },
+        { name: '10 Wins', threshold: 10 },
+		{ name: '100 Wins', threshold: 100 },
+      ];
+
+	  const gameAchievements = [
+        { name: 'First Game Played', threshold: 1 },
+      ];
+
+      for (const achievement of xpAchievements) {
+        if (playerRating >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+          }
+        }
+      }
+
+	  for (const achievement of winAchievements) {
+        if (wins >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+          }
+        }
+      }
+
+	  for (const achievement of gameAchievements) {
+        if (gamesPlayed >= achievement.threshold) {
+          const achievementData = await this.prisma.achievement.findUnique({
+            where: { name: achievement.name },
+          });
+
+          if (!achievementData) {
+            throw new Error(`Achievement "${achievement.name}" not found.`);
+          }
+
+          const alreadyGranted = await this.prisma.userAchievement.findFirst({
+            where: { userID, achievementID: achievementData.ID },
+          });
+
+          if (!alreadyGranted) {
+            await this.prisma.userAchievement.create({
+              data: { userID, achievementID: achievementData.ID },
+            });
+          }
+        }
+      }
+    } catch (error) {
+      this.errorHandlingService.throwHttpException(error);
+    }
+  }
 }

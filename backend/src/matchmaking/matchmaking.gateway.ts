@@ -37,7 +37,6 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 			if (this.queue.length >= 1)
 			{
 				const otherID: number = this.queue.shift();
-				// make game
 				const game = await this.gameService.createGame(userID, otherID, token);
 				if (game == null)
 					throw new InternalServerErrorException('Error creating the game');
@@ -83,7 +82,6 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
   
 	async handleConnection(client: Socket): Promise<void> {
 		try {
-			console.log(`Client connected: ${client.id}`);
 			let token = client.handshake.query.token;
 			if (Array.isArray(token)) token = token[0];
 			const userID = await this.loginService.getUserIDFromCache(token);
@@ -94,7 +92,6 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 	  }
 	  async handleDisconnect(client: Socket): Promise<void> {
 		try {
-			console.log(`Client disconnected: ${client.id}`);
 			const user = await this.prismaService.user.findUnique({where: {websocketID: client.id}, select: {ID: true}});
 			if (!user) {
 			  throw new NotFoundException('User not found')

@@ -41,5 +41,3 @@ const MainPage = () => {
 };
 
 export default MainPage;
-
-//! let op, User Profile: user ID is hier gehard-code!!!

@@ -15,7 +15,6 @@ async function bootstrap() {
 
 	app.useStaticAssets(join(__dirname, '..', 'src', 'public'));
 	await app.listen(process.env.PORT_BACKEND);
-	console.log('Visit Transcendancing Queens\'s BACKEND on ' + process.env.URL_BACKEND);
-	console.log('Visit Transcendancing Queens\'s FRONTEND on ' + process.env.URL_FRONTEND);
+	console.log('Visit Transcendancing Queens on ' + process.env.URL_FRONTEND);
 }
 bootstrap();

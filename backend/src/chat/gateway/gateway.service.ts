@@ -25,7 +25,6 @@ export class GatewayService {
     ) {}
 
     async handleConnection(client: Socket): Promise<void> {
-        console.log(`Client connected: ${client.id}`);
         let token = client.handshake.query.token;
         if (Array.isArray(token)) token = token[0];
         const userID = await this.loginService.getUserIDFromCache(token);
@@ -39,7 +38,6 @@ export class GatewayService {
     }
 
     async handleDisconnect(client: Socket): Promise<void> {
-        console.log(`Client disconnected: ${client.id}`);
         const user = await this.prisma.user.findUnique({where: {websocketID: client.id}, select: {ID: true}});
         if (!user) {
             throw new NotFoundException('User not found')
