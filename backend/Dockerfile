@@ -1,6 +1,8 @@
 # BACKEND DOCKERFILE
 
-FROM node:16-alpine
+FROM node:22-alpine
+
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
