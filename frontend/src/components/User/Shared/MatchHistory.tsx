@@ -32,7 +32,7 @@ const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData
                     {match.result}
                   </td>
                   <td>
-                    {match.scorePlayer1} - {match.scorePlayer2}
+                    {match.scoreLeft} - {match.scoreRight}
                   </td>
                   <td>
                     <button
