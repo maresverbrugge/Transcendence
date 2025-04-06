@@ -11,8 +11,7 @@ const Game = () => {
 
   useEffect(() => {
 
-    // Initialize socket connection
-    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND_WS}/matchmaking`, { // localhost veranderen naar react_app_var
+    const socketIo: Socket = io(`${process.env.REACT_APP_URL_BACKEND_WS}/matchmaking`, {
       transports: ["websocket"],
       query: { token },
 	  withCredentials: true,
@@ -24,13 +23,12 @@ const Game = () => {
 
 	socketIo.on('error', (error) => {emitter.emit('error', error)});
 
-    // Set socket instance in state
     setSocket(socketIo);
 
     return () => {
       socketIo.off('newGame');
       socketIo.off('error');
-      socketIo.disconnect(); // Disconnect the socket when the component unmounts
+      socketIo.disconnect();
     };
   }, []);
 
@@ -49,21 +47,24 @@ const Game = () => {
   }
 
   return (
-	<div className="d-flex justify-content-center align-items-center vh-100" style={{overflowY: 'hidden'}}>
-		{joinedGame && (
-			<PaddleSelect/>
-		)}
-		{!joinedGame && (
-			<div className="games-startup">
-				{inQueue && (
-					<button className="btn btn-primary" onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
-				)}
-				{!inQueue && (
-					<button className="btn btn-primary" onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
-				)}
-				<label>Join the queue to play.</label>
-			</div>
-		)}
+	<div className="d-flex justify-content-center align-items-center vh-100" style={{ overflowY: 'hidden' }}>
+	  {joinedGame && <PaddleSelect />}
+	  {!joinedGame && (
+	    <div className="games-startup text-center">
+	      <div className="d-flex flex-column gap-3 align-items-center">
+	        {inQueue ? (
+	          <button className="btn btn-primary" onClick={() => leaveQueue(token)}>
+	            I don't want to play anymore
+	          </button>
+	        ) : (
+	          <button className="btn btn-primary" onClick={() => joinQueue(token)}>
+	            Wanna play?
+	          </button>
+	        )}
+	        <label className="text-light">Join the queue to play.</label>
+	      </div>
+	    </div>
+	  )}
 	</div>
   );
 };

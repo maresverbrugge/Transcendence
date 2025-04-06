@@ -211,7 +211,6 @@ const GameLogic = ({ socket, skin, token }) => {
 	
     draw();
 
-    // Event listener for keydown
     const keyHandler = createKeyHandler(socket, gameID, token);
     document.addEventListener('keydown', keyHandler);
 	

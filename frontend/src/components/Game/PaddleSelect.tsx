@@ -16,14 +16,13 @@ const PaddleSelect = ({}) => {
 	  withCredentials: true,
     });
 
-    // Set socket instance in state
     setSocket(socketIo);
 
 	socketIo.on('error', (error) => {emitter.emit('error', error)});
 
     return () => {
 	  socketIo.off('error');
-	  socketIo.disconnect(); // Disconnect the socket when the component unmounts
+	  socketIo.disconnect();
   };
   }, []);
 
