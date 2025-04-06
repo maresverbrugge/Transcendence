@@ -32,7 +32,6 @@ function UserInfoAccordion({ userID, triggerRefresh }: UserInfoAccordionProps) {
 
     const fetchAchievements = async () => {
         return axios.get(`${process.env.REACT_APP_URL_BACKEND}/user/${userID}/achievements/${token}`);
-        // console.log('Fetched achievements:', response.data); // Testing, remove later
     };
 
     const fetchAllData = async () => {
