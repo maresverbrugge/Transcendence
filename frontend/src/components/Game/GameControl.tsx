@@ -139,6 +139,7 @@ const GameLogic = ({ socket, skin, token }) => {
   const [scoreLeft, setScoreLeft] = useState(0);
   const [scoreRight, setScoreRight] = useState(0);
   const [end, setEnd] = useState(false);
+  const [disconnect, setDisconnect] = useState(false);
   const width = 500;
   const height = 500;
   const ballRef = useRef<Ball | null>(null);
@@ -263,6 +264,7 @@ const GameLogic = ({ socket, skin, token }) => {
 	  });
 	socket.on('disconnection', () => {
 		setEnd(true);
+		setDisconnect(true);
 	  });
 
     return () => {
@@ -286,7 +288,7 @@ const GameLogic = ({ socket, skin, token }) => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center vh-100">
 		<canvas ref={canvasRef} height="500" width="500" className="border border-light rounded" />
-          {end && side == 0 && scoreLeft > scoreRight && (
+          {!disconnect && end && side == 0 && scoreLeft > scoreRight && (
             <div className="mt-3">
               <h4 className="text-success">You won, yay!</h4>
               <Button variant="outline-light" onClick={() => navigate('/main')}>
@@ -294,7 +296,7 @@ const GameLogic = ({ socket, skin, token }) => {
               </Button>
             </div>
           )}
-		  {end && side == 0 && scoreRight > scoreLeft && (
+		  {!disconnect && end && side == 0 && scoreRight > scoreLeft && (
             <div className="mt-3">
               <h4 className="text-success">You lose, better luck next time!</h4>
               <Button variant="outline-light" onClick={() => navigate('/main')}>
@@ -302,7 +304,7 @@ const GameLogic = ({ socket, skin, token }) => {
               </Button>
             </div>
           )}
-		  {end && side == 1 && scoreRight > scoreLeft && (
+		  {!disconnect && end && side == 1 && scoreRight > scoreLeft && (
             <div className="mt-3">
               <h4 className="text-success">You won, yay!</h4>
               <Button variant="outline-light" onClick={() => navigate('/main')}>
@@ -310,9 +312,17 @@ const GameLogic = ({ socket, skin, token }) => {
               </Button>
             </div>
           )}
-		  {end && side == 1 && scoreLeft > scoreRight && (
+		  {!disconnect && end && side == 1 && scoreLeft > scoreRight && (
             <div className="mt-3">
               <h4 className="text-success">You lose, better luck next time!</h4>
+              <Button variant="outline-light" onClick={() => navigate('/main')}>
+                Back to Main Menu
+              </Button>
+            </div>
+          )}
+		  {end && disconnect && (
+            <div className="mt-3">
+              <h4 className="text-success">Your game got interrupted</h4>
               <Button variant="outline-light" onClick={() => navigate('/main')}>
                 Back to Main Menu
               </Button>
