@@ -50,9 +50,11 @@ class Ball {
       this.y = height / 2;
     }
     if (this.bottom() > height) {
+		this.speedY *= -1;
       this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
     }
     if (this.top() < 0) {
+		this.speedY *= -1;
       this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
     }
   }
@@ -189,11 +191,15 @@ const GameLogic = ({ socket, skin, token }) => {
     paddleLeft.display(height);
     paddleRight.display(height);
 
-    if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
+    if (ball.left() <= paddleLeft.right() && ball.right() >= paddleLeft.left() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
       socket.emit('hit paddle', { gameID, value: ball.y - paddleLeft.y, oldHigh: paddleLeft.h / 2, token });
+	  ball.x += 10;
+	  ball.speedX *= -1;
     }
-    if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
+    if (ball.right() >= paddleRight.left() && ball.left() <= paddleRight.right() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
       socket.emit('hit paddle', { gameID, value: ball.y - paddleRight.y, oldHigh: paddleRight.h / 2, token });
+	  ball.x -= 10;
+	  ball.speedX *= -1;
     }
 
     context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
@@ -212,7 +218,6 @@ const GameLogic = ({ socket, skin, token }) => {
 	
     draw();
 
-    // Event listener for keydown
     const keyHandler = createKeyHandler(socket, gameID, token);
     document.addEventListener('keydown', keyHandler);
 	
