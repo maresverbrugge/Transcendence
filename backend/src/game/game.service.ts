@@ -16,6 +16,7 @@ interface MatchInstance
   scoreLeft: number,
   scoreRight: number,
   firstPlayerReady: boolean,
+  lastHit: number,
 }
 
 @Injectable()
@@ -62,7 +63,7 @@ export class GameService {
 				  },
 			  },
 		});
-		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false});
+		this.matches.push({ID: newGame.matchID, leftPlayerID: userID1, rightPlayerID: userID2, ballspeedx: 0, ballspeedy: 0, scoreLeft: 0, scoreRight: 0, firstPlayerReady: false, lastHit: Date.now()});
 		return newGame;
 	} catch (error) {
 		this.errorHandlingService.throwHttpException(error);
@@ -103,8 +104,8 @@ export class GameService {
 	{
 		try {
 			while (game.ballspeedy == 0)
-				game.ballspeedy = Math.floor(Math.random() * 6 - 3);
-			game.ballspeedx = 5;
+				game.ballspeedy = Math.floor(Math.random() * 5 - 3);
+			game.ballspeedx = 4;
 			const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 			const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 			server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
@@ -125,16 +126,19 @@ export class GameService {
 
   async handleHitPaddle(gameID: number, value: number, oldHigh: number, token: string, server: Namespace) {
 	try {
+		const playerID = await this.loginService.getUserIDFromCache(token);
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game) {
 			console.error(`Game with ID ${gameID} not found.`);
 			return;
-			}
-		game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -4, 4);
+		}
+		if (Date.now() - game.lastHit < 200)
+			return;
+		game.lastHit = Date.now();
+		game.ballspeedy = this.map_range(value, -oldHigh, oldHigh, -3, 3);
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
 		const socketRight = await this.userService.getSocketIDByUserID(game.rightPlayerID, token);
 		server.to(socketRight).to(socketLeft).emit('ballSpeedY', game.ballspeedy);
-		server.to(socketRight).to(socketLeft).emit('ballSpeedX', game.ballspeedx * -1);
 		game.ballspeedx *= -1;
 	} catch(error) {
 		this.errorHandlingService.throwHttpException(error);
@@ -143,12 +147,15 @@ export class GameService {
 
   async handleScore(server: Namespace, gameID: number, side: number, token: string) {
 	try {
-		const playerID = await this.loginService.getUserIDFromCache(token);
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
-		if (!game || playerID == game.rightPlayerID) {
+		if (!game) {
 			console.error(`Game with ID ${gameID} not found.`);
 			return;
 		}
+		const playerID = await this.loginService.getUserIDFromCache(token);
+		if (playerID == game.rightPlayerID)
+			return;
+		game.lastHit = Date.now() - 900;
 		if (side === 1) {
 			game.scoreLeft += 1;
 		} else {
