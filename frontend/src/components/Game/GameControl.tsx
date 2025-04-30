@@ -43,17 +43,21 @@ class Ball {
       this.socket.emit('left scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedX *= -1;
     }
     if (this.left() < 0) {
       this.socket.emit('right scored', { gameID: this.gameID, token: this.token });
       this.x = width / 2;
       this.y = height / 2;
+	  this.speedX *= -1;
     }
     if (this.bottom() > height) {
       this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
+	  this.speedY *= -1;
     }
     if (this.top() < 0) {
       this.socket.emit('reverse ball speedY', {gameID: this.gameID, token: this.token});
+	  this.speedY *= -1;
     }
   }
   display() {
@@ -147,6 +151,7 @@ const GameLogic = ({ socket, skin, token }) => {
   const paddleRightRef = useRef<Paddle | null>(null);
   const [playerLeft, setPlayerLeft] = useState<string>(null);
   const [playerRight, setPlayerRight] = useState<string>(null);
+  const [lastHitSide, setLastHitSide] = useState<number>(0);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -161,8 +166,10 @@ const GameLogic = ({ socket, skin, token }) => {
 	ballRef.current = new Ball(width / 2, height / 2, 50, context, gameID, socket, token);
 	paddleLeftRef.current = new Paddle(15, height / 2, 40, 200, context, skin);
 	paddleRightRef.current = new Paddle(width - 15, height / 2, 40, 200, context, skin);
-  
-	socket.emit('start', { token: token, gameID: gameID });
+
+	setTimeout(() => {
+		socket.emit('start', { token: token, gameID: gameID });
+	  }, 1500);
   
   }, [context, gameID]);
   
@@ -184,18 +191,32 @@ const GameLogic = ({ socket, skin, token }) => {
 
     if (!ball || !paddleLeft || !paddleRight) return;
 
-    ball.move(width, height);
-    ball.display();
-    paddleLeft.display(height);
-    paddleRight.display(height);
-
-    if (ball.left() < paddleLeft.right() && ball.y > paddleLeft.top() && ball.y < paddleLeft.bottom()) {
-      socket.emit('hit paddle', { gameID, value: ball.y - paddleLeft.y, oldHigh: paddleLeft.h / 2, token });
+    if (ballRef.current.left() < 40 && ballRef.current.y > paddleLeftRef.current.top() && ballRef.current.y < paddleLeftRef.current.bottom() && lastHitSide !== 1) {
+		socket.emit('hit paddle', { gameID, value: ballRef.current.y - paddleLeftRef.current.y, oldHigh: paddleLeftRef.current.h / 2, token });
+		console.log("before left")
+		console.log(ballRef.current.speedX)
+		ballRef.current.speedX = Math.abs(ballRef.current.speedX);
+		console.log("after left")
+		console.log(ballRef.current.speedX)
+		ballRef.current.x = paddleLeftRef.current.right() + 27;
+	  setLastHitSide(1);
     }
-    if (ball.right() > paddleRight.left() && ball.y > paddleRight.top() && ball.y < paddleRight.bottom()) {
-      socket.emit('hit paddle', { gameID, value: ball.y - paddleRight.y, oldHigh: paddleRight.h / 2, token });
+    if (ballRef.current.right() > width - 40 && ballRef.current.y > paddleRightRef.current.top() && ballRef.current.y < paddleRightRef.current.bottom() && lastHitSide !== 2) {
+      socket.emit('hit paddle', { gameID, value: ballRef.current.y - paddleRightRef.current.y, oldHigh: paddleRightRef.current.h / 2, token });
+	  console.log("before right")
+	  console.log(ballRef.current.speedX)
+	  ballRef.current.speedX = -1 * Math.abs(ballRef.current.speedX);
+	  console.log("after right")
+	  console.log(ballRef.current.speedX)
+	  ballRef.current.x = paddleRightRef.current.left() - 27;
+	  setLastHitSide(2);
     }
 
+	ballRef.current.move(width, height);
+	ballRef.current.display();
+	paddleLeft.display(height);
+	paddleRight.display(height);
+	
     context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
     context.fillText(`${playerLeft}: ${scoreLeft}`, width / 2 - 30, 30);
 
@@ -209,10 +230,11 @@ const GameLogic = ({ socket, skin, token }) => {
 
       frameId = requestAnimationFrame(draw);
     };
-	
+
+	console.log(lastHitSide)
+
     draw();
 
-    // Event listener for keydown
     const keyHandler = createKeyHandler(socket, gameID, token);
     document.addEventListener('keydown', keyHandler);
 	
@@ -220,7 +242,7 @@ const GameLogic = ({ socket, skin, token }) => {
 		cancelAnimationFrame(frameId);
 		document.removeEventListener('keydown', keyHandler);
     };
-}, [context, gameID, end, scoreLeft, scoreRight, playerLeft, playerRight]);
+}, [context, gameID, end, scoreLeft, scoreRight, playerLeft, playerRight, lastHitSide]);
 
   useEffect(() => {
     socket.on('gameID', (id: number) => {
@@ -239,28 +261,31 @@ const GameLogic = ({ socket, skin, token }) => {
 		setPlayerRight(playerName);
 	  });
 	socket.on('ballSpeedY', (speed: string) => {
-	  ballRef.current.speedY = parseInt(speed);
+		ballRef.current.speedY = parseInt(speed);
 	});
 	socket.on('ballSpeedX', (speed: string) => {
-		ballRef.current.speedX = parseInt(speed);
+		if (ballRef.current.speedX === 0 || ballRef.current.x < 80 || ballRef.current.x > width - 80)
+			ballRef.current.speedX = parseInt(speed);
 	});
 	socket.on('right up', () => {
-	  paddleRightRef.current.y -= 5;
+	  paddleRightRef.current.y -= 12;
 	});
 	socket.on('left up', () => {
-	  paddleLeftRef.current.y -= 5;
+	  paddleLeftRef.current.y -= 12;
 	});
 	socket.on('right down', () => {
-	  paddleRightRef.current.y += 5;
+	  paddleRightRef.current.y += 12;
 	});
 	socket.on('left down', () => {
-	  paddleLeftRef.current.y += 5;
+	  paddleLeftRef.current.y += 12;
 	});
 	socket.on('left score', () => {
 		setScoreLeft(prev => prev + 1);
+		setLastHitSide(0);
 	  });
 	socket.on('right score', () => {
 		setScoreRight(prev => prev + 1);
+		setLastHitSide(0);
 	  });
 	socket.on('disconnection', () => {
 		setEnd(true);
