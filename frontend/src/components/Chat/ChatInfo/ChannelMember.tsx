@@ -1,6 +1,5 @@
 import React from 'react';
 import { Socket } from 'socket.io-client';
-
 import { ChannelData, MemberData } from '../interfaces';
 import BlockButton from './BlockButton';
 import { emitter } from '../../emitter';

@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { StatisticsData } from '../interfaces';
 
 const Statistics = ({ statisticsData }: { statisticsData: StatisticsData }) => {

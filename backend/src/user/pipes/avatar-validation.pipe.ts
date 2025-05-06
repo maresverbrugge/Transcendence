@@ -1,8 +1,7 @@
 import {
     PipeTransform, Injectable, BadRequestException,
   } from '@nestjs/common';
-
-  import { UploadedFileType } from '../interfaces';
+import { UploadedFileType } from '../interfaces';
 
 @Injectable()
 export class AvatarValidationPipe implements PipeTransform {

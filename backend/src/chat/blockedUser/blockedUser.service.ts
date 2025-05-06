@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { LoginService } from 'src/authentication/login/login.service';
 import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';

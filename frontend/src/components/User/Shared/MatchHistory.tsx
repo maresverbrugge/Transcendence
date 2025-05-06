@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { MatchHistoryData } from '../interfaces';
 
 const MatchHistory = ({ matchHistoryData }: { matchHistoryData: MatchHistoryData[] }) => {

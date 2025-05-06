@@ -2,7 +2,6 @@ import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Message } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { BlockedUserService } from '../blockedUser/blockedUser.service';
 import { ChannelService } from '../channel/channel.service';
 import { LoginService } from 'src/authentication/login/login.service';

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-
 import { ChannelData } from '../interfaces';
 import { emitter } from '../../emitter';
 

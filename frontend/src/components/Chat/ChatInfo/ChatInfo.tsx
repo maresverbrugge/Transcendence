@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
-
 import Friends from './Friends';
 import { ChannelData, FriendData } from '../interfaces';
 import Channel from './Channel';
 import DM from './DM';
 import axios from 'axios';
 import { emitter } from '../../emitter';
-
 
 interface ChannelInfoProps {
   channelID: number;
