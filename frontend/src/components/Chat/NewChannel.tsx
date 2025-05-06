@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { emitter } from '../emitter';
-
 import { FriendData } from './interfaces';
 
 interface NewChannelProps {

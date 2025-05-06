@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import SingleHeader from './Pages/SingleHeader';
 import { getToken, isTwoFactorEnabled, markUserOnline } from '../Utils/apiCalls';
 import { emitter } from '../emitter';

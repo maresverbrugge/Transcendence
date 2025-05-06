@@ -1,6 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
 import axios from 'axios';
-import { emitter } from '../../emitter';
 
 interface UsernameProps {
   currentUsername: string;

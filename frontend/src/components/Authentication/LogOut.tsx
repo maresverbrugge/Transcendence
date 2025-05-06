@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import SingleHeader from './Pages/SingleHeader';
 import { markUserOffline } from '../Utils/apiCalls';
 

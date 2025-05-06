@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-
 import { FriendData } from './interfaces';
 import { emitter } from '../emitter';
 

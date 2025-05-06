@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { AchievementsData } from '../interfaces';
 
 function Achievements({ achievements = [] }: { achievements: AchievementsData[] }) {

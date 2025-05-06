@@ -1,5 +1,4 @@
 import { Module, forwardRef } from '@nestjs/common';
-
 import { ChannelController } from './channel/channel.controller';
 import { ChannelService } from './channel/channel.service';
 import { UserController } from './blockedUser/blockedUser.controller';

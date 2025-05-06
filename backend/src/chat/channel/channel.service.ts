@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef }
 import { Socket, Namespace } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client';
-
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
 import { HashingService } from '../hashing/hashing.service';

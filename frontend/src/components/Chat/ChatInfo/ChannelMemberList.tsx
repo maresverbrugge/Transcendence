@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-
 import { ChannelData, MemberData, FriendData } from '../interfaces';
-import AddMember from '../AddChannelMember';
 import ChannelMember from './ChannelMember';
 import { emitter } from '../../emitter';
 

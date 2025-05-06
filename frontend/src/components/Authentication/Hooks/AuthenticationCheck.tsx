@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import { verifyToken } from '../../Utils/apiCalls';
 
 const isAuthenticatedHook = () => {

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
 import Channels from '../components/Chat/Channels/Channels';
 import ChatInfo from '../components/Chat/ChatInfo/ChatInfo';
 import Messenger from '../components/Chat/Messenger/Messenger';
 import { FriendData } from '../components/Chat/interfaces';
 import axios from 'axios';
-
 import { emitter } from '../components/emitter';
 import ReceiveGameInvite from '../components/Chat/ReceiveGameInvite';
 import GoBackButton from '../components/GoBackButton';
@@ -23,7 +21,6 @@ const Chat = () => {
   const token = localStorage.getItem('authenticationToken');
 
   useEffect(() => {
-
 
     const socketIo = io(`${process.env.REACT_APP_URL_BACKEND_WS}/chat`, {
       transports: ["websocket"],

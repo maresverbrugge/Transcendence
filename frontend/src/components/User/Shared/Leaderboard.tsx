@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { emitter } from '../../emitter';
-
 import { LeaderboardData } from '../interfaces';
 
 const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {

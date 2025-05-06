@@ -42,7 +42,6 @@ export class GameService {
 			  },
 		  },
 		});
-		//add match to players matchhistory
 		const user = await this.prisma.user.update({
 			where: {
 				ID: userID1,
@@ -97,7 +96,6 @@ export class GameService {
   async handleStart(gameID: number, token: string, server: Namespace) {
     var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
-        console.error(`Game with ID ${gameID} not found.`);
         return;
     }
 	if (game.firstPlayerReady)
@@ -129,7 +127,6 @@ export class GameService {
 		const playerID = await this.loginService.getUserIDFromCache(token);
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game) {
-			console.error(`Game with ID ${gameID} not found.`);
 			return;
 		}
 		if (Date.now() - game.lastHit < 200)
@@ -149,7 +146,6 @@ export class GameService {
 	try {
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game) {
-			console.error(`Game with ID ${gameID} not found.`);
 			return;
 		}
 		const playerID = await this.loginService.getUserIDFromCache(token);
@@ -178,7 +174,6 @@ export class GameService {
 		const playerID = await this.loginService.getUserIDFromCache(token);
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game || playerID == game.rightPlayerID) {
-			console.error(`Game with ID ${gameID} not found.`);
 			return;
 		}
 		game.ballspeedy *= -1;
@@ -195,7 +190,6 @@ export class GameService {
 		const playerID = await this.loginService.getUserIDFromCache(token);
 		var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 		if (!game) {
-			console.error(`Game with ID ${gameID} not found.`);
 			return;
 		}
 		const socketLeft = await this.userService.getSocketIDByUserID(game.leftPlayerID, token);
@@ -232,7 +226,6 @@ export class GameService {
 		this.endedIds.push(gameID);
 	  var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	  if (!game) {
-        console.error(`Game with ID ${gameID} not found.`);
         return;
     }
 	try {
@@ -279,7 +272,6 @@ export class GameService {
   async handleDisconnection(server: Namespace, gameID: number, client: Socket, token: string): Promise<void> {
 	var game: MatchInstance = this.matches.find((instance) => instance.ID === gameID);
 	if (!game) {
-	  console.error(`Game with ID ${gameID} not found.`);
 	  return;
   }
   try {

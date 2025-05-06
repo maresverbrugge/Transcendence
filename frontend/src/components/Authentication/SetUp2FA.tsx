@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import SingleHeader from './Pages/SingleHeader';
 import { getQRCode } from '../Utils/apiCalls';
 import Enable2FA from './Enable2FA';

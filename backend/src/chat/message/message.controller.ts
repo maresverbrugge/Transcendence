@@ -1,6 +1,5 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { Message } from '@prisma/client';
-
 import { MessageService } from './message.service';
 
 @Controller('chat/message')
