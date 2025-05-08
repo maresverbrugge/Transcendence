@@ -100,7 +100,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
         {/* Scrollable Lists */}
         <div style={{ flexGrow: 1, overflowY: 'auto'}}>
           {/* Public Channels */}
-          {channels.some((channel) => !channel.isPrivate) && (
+          {Array.isArray(channels) && channels.some((channel) => !channel.isPrivate) && (
             <div className="mb-3 text-center">
               <h5>Public Channels</h5>
               <ul className="list-group">
@@ -119,7 +119,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
           )}
 
           {/* Private Channels */}
-          {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
+          {Array.isArray(channels) && channels.some((channel) => channel.isPrivate && !channel.isDM) && (
             <div className="mb-3 text-center">
               <h5>Private Channels</h5>
               <ul className="list-group">
@@ -138,7 +138,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
           )}
 
           {/* Direct Messages */}
-          {channels.some((channel) => channel.isDM) && (
+          {Array.isArray(channels) && channels.some((channel) => channel.isDM) && (
             <div className="mb-3 text-center">
               <h5>Direct Messages</h5>
               <ul className="list-group">
