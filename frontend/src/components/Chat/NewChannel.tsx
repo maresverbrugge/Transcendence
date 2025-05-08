@@ -19,13 +19,13 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
   const [passwordEnabled, setPasswordEnabled] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [selectedFriends, setSelectedFriends] = useState<number[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<number>(null)
+  const [selectedFriend, setSelectedFriend] = useState<number | null>(null)
   const token = localStorage.getItem('authenticationToken');
 
 
   useEffect(() => {
     emitter.on('createChannel', () => {setIsCreating(true)});
-    
+
     return () => {
       emitter.off('createChannel');
     };
@@ -33,9 +33,9 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
 
   useEffect(() => {
       newChannelBoxRef.current?.focus();
-  
+
   }, [isCreating]);
-  
+
   const toggleMember = (userID: number) => {
     setSelectedFriends((prev) => (prev.includes(userID) ? prev.filter((id) => id !== userID) : [...prev, userID]));
   };
@@ -59,7 +59,7 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
         emitter.emit('error', error);
       }
     };
-    
+
   const resetForm = () => {
     setIsCreating(false);
     setChannelName('');
@@ -77,7 +77,7 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
         resetForm();
       }
     };
-  
+
   return (
     <>
       {isCreating && (
@@ -147,7 +147,7 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
                       <input className="form-check-input"
                         type="checkbox"
                         checked={selectedFriends.includes(friend.ID)}
-                        onChange={() => toggleMember(friend.ID)} 
+                        onChange={() => toggleMember(friend.ID)}
                         style={{
                           backgroundColor: selectedFriends.includes(friend.ID) ? "#0dcaf0" : "",
                           borderColor: selectedFriends.includes(friend.ID) ? "#0dcaf0" : "",
@@ -175,7 +175,7 @@ const NewChannel = ({ friends, socket }: NewChannelProps) => {
                         id={`optionsRadios${friend.ID}`}
                         value={`option${friend.ID}`}
                         checked={selectedFriend === friend.ID}
-                        onChange={() => setSelectedFriend(friend.ID)} 
+                        onChange={() => setSelectedFriend(friend.ID)}
                         style={{
                           backgroundColor: selectedFriend === friend.ID ? "#0dcaf0" : "",
                           borderColor: selectedFriend === friend.ID ? "#0dcaf0" : "",

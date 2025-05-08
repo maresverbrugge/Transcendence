@@ -43,7 +43,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
         const response = await axios.get<ChannelData[]>(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/all/${token}`);
         setChannels(response.data);
         if (selectedChannelID && !response.data.some((channel) => channel.ID === selectedChannelID)) {
-          emitter.emit('selectChannel', null)
+          emitter.emit('selectChannel', -1)
         }
       } catch (error) {
         emitter.emit('error', error);
@@ -79,12 +79,12 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
 
   const handleClickChannel = (channelID: number) => {
     var channel = channels.find((ch) => ch.ID === channelID);
-    if (channelID === selectedChannelID) channel = null;
+    if (channelID === selectedChannelID) channel = undefined;
     if (channel?.passwordEnabled) {
       emitter.emit('showPasswordPrompt', channelID);
     }
     else {
-      emitter.emit('selectChannel', channel ? channel.ID : null);
+      emitter.emit('selectChannel', channel ? channel.ID : -1);
     }
   };
 

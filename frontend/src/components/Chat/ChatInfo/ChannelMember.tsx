@@ -25,7 +25,7 @@ const ChannelMember = ({member, currentMember, channel, blockedUserIDs, socket}:
     ban: 'Are you sure you want to ban this user?',
   };
 
-  const emitAction = (action) => {
+  const emitAction = (action: 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban') => {
     socket.emit('channelAction', {
       action,
       channelMemberID: member.ID,
