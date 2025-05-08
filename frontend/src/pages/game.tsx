@@ -49,7 +49,7 @@ const Game = () => {
   };
 
   if (!socket) {
-    return;
+    return null;
   }
 
   return (
