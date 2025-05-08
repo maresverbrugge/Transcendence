@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Inject, forwardRef} from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LoginService } from '../../authentication/login/login.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class BlockedUserService {
         select: { blockedUsers: { select: { blockedID: true } } },
       });
       if (!user) throw new NotFoundException('User not found');
-      return user.blockedUsers.map((blockedUser) => {
+      return user.blockedUsers.map((blockedUser: { blockedID: number }) => {
         return blockedUser.blockedID;
       });
     } catch (error) {

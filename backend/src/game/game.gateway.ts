@@ -8,12 +8,12 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { UserStatus, MatchStatus } from '@prisma/client';
 import { GameService } from './game.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
-import { UserService } from 'src/user/user.service';
+import { LoginService } from '../authentication/login/login.service';
+import { ErrorHandlingService } from '../error-handling/error-handling.service';
+import { UserService } from '../user/user.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -112,7 +112,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const userID = await this.loginService.getUserIDFromCache(token);
       const gameID: number = this.gameService.getGameID(userID);
       this.gameService.handleDisconnection(this.server, gameID, client, token);
-      
+
       await this.prisma.user.update({
         where: { ID: userID },
         data: { websocketID: null, status: UserStatus.ONLINE },
