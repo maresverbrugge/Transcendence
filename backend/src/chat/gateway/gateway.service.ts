@@ -3,10 +3,10 @@ import { Socket } from 'socket.io';
 import { UserStatus } from '@prisma/client';
 import { ChatGateway } from './chat.gateway';
 import { ChannelService } from '../channel/channel.service';
-import { LoginService } from 'src/authentication/login/login.service';
+import { LoginService } from '../../authentication/login/login.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 
 @Injectable()
 export class GatewayService {

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginService } from 'src/authentication/login/login.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LoginService } from '../../authentication/login/login.service';
 import { GatewayService } from '../gateway/gateway.service';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class GameInviteService {
         @Inject(forwardRef(() => GatewayService))
         private readonly gatewayService: GatewayService,
       ) {}
-    
+
     async sendGameInvite(client: Socket, receiverUserID: number, token: string): Promise<void> {
         const senderID = await this.loginService.getUserIDFromCache(token);
         const sender = await this.prisma.user.findUnique({
@@ -43,7 +43,7 @@ export class GameInviteService {
         }
     }
 
-    async declineGameInvite(senderUserID: number, message: string, token): Promise<void> {
+    async declineGameInvite(senderUserID: number, message: string, token: string): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
         const sender = await this.gatewayService.getWebSocketByUserID(senderUserID);
         if (sender && sender.connected) {
@@ -51,7 +51,7 @@ export class GameInviteService {
         }
     }
 
-    async acceptGameInvite(senderUserID: number, token): Promise<void> {
+    async acceptGameInvite(senderUserID: number, token: string): Promise<void> {
         const receiverID = await this.loginService.getUserIDFromCache(token);
         const sender = await this.gatewayService.getWebSocketByUserID(senderUserID);
         if (sender && sender.connected) {

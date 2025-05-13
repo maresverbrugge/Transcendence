@@ -72,7 +72,7 @@ const Friend = ({ friend, socket }: FriendProps) => {
   );
 };
 
-const Friends = ({ friends, socket }: FriendsProps) => {
+const Friends = ({ friends = [], socket }: FriendsProps) => {
   const token = localStorage.getItem('authenticationToken');
 
   return (
@@ -82,10 +82,10 @@ const Friends = ({ friends, socket }: FriendsProps) => {
       </div>
       <div style={{ flexGrow: 1, overflowY: 'auto'}}>
         <ul className="friends" style={{ paddingLeft: 0}}>
-          {friends
+          {Array.isArray(friends) && friends
             .sort((a, b) => {
               const statusOrder = { IN_CHAT: 1, ONLINE: 2, IN_GAME: 2, OFFLINE: 3 };
-              return statusOrder[a.status] - statusOrder[b.status];
+              return statusOrder[a.status as keyof typeof statusOrder] - statusOrder[b.status as keyof typeof statusOrder];
             })
             .map((friend) => (
               <Friend key={friend.ID} friend={friend} socket={socket} />

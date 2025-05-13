@@ -15,7 +15,7 @@ import { MessageService } from '../message/message.service';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { GameInviteService } from '../gameInvite/game-invite.service';
 import { MessagePipe } from '../pipes/message.pipe';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 import { GatewayService } from './gateway.service';
 
 type ChannelWithMembersAndMessages = Channel & {

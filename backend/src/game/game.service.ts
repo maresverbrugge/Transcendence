@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from '../user/user.service';
 import { Match, MatchStatus, UserStatus } from '@prisma/client';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { LoginService } from '../authentication/login/login.service';
+import { ErrorHandlingService } from '../error-handling/error-handling.service';
 
 interface MatchInstance
 {
@@ -71,7 +71,10 @@ export class GameService {
 
   getGameID(playerID: number): number {
 	var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
-	return game.ID;
+	if (game !== undefined)
+		return game.ID;
+	else
+		return undefined;
   }
 
   async getSide(gameID: number, token: string, server: Namespace): Promise<number> {

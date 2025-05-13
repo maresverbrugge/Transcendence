@@ -34,18 +34,22 @@ const Game = () => {
     };
   }, []);
 
-  const joinQueue = (token) => {
-	socket.emit('joinqueue', token);
-	setInQueue(true);
+  const joinQueue = (token: string) => {
+    if (socket) {
+      socket.emit('joinqueue', token);
+      setInQueue(true);
+    }
   };
 
-  const leaveQueue = (token) => {
-	socket.emit('leavequeue', token);
-	setInQueue(false);
+  const leaveQueue = (token: string) => {
+    if (socket) {
+      socket.emit('leavequeue', token);
+      setInQueue(false);
+    }
   };
 
   if (!socket) {
-    return;
+    return null;
   }
 
   return (
@@ -56,10 +60,10 @@ const Game = () => {
 		{!joinedGame && (
 			<div className="games-startup">
 				{inQueue && (
-					<button className="btn btn-primary" onClick={() => leaveQueue(token)}>{`I don't want to play anymore`}</button>
+          <button className="btn btn-primary" onClick={() => token && leaveQueue(token)}>{`I don't want to play anymore`}</button>
 				)}
 				{!inQueue && (
-					<button className="btn btn-primary" onClick={() => joinQueue(token)}>{`Wanna play?`}</button>
+          <button className="btn btn-primary" onClick={() => token && joinQueue(token)}>{`Wanna play?`}</button>
 				)}
 				<label>Join the queue to play.</label>
 			</div>

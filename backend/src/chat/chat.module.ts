@@ -8,11 +8,11 @@ import { MessageController } from './message/message.controller';
 import { BlockedUserService } from './blockedUser/blockedUser.service';
 import { HashingService } from './hashing/hashing.service';
 import { GameInviteService } from './gameInvite/game-invite.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { ErrorHandlingService } from '../error-handling/error-handling.service';
 import { GatewayService } from './gateway/gateway.service';
-import { UserModule } from 'src/user/user.module';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { LoginModule } from 'src/authentication/authentication.module';
+import { UserModule } from '../user/user.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { LoginModule } from '../authentication/authentication.module';
 import { ChatGateway } from './gateway/chat.gateway';
 
 @Module({

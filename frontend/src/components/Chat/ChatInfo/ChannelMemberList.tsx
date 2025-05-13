@@ -57,7 +57,7 @@ const ChannelMemberList = ({ channel, friends, socket }: ChannelMemberListProps)
   }, [channel, socket]);
 
   const currentMember = members.find((member) => member.ID === currentMemberID);
-  if (currentMember?.isBanned) emitter.emit('selectChannel', null);
+  if (currentMember?.isBanned) emitter.emit('selectChannel', -1);
 
   const sortedMembers = members.sort((a, b) => {
     if (a.isOwner) return -1;

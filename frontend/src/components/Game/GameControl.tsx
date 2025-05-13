@@ -134,7 +134,7 @@ const createKeyHandler = (socket: Socket, gameID: number, token: string) => {
   };
 };
 
-const GameLogic = ({ socket, skin, token }) => {
+const GameLogic = ({ socket, skin, token }: { socket: Socket; skin: string; token: string }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [gameID, setGameID] = useState<number | null>(null);
@@ -149,8 +149,8 @@ const GameLogic = ({ socket, skin, token }) => {
   const ballRef = useRef<Ball | null>(null);
   const paddleLeftRef = useRef<Paddle | null>(null);
   const paddleRightRef = useRef<Paddle | null>(null);
-  const [playerLeft, setPlayerLeft] = useState<string>(null);
-  const [playerRight, setPlayerRight] = useState<string>(null);
+  const [playerLeft, setPlayerLeft] = useState<string | null>(null);
+  const [playerRight, setPlayerRight] = useState<string | null>(null);
   const [lastHitSide, setLastHitSide] = useState<number>(0);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ const GameLogic = ({ socket, skin, token }) => {
 
   useEffect(() => {
 	if (!context || gameID === null) return;
-  
+
 	ballRef.current = new Ball(width / 2, height / 2, 50, context, gameID, socket, token);
 	paddleLeftRef.current = new Paddle(15, height / 2, 40, 200, context, skin);
 	paddleRightRef.current = new Paddle(width - 15, height / 2, 40, 200, context, skin);
@@ -170,9 +170,9 @@ const GameLogic = ({ socket, skin, token }) => {
 	setTimeout(() => {
 		socket.emit('start', { token: token, gameID: gameID });
 	  }, 1500);
-  
+
   }, [context, gameID]);
-  
+
 
   useEffect(() => {
 	if (!context || gameID === null) return;
@@ -216,7 +216,7 @@ const GameLogic = ({ socket, skin, token }) => {
 	ballRef.current.display();
 	paddleLeft.display(height);
 	paddleRight.display(height);
-	
+
     context.fillText(`${playerRight}: ${scoreRight}`, width / 2 + 30, 30);
     context.fillText(`${playerLeft}: ${scoreLeft}`, width / 2 - 30, 30);
 
@@ -237,7 +237,7 @@ const GameLogic = ({ socket, skin, token }) => {
 
     const keyHandler = createKeyHandler(socket, gameID, token);
     document.addEventListener('keydown', keyHandler);
-	
+
     return () => {
 		cancelAnimationFrame(frameId);
 		document.removeEventListener('keydown', keyHandler);

@@ -27,7 +27,7 @@ const PaddleSelect = ({}) => {
   };
   }, []);
 
-  function handleChange(event) {
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSelectedPaddle(event.target.value);
 	socket.emit('getGameID', token);
 	setShowGame(true);
@@ -56,7 +56,7 @@ const PaddleSelect = ({}) => {
 				</label>
 			</div>
 		)}
-	</div> 
+	</div>
   );
 };
 

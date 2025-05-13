@@ -9,7 +9,7 @@ const redirect_uri = process.env.REACT_APP_LOGIN_REDIRECT;
 const state = process.env.REACT_APP_LOGIN_STATE;
 
 const handleLogin = () => {
-  window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&response_type=code&scope=public&state=${state}`;
+  window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri || '')}&response_type=code&scope=public&state=${state}`;
 };
 
 const Login = () => {

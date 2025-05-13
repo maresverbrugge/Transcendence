@@ -50,7 +50,7 @@ const Username = ({ currentUsername, onUsernameUpdate }: UsernameProps) => {
       setIsEditing(false);
       setUploadStatus('success');
       onUsernameUpdate(tempUsername); // Notify parent of the username change
-    } catch (error) {
+    } catch (error: any) {
       if (error?.response?.data?.message) {
         setValidationMessage(error.response.data.message); // Display backend validation error
       }
