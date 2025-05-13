@@ -111,12 +111,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (Array.isArray(token)) token = token[0];
       const userID = await this.loginService.getUserIDFromCache(token);
       const gameID: number = this.gameService.getGameID(userID);
-      this.gameService.handleDisconnection(this.server, gameID, client, token);
+	  if (gameID !== undefined)
+	  {
+		  this.gameService.handleDisconnection(this.server, gameID, client, token);
 
-      await this.prisma.user.update({
-        where: { ID: userID },
-        data: { websocketID: null, status: UserStatus.ONLINE },
-      });
+		  await this.prisma.user.update({
+			where: { ID: userID },
+			data: { websocketID: null, status: UserStatus.ONLINE },
+		  });
+	  }
       console.log('CLIENT DISCONNECTED', userID);
     } catch (error) {
 		this.errorHandlingService.emitHttpException(error, client);
