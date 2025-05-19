@@ -54,7 +54,7 @@ const Friends = () => {
     );
   }
 
-  if (!friends.length) {
+  if (!Array.isArray(friends) || friends.length === 0) {
     return (
       <div className="text-center p-3">
         <p>No friends found! </p>

@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as speakeasy from 'speakeasy'; // https://www.npmjs.com/package/speakeasy
 import * as qrcode from 'qrcode';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 
 @Injectable()
 export class TwoFactorService {

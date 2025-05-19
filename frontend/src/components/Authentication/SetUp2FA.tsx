@@ -46,7 +46,7 @@ const SetUp2FA = () => {
             <li>Install the Google Authenticator app on your phone.</li>
             <li>Scan the QR code below with the Google Authenticator app.</li>
           </ol>
-          <img src={qrcodeUrl} className="img-fluid" style={{ width: '300px' }} />
+          <img src={qrcodeUrl || ''} className="img-fluid" style={{ width: '300px' }} />
           <button
             className="btn btn-primary w-30 fs-4 fw-bold mt-3"
             onClick={() => setUserScannedQRCode(true)}

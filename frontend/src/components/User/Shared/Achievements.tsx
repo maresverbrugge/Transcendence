@@ -2,6 +2,10 @@ import React from 'react';
 import { AchievementsData } from '../interfaces';
 
 function Achievements({ achievements = [] }: { achievements: AchievementsData[] }) {
+  if (!Array.isArray(achievements) || achievements.length === 0) {
+    return null;
+  }
+
   return (
     <div className="px-0 py-3">
     <h2 className="text-center mb-3">Achievements</h2>

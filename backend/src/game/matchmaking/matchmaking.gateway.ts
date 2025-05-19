@@ -1,13 +1,13 @@
 import { WebSocketServer, SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UserService } from '../../user/user.service';
 import { UserStatus } from '@prisma/client';
-import { GameService } from 'src/game/game.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
-  
+import { GameService } from '../../game/game.service';
+import { LoginService } from '../../authentication/login/login.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
+
   @WebSocketGateway({
 	namespace: 'matchmaking',
 	cors: {
@@ -27,7 +27,7 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 	@WebSocketServer() server: Namespace;
 	private queue: number[] = [];
 	private logger: Logger = new Logger('GameGateway');
-  
+
 	@SubscribeMessage('joinqueue')
 	async handleJoinQueue(client: any, token: string) {
 		try {
@@ -75,11 +75,11 @@ import { ErrorHandlingService } from 'src/error-handling/error-handling.service'
 			this.errorHandlingService.emitHttpException(error, client);
 		}
 	}
-  
+
 	afterInit(server: Namespace) {
 	  this.logger.log('WebSocket Gateway Initialized');
 	}
-  
+
 	async handleConnection(client: Socket): Promise<void> {
 		try {
 			let token = client.handshake.query.token;

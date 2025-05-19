@@ -10,7 +10,7 @@ const PasswordPrompt = () => {
 
   useEffect(() => {
     emitter.on('showPasswordPrompt', (channelID) => showPasswordPrompt(channelID))
-  
+
     return () => {
       emitter.off('showPasswordPrompt');
     }
@@ -38,7 +38,9 @@ const PasswordPrompt = () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/${selectedChannelForPassword}/verify-password`, { password })
       if (response.status ===  200) {
-        emitter.emit('selectChannel', selectedChannelForPassword);
+        if (selectedChannelForPassword !== null) {
+          emitter.emit('selectChannel', selectedChannelForPassword);
+        }
         setPasswordPromptVisible(false);
       } else {
         emitter.emit('alert', 'Incorrect password');

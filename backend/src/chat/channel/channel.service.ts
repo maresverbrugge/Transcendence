@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { Socket, Namespace } from 'socket.io';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Channel, ChannelMember, User, Message } from '@prisma/client';
 import { ChannelMemberService } from '../channel-member/channel-member.service';
 import { MessageService } from '../message/message.service';
 import { HashingService } from '../hashing/hashing.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { UserService } from 'src/user/user.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { LoginService } from '../../authentication/login/login.service';
+import { UserService } from '../../user/user.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';
-import { UserProfile } from 'src/user/interfaces';
+import { UserProfile } from '../../user/interfaces';
 
 type ChannelResponse = {
     ID: number;
@@ -93,7 +93,7 @@ export class ChannelService {
         this.errorHandlingService.throwHttpException(error);
     }
   }
-  
+
 
   addChannelMemberToChannel(channelID: number, socket: Socket): void {
     this.gatewayService.emitToRoom('updateChannelMember', String(channelID));
@@ -169,7 +169,7 @@ export class ChannelService {
           where: { isDM: true },
           select: { members: { select: { userID: true } } },
         });
-        const DM = DMs.find((dm) => {
+        const DM = DMs.find((dm: { members: { userID: number }[] }) => {
           const memberIDsInDM = dm.members.map((member) => member.userID);
           return memberIDsInDM.includes(ownerID) && memberIDsInDM.includes(memberIDs[0]);
         });
@@ -277,8 +277,8 @@ export class ChannelService {
       if (!user)
           throw new NotFoundException('User not found')
       return user.channelMembers
-          .filter((channelMember) => !channelMember.isBanned && channelMember.channel.isPrivate)
-          .map((channelMember) => {
+          .filter((channelMember: { isBanned: boolean; channel: { isPrivate: boolean } }) => !channelMember.isBanned && channelMember.channel.isPrivate)
+          .map((channelMember: { isBanned: boolean; channel: ChannelWithMembers }) => {
           if (channelMember.channel.isDM)
               channelMember.channel.name = this.getDMName(user.username, channelMember.channel);
           return channelMember.channel;
@@ -365,7 +365,7 @@ export class ChannelService {
     }
   }
 
-  async updateChannel(userID) {
+  async updateChannel(userID: number) {
     const socket = await this.gatewayService.getWebSocketByUserID(userID);
     if (socket?.connected) socket.emit('updateChannel');
   }
@@ -404,7 +404,7 @@ export class ChannelService {
     if (!channel || !channel.members) {
       throw new NotFoundException("Channel not found or has no members");
     }
-    const otherUser = channel.members.find(member => member.user.ID !== userID);
+    const otherUser = channel.members.find((member: { user: { ID: number } }) => member.user.ID !== userID);
     if (!otherUser) {
       throw new Error("User not found");
     }

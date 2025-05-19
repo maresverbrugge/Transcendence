@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { verifyToken } from '../../Utils/apiCalls';
 
 const isAuthenticatedHook = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('authenticationToken');

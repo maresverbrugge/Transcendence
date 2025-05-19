@@ -1,11 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException, Inject, forwardRef, BadRequestException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Namespace, Socket } from 'socket.io';
 import { ChannelMember, User } from '@prisma/client';
 import { ChannelService } from '../channel/channel.service';
 import { MessageService } from '../message/message.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { LoginService } from '../../authentication/login/login.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';
 
 type ChannelMemberResponse = ChannelMember & {
@@ -60,7 +60,7 @@ export class ChannelMemberService {
           },
         });
         if (!channel) throw new NotFoundException('Channel not found');
-        const filteredMembers = channel.members.filter((member) => !member.isBanned && member.channelID === channelID);
+        const filteredMembers = channel.members.filter((member: ChannelMember) => !member.isBanned && member.channelID === channelID);
         return filteredMembers;
     } catch (error) {
         this.errorHandlingService.throwHttpException(error);
@@ -76,7 +76,7 @@ export class ChannelMemberService {
       });
       if (!user)
         throw new NotFoundException('User not found')
-      const member = user?.channelMembers.find((member) => member.channelID === channelID);
+      const member = user?.channelMembers.find((member: { channelID: number; isBanned: boolean }) => member.channelID === channelID);
       return member !== undefined && !member.isBanned;
     } catch (error) {
         this.errorHandlingService.throwHttpException(error);
@@ -247,7 +247,7 @@ export class ChannelMemberService {
       });
       if (!user) throw new NotFoundException('User not found');
       const channelMembers = user.channelMembers;
-      channelMembers.map((member) => {
+      channelMembers.map((member: { channelID: number; isBanned: boolean }) => {
         if (!member.isBanned) {
           socket.join(String(member.channelID));
         }

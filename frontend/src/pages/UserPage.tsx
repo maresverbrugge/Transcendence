@@ -9,7 +9,7 @@ const UserPage = () => {
   const { userID } = useParams<{ userID: string }>();
   const [currentUserID, setCurrentUserID] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  var parsedUserID = parseInt(userID);
+  var parsedUserID = userID ? parseInt(userID) : NaN;
 
   useEffect(() => {
     const fetchCurrentUserID = async () => {

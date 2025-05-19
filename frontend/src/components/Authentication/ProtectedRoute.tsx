@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import isAuthenticatedHook from './Hooks/AuthenticationCheck';
 import SingleHeader from './Pages/SingleHeader';
 
-const ProtectedRoute = ({ element }) => {
+const ProtectedRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
   const isAuthenticated = isAuthenticatedHook();
 
   if (isAuthenticated === null) {

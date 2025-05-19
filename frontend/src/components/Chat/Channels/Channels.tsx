@@ -43,7 +43,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
         const response = await axios.get<ChannelData[]>(`${process.env.REACT_APP_URL_BACKEND}/chat/channel/all/${token}`);
         setChannels(response.data);
         if (selectedChannelID && !response.data.some((channel) => channel.ID === selectedChannelID)) {
-          emitter.emit('selectChannel', null)
+          emitter.emit('selectChannel', -1)
         }
       } catch (error) {
         emitter.emit('error', error);
@@ -79,12 +79,12 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
 
   const handleClickChannel = (channelID: number) => {
     var channel = channels.find((ch) => ch.ID === channelID);
-    if (channelID === selectedChannelID) channel = null;
+    if (channelID === selectedChannelID) channel = undefined;
     if (channel?.passwordEnabled) {
       emitter.emit('showPasswordPrompt', channelID);
     }
     else {
-      emitter.emit('selectChannel', channel ? channel.ID : null);
+      emitter.emit('selectChannel', channel ? channel.ID : -1);
     }
   };
 
@@ -100,7 +100,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
         {/* Scrollable Lists */}
         <div style={{ flexGrow: 1, overflowY: 'auto'}}>
           {/* Public Channels */}
-          {channels.some((channel) => !channel.isPrivate) && (
+          {Array.isArray(channels) && channels.some((channel) => !channel.isPrivate) && (
             <div className="mb-3 text-center">
               <h5>Public Channels</h5>
               <ul className="list-group">
@@ -119,7 +119,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
           )}
 
           {/* Private Channels */}
-          {channels.some((channel) => channel.isPrivate && !channel.isDM) && (
+          {Array.isArray(channels) && channels.some((channel) => channel.isPrivate && !channel.isDM) && (
             <div className="mb-3 text-center">
               <h5>Private Channels</h5>
               <ul className="list-group">
@@ -138,7 +138,7 @@ const Channels = ({ selectedChannelID, socket }: ChannelsProps) => {
           )}
 
           {/* Direct Messages */}
-          {channels.some((channel) => channel.isDM) && (
+          {Array.isArray(channels) && channels.some((channel) => channel.isDM) && (
             <div className="mb-3 text-center">
               <h5>Direct Messages</h5>
               <ul className="list-group">
