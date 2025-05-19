@@ -71,7 +71,10 @@ export class GameService {
 
   getGameID(playerID: number): number {
 	var game: MatchInstance = this.matches.find((instance) => instance.leftPlayerID === playerID || instance.rightPlayerID === playerID);
-	return game.ID;
+	if (game !== undefined)
+		return game.ID;
+	else
+		return -1;
   }
 
   async getSide(gameID: number, token: string, server: Namespace): Promise<number> {
