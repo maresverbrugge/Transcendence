@@ -46,12 +46,12 @@ const PaddleSelect = ({}) => {
 				</label>
 				<label>
 					<input type="radio" value="option1" checked={selectedPaddle === 'option1'} onChange={handleChange} />
-					<img className="button-image" src="http://localhost:3001/images/pexels-lum3n-44775-406014.jpg"></img>
+					<img className="button-image" src={`${process.env.REACT_APP_URL_BACKEND}/images/pexels-lum3n-44775-406014.jpg`}></img>
 					Doggo
 				</label>
 				<label>
 					<input type="radio" value="option2" checked={selectedPaddle === 'option2'} onChange={handleChange} />
-					<img className="button-image" src="http://localhost:3001/images/pexels-pixabay-259915.jpg"></img>
+					<img className="button-image" src={`${process.env.REACT_APP_URL_BACKEND}/images/pexels-pixabay-259915.jpg`}></img>
 					Bricks
 				</label>
 			</div>
