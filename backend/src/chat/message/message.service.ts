@@ -1,11 +1,11 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Message } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { BlockedUserService } from '../blockedUser/blockedUser.service';
 import { ChannelService } from '../channel/channel.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { LoginService } from '../../authentication/login/login.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 import { GatewayService } from '../gateway/gateway.service';
 
 type action = 'demote' | 'makeAdmin' | 'mute' | 'kick' | 'ban' | 'join' | 'leave';
@@ -48,13 +48,13 @@ export class MessageService {
     const messageCount = await this.prisma.message.count({
       where: { channelID },
     });
-  
+
     if (messageCount > 80) {
       const oldestMessage = await this.prisma.message.findFirst({
         where: { channelID },
         orderBy: { createdAt: 'asc' },
       });
-  
+
       if (oldestMessage) {
         await this.prisma.message.delete({
           where: { ID: oldestMessage.ID },

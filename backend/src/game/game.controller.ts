@@ -1,7 +1,7 @@
 import { Controller, Post, Param, InternalServerErrorException, ParseIntPipe } from '@nestjs/common';
-import { GameService } from 'src/game/game.service';
-import { LoginService } from 'src/authentication/login/login.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GameService } from '../game/game.service';
+import { LoginService } from '../authentication/login/login.service';
+import { ErrorHandlingService } from '../error-handling/error-handling.service';
 
 @Controller('game/matches')
 export class GameController {

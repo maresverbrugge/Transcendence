@@ -7,14 +7,14 @@ import { emitter } from '../emitter';
 const SendGameInvite = ({ socket } : {socket: Socket} ) => {
   const sendGameInviteBoxRef = useRef<HTMLDivElement>(null);
   const [isPending, setIsPending] = useState(false);
-  const [receiverUserID, setReceiverUserID] = useState(null);
+  const [receiverUserID, setReceiverUserID] = useState<number | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('authenticationToken');
 
-  
+
   useEffect(() => {
     sendGameInviteBoxRef.current?.focus();
-  
+
     const handleInviteResponse = (data: { accepted: boolean; message: string, receiverUserID: number }) => {
       if (data.receiverUserID === receiverUserID) {
         setIsPending(false);
@@ -25,23 +25,23 @@ const SendGameInvite = ({ socket } : {socket: Socket} ) => {
         }
       }
     };
-  
+
     const handleAcceptOtherGameInvite = () => {
       if (isPending)
         handleCancelInvite();
     }
-  
+
     const handleSendGameInvite = (userID: number) => {
       setReceiverUserID(userID);
       setIsPending(true);
     }
-  
+
     emitter.on('acceptOtherGameInvite', handleAcceptOtherGameInvite);
-  
+
     emitter.on('sendGameInvite', handleSendGameInvite);
-  
+
     socket.on('gameInviteResponse', handleInviteResponse);
-  
+
     return () => {
       emitter.off('acceptOtherGameInvite');
       emitter.off('sendGameInvite', handleSendGameInvite);

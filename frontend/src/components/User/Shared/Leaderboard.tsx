@@ -37,7 +37,7 @@ const Leaderboard = ({ triggerRefresh }: { triggerRefresh?: boolean }) => {
     );
   }
 
-  if (!leaderboardData || leaderboardData.length === 0) {
+  if (!Array.isArray(leaderboardData) || leaderboardData.length === 0) {
     return (
       <div className="text-center mt-5">
         <p className="fs-4 text-muted">No leaderboard data available.</p>

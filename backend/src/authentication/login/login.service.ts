@@ -5,13 +5,13 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/common/cache';
 import { Cache } from 'cache-manager';
 import axios from 'axios';
 import { UserStatus } from '@prisma/client';
-import { GatewayService } from 'src/chat/gateway/gateway.service';
-import { ErrorHandlingService } from 'src/error-handling/error-handling.service';
+import { GatewayService } from '../../chat/gateway/gateway.service';
+import { ErrorHandlingService } from '../../error-handling/error-handling.service';
 
 // More info on this section here: https://api.intra.42.fr/apidoc/guides/web_application_flow
 

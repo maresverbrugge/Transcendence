@@ -42,7 +42,7 @@ const Channel = ({ channel, friends, socket }: ChannelProps) => {
 
   const leaveChannel = () => {
     socket.emit('leaveChannel', { channelID: channel.ID, token});
-    emitter.emit('selectChannel', null);
+    emitter.emit('selectChannel', -1);
   };
 
   return (
